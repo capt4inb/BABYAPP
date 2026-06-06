@@ -1,11 +1,19 @@
 import { useState } from 'react';
-import { Save, Download, Upload, Trash2, AlertTriangle } from 'lucide-react';
+import { Save, Download, Upload, Trash2, AlertTriangle, Users, LogOut, Loader2, Cloud } from 'lucide-react';
+import { createRoom, joinRoom } from '../services/firebase';
 
-export default function SettingsTab({ settings, onSaveSettings, records, onImportRecords }) {
+export default function SettingsTab({ 
+  settings, onSaveSettings, records, onImportRecords,
+  syncPin, syncStatus, onJoinSync, onLeaveSync 
+}) {
   const [form, setForm] = useState({ ...settings });
   const [saved, setSaved] = useState(false);
   const [importError, setImportError] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const [joinPin, setJoinPin] = useState('');
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncError, setSyncError] = useState('');
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -60,6 +68,41 @@ export default function SettingsTab({ settings, onSaveSettings, records, onImpor
     } else {
       setShowClearConfirm(true);
       setTimeout(() => setShowClearConfirm(false), 5000);
+    }
+  };
+
+  const handleCreateRoom = async () => {
+    try {
+      setSyncLoading(true);
+      setSyncError('');
+      const pin = await createRoom(records, settings);
+      onJoinSync(pin);
+    } catch (err) {
+      setSyncError(err.message);
+    } finally {
+      setSyncLoading(false);
+    }
+  };
+
+  const handleJoinRoom = async () => {
+    if (!joinPin.trim() || joinPin.length !== 4) {
+      setSyncError('Mã PIN phải gồm 4 chữ số');
+      return;
+    }
+    try {
+      setSyncLoading(true);
+      setSyncError('');
+      const initialData = await joinRoom(joinPin);
+      onImportRecords(initialData.records || []);
+      if (initialData.settings) {
+        onSaveSettings(initialData.settings);
+        setForm(initialData.settings);
+      }
+      onJoinSync(joinPin);
+    } catch (err) {
+      setSyncError(err.message);
+    } finally {
+      setSyncLoading(false);
     }
   };
 
@@ -153,6 +196,85 @@ export default function SettingsTab({ settings, onSaveSettings, records, onImpor
           <Save size={18} />
           {saved ? '✅ Đã lưu!' : 'Lưu cài đặt'}
         </button>
+
+        {/* Family Sync */}
+        <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+          <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Users size={18} color="var(--color-text)" />
+            Đồng bộ gia đình
+          </h2>
+
+          {syncPin ? (
+            <div style={{ background: 'var(--color-primary-bg)', padding: 16, borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-primary-light)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase' }}>
+                    Mã phòng của bạn
+                  </div>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '0.1em' }}>
+                    {syncPin}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                    <Cloud size={14} /> 
+                    {syncStatus === 'connecting' ? 'Đang kết nối...' : 'Đã kết nối'}
+                  </div>
+                </div>
+                <button
+                  className="btn btn-ghost"
+                  onClick={onLeaveSync}
+                  style={{ padding: '8px 12px', color: 'var(--color-danger)' }}
+                >
+                  <LogOut size={16} /> Ngắt kết nối
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+                Tạo mã PIN để đồng bộ dữ liệu giữa các máy (ví dụ: máy của mẹ và bố).
+              </p>
+
+              {syncError && (
+                <div style={{ marginBottom: 16, padding: '10px 12px', background: 'rgba(255,107,107,0.1)', color: 'var(--color-danger)', fontSize: 13, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <AlertTriangle size={16} /> {syncError}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Nhập mã 4 số..."
+                  value={joinPin}
+                  onChange={e => setJoinPin(e.target.value)}
+                  style={{ flex: 1, letterSpacing: '0.1em', fontWeight: 600 }}
+                  maxLength={4}
+                />
+                <button
+                  className="btn btn-primary"
+                  onClick={handleJoinRoom}
+                  disabled={syncLoading}
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  {syncLoading ? <Loader2 size={18} className="animate-spin" /> : 'Tham gia'}
+                </button>
+              </div>
+
+              <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--color-text-light)', marginBottom: 16 }}>
+                — hoặc —
+              </div>
+
+              <button
+                className="btn btn-ghost"
+                onClick={handleCreateRoom}
+                disabled={syncLoading}
+                style={{ width: '100%', background: 'var(--color-surface-alt)' }}
+              >
+                {syncLoading ? <Loader2 size={18} className="animate-spin" /> : 'Tạo mã phòng mới'}
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Data Management */}
         <div className="card" style={{ padding: 20, marginBottom: 16 }}>

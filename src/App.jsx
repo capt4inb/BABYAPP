@@ -6,6 +6,7 @@ import StatsTab from './components/StatsTab';
 import WonderWeeksTab from './components/WonderWeeksTab';
 import SettingsTab from './components/SettingsTab';
 import RecordModal from './components/RecordModal';
+import { subscribeToRoom, updateRoomRecords, updateRoomSettings } from './services/firebase';
 
 // ── localStorage keys ─────────────────────────────────────────
 const STORAGE_KEYS = {
@@ -59,31 +60,74 @@ export default function App() {
     loadFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   );
   const [modal, setModal] = useState(null); // null | { type: 'feed' | 'pump', editRecord: null | object }
+  
+  // Sync state
+  const [syncPin, setSyncPin] = useState(() => loadFromStorage('bmt_sync_pin', null));
+  const [syncStatus, setSyncStatus] = useState('disconnected'); // disconnected | connecting | connected
 
-  // Persist records
+  // Firebase Realtime Subscription
+  useEffect(() => {
+    saveToStorage('bmt_sync_pin', syncPin);
+    if (!syncPin) {
+      setSyncStatus('disconnected');
+      return;
+    }
+
+    setSyncStatus('connecting');
+    const unsubscribe = subscribeToRoom(
+      syncPin,
+      (remoteRecords) => {
+        // Only update if different to avoid looping (Firebase handles some of this, but it's safe to just set)
+        setRecords(remoteRecords);
+        setSyncStatus('connected');
+      },
+      (remoteSettings) => {
+        setSettings(remoteSettings);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [syncPin]);
+
+  // Persist records to local storage as fallback
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.RECORDS, records);
   }, [records]);
 
-  // Persist settings
+  // Persist settings to local storage as fallback
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.SETTINGS, settings);
   }, [settings]);
 
   // ── Record CRUD ──────────────────────────────────────────────
   const addRecord = useCallback((record) => {
-    setRecords(prev => [record, ...prev].sort(
-      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-    ));
-  }, []);
+    setRecords(prev => {
+      const next = [record, ...prev].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      if (syncPin) updateRoomRecords(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
 
   const updateRecord = useCallback((id, updated) => {
-    setRecords(prev => prev.map(r => r.id === id ? { ...r, ...updated } : r));
-  }, []);
+    setRecords(prev => {
+      const next = prev.map(r => r.id === id ? { ...r, ...updated } : r);
+      if (syncPin) updateRoomRecords(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
 
   const deleteRecord = useCallback((id) => {
-    setRecords(prev => prev.filter(r => r.id !== id));
-  }, []);
+    setRecords(prev => {
+      const next = prev.filter(r => r.id !== id);
+      if (syncPin) updateRoomRecords(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const handleSaveSettings = useCallback((newSettings) => {
+    setSettings(newSettings);
+    if (syncPin) updateRoomSettings(syncPin, newSettings).catch(console.error);
+  }, [syncPin]);
 
   // ── Modal helpers ────────────────────────────────────────────
   const openFeedModal = useCallback((editRecord = null) => {
@@ -127,9 +171,16 @@ export default function App() {
         {activeTab === 'settings'  && (
           <SettingsTab
             settings={settings}
-            onSaveSettings={setSettings}
+            onSaveSettings={handleSaveSettings}
             records={records}
-            onImportRecords={setRecords}
+            onImportRecords={(recs) => {
+              setRecords(recs);
+              if (syncPin) updateRoomRecords(syncPin, recs).catch(console.error);
+            }}
+            syncPin={syncPin}
+            syncStatus={syncStatus}
+            onJoinSync={(pin) => setSyncPin(pin)}
+            onLeaveSync={() => setSyncPin(null)}
           />
         )}
       </div>
