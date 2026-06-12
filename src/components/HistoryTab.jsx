@@ -24,7 +24,7 @@ function groupByDay(records) {
   return Object.entries(groups).map(([day, recs]) => ({ day, recs }));
 }
 
-export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, onDeleteRecord }) {
+export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal, onDeleteRecord }) {
   const [filter, setFilter] = useState('all'); // all | feed
   const [search, setSearch] = useState('');
   const [expandedDays, setExpandedDays] = useState({});
@@ -86,11 +86,12 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, 
           {[
             { value: 'all', label: 'Tất cả', emoji: '📋' },
             { value: 'feed', label: 'Cữ bú', emoji: '🍼' },
+            { value: 'weight', label: 'Cân nặng', emoji: '⚖️' },
           ].map(f => (
             <button
               key={f.value}
               className={`tag ${
-                f.value === 'all' ? 'tag-primary' : 'tag-baby'
+                f.value === 'all' ? 'tag-primary' : f.value === 'feed' ? 'tag-baby' : 'tag-primary'
               } ${filter === f.value ? 'active' : ''}`}
               onClick={() => setFilter(f.value)}
             >
@@ -152,10 +153,10 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, 
                     {/* Icon */}
                     <div style={{
                       width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: 'var(--color-primary-bg)',
+                      background: r.type === 'feed' ? 'var(--color-primary-bg)' : 'linear-gradient(135deg,#4FACFE,#00F2FE)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      <Droplets size={18} color="var(--color-primary)" />
+                      {r.type === 'feed' ? <Droplets size={18} color="var(--color-primary)" /> : <span style={{fontSize: 16}}>⚖️</span>}
                     </div>
 
                     {/* Details */}
@@ -163,12 +164,12 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                           <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-                            Bú {r.side === 'left' ? 'trái' : r.side === 'right' ? 'phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}
+                            {r.type === 'feed' ? `Bú ${r.side === 'left' ? 'trái' : r.side === 'right' ? 'phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}` : 'Ghi cân nặng'}
                           </span>
                           <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
                             {new Date(r.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                            {r.volume ? ` · ${r.volume} ml` : ''}
-                            {r.duration ? ` · ${r.duration} phút` : ''}
+                            {r.type === 'feed' && r.volume ? ` · ${r.volume} ml` : ''}
+                            {r.type === 'weight' && r.weight ? ` · ${r.weight} kg` : ''}
                           </div>
                           {r.note && (
                             <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: 2 }}>
@@ -180,7 +181,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, 
                         {/* Actions */}
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                           <button
-                            onClick={() => onOpenFeedModal(r)}
+                            onClick={() => r.type === 'feed' ? onOpenFeedModal(r) : onOpenWeightModal(r)}
                             style={{
                               width: 30, height: 30, borderRadius: 8, border: 'none',
                               background: 'var(--color-surface-alt)', cursor: 'pointer',

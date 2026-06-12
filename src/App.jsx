@@ -16,6 +16,7 @@ const STORAGE_KEYS = {
 
 const DEFAULT_SETTINGS = {
   babyName: 'Bé Yêu',
+  babyGender: 'boy', // 'boy' | 'girl'
   babyBirthDate: '', // YYYY-MM-DD
   babyDueDate: '',   // YYYY-MM-DD (optional, for Wonder Weeks)
   feedIntervalHours: 3,
@@ -58,7 +59,7 @@ export default function App() {
   const [settings, setSettings] = useState(() =>
     loadFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   );
-  const [modal, setModal] = useState(null); // null | { type: 'feed', editRecord: null | object }
+  const [modal, setModal] = useState(null); // null | { type: 'feed' | 'weight', editRecord: null | object }
   
   // Sync state
   const [syncPin, setSyncPin] = useState(() => loadFromStorage('bmt_sync_pin', null));
@@ -133,6 +134,10 @@ export default function App() {
     setModal({ type: 'feed', editRecord });
   }, []);
 
+  const openWeightModal = useCallback((editRecord = null) => {
+    setModal({ type: 'weight', editRecord });
+  }, []);
+
   const closeModal = useCallback(() => setModal(null), []);
 
   const handleModalSave = useCallback((record) => {
@@ -152,6 +157,7 @@ export default function App() {
     onUpdateRecord: updateRecord,
     onDeleteRecord: deleteRecord,
     onOpenFeedModal: openFeedModal,
+    onOpenWeightModal: openWeightModal,
   };
 
   return (

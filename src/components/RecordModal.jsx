@@ -8,8 +8,12 @@ function toLocalDatetimeInput(date) {
 }
 
 export default function RecordModal({ type, editRecord, onSave, onClose }) {
+  const isFeed = type === 'feed';
+  const isWeight = type === 'weight';
+
   const [timestamp, setTimestamp] = useState(toLocalDatetimeInput(new Date()));
   const [volume, setVolume] = useState('');
+  const [weight, setWeight] = useState('');
   const [side, setSide] = useState('both');     // left|right|both|bottle
   const [note, setNote] = useState('');
 
@@ -17,6 +21,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
     if (editRecord) {
       setTimestamp(toLocalDatetimeInput(editRecord.timestamp));
       setVolume(editRecord.volume ?? '');
+      setWeight(editRecord.weight ?? '');
       setSide(editRecord.side ?? 'both');
       setNote(editRecord.note ?? '');
     }
@@ -26,12 +31,16 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
     e.preventDefault();
     const record = {
       id: editRecord?.id ?? crypto.randomUUID(),
-      type: 'feed',
+      type,
       timestamp: new Date(timestamp).toISOString(),
       note: note.trim(),
-      side,
-      volume: volume !== '' ? Number(volume) : null,
     };
+    if (isFeed) {
+      record.side = side;
+      record.volume = volume !== '' ? Number(volume) : null;
+    } else if (isWeight) {
+      record.weight = weight !== '' ? Number(weight) : null;
+    }
     onSave(record);
   };
 
@@ -56,17 +65,19 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 40, height: 40, borderRadius: 12,
-              background: 'linear-gradient(135deg,#FF6B9D,#FF8CB6)',
+              background: isFeed 
+                ? 'linear-gradient(135deg,#FF6B9D,#FF8CB6)'
+                : 'linear-gradient(135deg,#4FACFE,#00F2FE)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <Droplets size={20} color="white" />
+              {isFeed ? <Droplets size={20} color="white" /> : <span style={{ fontSize: 20 }}>⚖️</span>}
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
-                {editRecord ? 'Chỉnh sửa' : 'Ghi lại'} cữ bú
+                {editRecord ? 'Chỉnh sửa' : 'Ghi lại'} {isFeed ? 'cữ bú' : 'cân nặng'}
               </h2>
               <p style={{ margin: 0, fontSize: 12, color: 'var(--color-text-muted)' }}>
-                Theo dõi lượng sữa mẹ / bình
+                {isFeed ? 'Theo dõi lượng sữa mẹ / bình' : 'Theo dõi sự phát triển của bé'}
               </p>
             </div>
           </div>
@@ -99,51 +110,75 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
           </div>
 
           {/* Feed side selector */}
-          <div className="form-group">
-            <label className="form-label">Cách bú</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {feedSides.map(s => (
-                <button
-                  key={s.value}
-                  type="button"
-                  onClick={() => setSide(s.value)}
-                  style={{
-                    padding: '10px 12px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: `2px solid ${side === s.value ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                    background: side === s.value ? 'var(--color-primary-bg)' : 'var(--color-surface-alt)',
-                    color: side === s.value ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                    fontFamily: 'Outfit, sans-serif',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <span>{s.emoji}</span> {s.label}
-                </button>
-              ))}
+          {isFeed && (
+            <div className="form-group">
+              <label className="form-label">Cách bú</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {feedSides.map(s => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => setSide(s.value)}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: `2px solid ${side === s.value ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                      background: side === s.value ? 'var(--color-primary-bg)' : 'var(--color-surface-alt)',
+                      color: side === s.value ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                      fontFamily: 'Outfit, sans-serif',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <span>{s.emoji}</span> {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Volume */}
-          <div className="form-group">
-            <label className="form-label">
-              Lượng sữa (ml) — tùy chọn
-            </label>
-            <input
-              type="number"
-              className="form-input"
-              value={volume}
-              onChange={e => setVolume(e.target.value)}
-              placeholder="Nhập số ml..."
-              min="0"
-              max="1000"
-            />
-          </div>
+          {isFeed && (
+            <div className="form-group">
+              <label className="form-label">
+                Lượng sữa (ml) — tùy chọn
+              </label>
+              <input
+                type="number"
+                className="form-input"
+                value={volume}
+                onChange={e => setVolume(e.target.value)}
+                placeholder="Nhập số ml..."
+                min="0"
+                max="1000"
+              />
+            </div>
+          )}
+
+          {/* Weight */}
+          {isWeight && (
+            <div className="form-group">
+              <label className="form-label">
+                Cân nặng (kg)
+              </label>
+              <input
+                type="number"
+                className="form-input"
+                value={weight}
+                onChange={e => setWeight(e.target.value)}
+                placeholder="Ví dụ: 6.5"
+                step="0.1"
+                min="0"
+                max="50"
+                required
+              />
+            </div>
+          )}
 
           {/* Note */}
           <div className="form-group">
@@ -165,10 +200,10 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
             </button>
             <button
               type="submit"
-              className="btn btn-primary"
-              style={{ flex: 2 }}
+              className={`btn ${isFeed ? 'btn-primary' : ''}`}
+              style={{ flex: 2, background: isWeight ? 'linear-gradient(135deg,#4FACFE,#00F2FE)' : undefined, color: isWeight ? 'white' : undefined }}
             >
-              {editRecord ? 'Lưu thay đổi' : 'Lưu cữ bú'}
+              {editRecord ? 'Lưu thay đổi' : `Lưu ${isFeed ? 'cữ bú' : 'cân nặng'}`}
             </button>
           </div>
         </form>

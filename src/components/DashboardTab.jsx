@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { Droplets, Zap, Clock, TrendingUp, AlertCircle } from 'lucide-react';
+import { Droplets, Clock, TrendingUp, AlertCircle, Activity } from 'lucide-react';
 import { getBabyWeekAge, getWonderWeekStatus } from '../data/wonderWeeks';
+import { getWHOMedianWeight, evaluateWeight, getMonthsBetween } from '../data/whoWeight';
 
 function timeSince(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -22,11 +23,12 @@ function timeUntilNext(lastIso, intervalHours) {
   return { label: `${hrs}:${mins}`, overdue: false };
 }
 
-export default function DashboardTab({ records, settings, onOpenFeedModal }) {
-  const { babyName, babyBirthDate, babyDueDate, feedIntervalHours } = settings;
+export default function DashboardTab({ records, settings, onOpenFeedModal, onOpenWeightModal }) {
+  const { babyName, babyBirthDate, babyDueDate, feedIntervalHours, babyGender } = settings;
 
   // Last records
   const lastFeed = useMemo(() => records.find(r => r.type === 'feed'), [records]);
+  const lastWeight = useMemo(() => records.find(r => r.type === 'weight'), [records]);
 
   // Today counts
   const todayStart = useMemo(() => {
@@ -48,6 +50,16 @@ export default function DashboardTab({ records, settings, onOpenFeedModal }) {
 
   // Recent 4 records for timeline
   const recent = records.slice(0, 5);
+
+  // Weight evaluation
+  let weightEval = null;
+  if (lastWeight && babyBirthDate) {
+    const months = getMonthsBetween(babyBirthDate, lastWeight.timestamp);
+    if (months !== null) {
+      const median = getWHOMedianWeight(babyGender || 'boy', months);
+      weightEval = { months, median, ...evaluateWeight(lastWeight.weight, median) };
+    }
+  }
 
   return (
     <div className="animate-fade-in">
@@ -81,7 +93,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal }) {
       </div>
 
       {/* Quick Action Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, padding: '16px 16px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '16px 16px 0' }}>
         <button
           id="btn-log-feed"
           className="btn btn-primary"
@@ -100,10 +112,24 @@ export default function DashboardTab({ records, settings, onOpenFeedModal }) {
             </span>
           )}
         </button>
+
+        <button
+          className="btn"
+          onClick={() => onOpenWeightModal()}
+          style={{ flex: 1, padding: '16px 12px', borderRadius: 'var(--radius-md)', flexDirection: 'column', gap: 6, height: 'auto', background: 'linear-gradient(135deg,#4FACFE,#00F2FE)', color: 'white', border: 'none', cursor: 'pointer' }}
+        >
+          <span style={{ fontSize: 26, lineHeight: 1 }}>⚖️</span>
+          <span style={{ fontSize: 15, fontWeight: 700 }}>Ghi cân nặng</span>
+          {lastWeight && (
+            <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.9 }}>
+              Gần nhất: {lastWeight.weight} kg
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Today's Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, padding: '12px 16px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: lastWeight ? '1fr 1fr' : '1fr', gap: 12, padding: '12px 16px 0' }}>
         <div className="card" style={{ padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <Droplets size={16} color="var(--color-primary)" />
@@ -123,6 +149,29 @@ export default function DashboardTab({ records, settings, onOpenFeedModal }) {
             </div>
           )}
         </div>
+
+        {lastWeight && weightEval && (
+          <div className="card" style={{ padding: 16, background: weightEval.status === 'normal' ? 'var(--color-surface)' : 'rgba(255, 107, 107, 0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <Activity size={16} color="var(--color-text)" />
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Chuẩn WHO
+              </span>
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text)', lineHeight: 1 }}>
+              {lastWeight.weight} <span style={{ fontSize: 14 }}>kg</span>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
+              Lúc {weightEval.months} tháng tuổi
+            </div>
+            <div style={{ 
+              fontSize: 11, marginTop: 6, fontWeight: 700, 
+              color: weightEval.status === 'normal' ? '#2ECC71' : 'var(--color-danger)'
+            }}>
+              {weightEval.label} (Chuẩn: {weightEval.median}kg)
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Wonder Week Banner */}
@@ -167,15 +216,20 @@ export default function DashboardTab({ records, settings, onOpenFeedModal }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-                      🍼 Bú {r.side === 'left' ? 'bên trái' : r.side === 'right' ? 'bên phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}
+                      {r.type === 'feed' ? `🍼 Bú ${r.side === 'left' ? 'bên trái' : r.side === 'right' ? 'bên phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}` : `⚖️ Cân nặng`}
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--color-text-light)', whiteSpace: 'nowrap', marginLeft: 8 }}>
                       {timeSince(r.timestamp)}
                     </span>
                   </div>
-                  {r.volume && (
+                  {r.type === 'feed' && r.volume && (
                     <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
                       {r.volume} ml
+                    </div>
+                  )}
+                  {r.type === 'weight' && r.weight && (
+                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
+                      {r.weight} kg
                     </div>
                   )}
                   {r.note && (

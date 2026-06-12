@@ -147,8 +147,6 @@ export default function StatsTab({ records }) {
               ))}
             </div>
           </div>
-
-          </div>
         </div>
 
         {/* Feed side distribution */}

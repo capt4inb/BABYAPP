@@ -133,6 +133,18 @@ export default function SettingsTab({
           </div>
 
           <div className="form-group">
+            <label className="form-label">Giới tính</label>
+            <select
+              className="form-input"
+              value={form.babyGender}
+              onChange={e => handleChange('babyGender', e.target.value)}
+            >
+              <option value="boy">Bé trai</option>
+              <option value="girl">Bé gái</option>
+            </select>
+          </div>
+
+          <div className="form-group">
             <label className="form-label">Ngày sinh (YYYY-MM-DD)</label>
             <input
               type="date"
