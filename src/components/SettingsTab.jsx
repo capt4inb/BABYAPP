@@ -171,19 +171,6 @@ export default function SettingsTab({
               ))}
             </select>
           </div>
-
-          <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Chu kỳ hút sữa (giờ)</label>
-            <select
-              className="form-input"
-              value={form.pumpIntervalHours}
-              onChange={e => handleChange('pumpIntervalHours', Number(e.target.value))}
-            >
-              {[2, 2.5, 3, 3.5, 4, 5, 6].map(h => (
-                <option key={h} value={h}>{h} giờ</option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Save button */}

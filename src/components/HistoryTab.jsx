@@ -25,7 +25,7 @@ function groupByDay(records) {
 }
 
 export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, onDeleteRecord }) {
-  const [filter, setFilter] = useState('all'); // all | feed | pump
+  const [filter, setFilter] = useState('all'); // all | feed
   const [search, setSearch] = useState('');
   const [expandedDays, setExpandedDays] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -86,12 +86,11 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, 
           {[
             { value: 'all', label: 'Tất cả', emoji: '📋' },
             { value: 'feed', label: 'Cữ bú', emoji: '🍼' },
-            { value: 'pump', label: 'Hút sữa', emoji: '⚡' },
           ].map(f => (
             <button
               key={f.value}
               className={`tag ${
-                f.value === 'all' ? 'tag-primary' : f.value === 'feed' ? 'tag-baby' : 'tag-pump'
+                f.value === 'all' ? 'tag-primary' : 'tag-baby'
               } ${filter === f.value ? 'active' : ''}`}
               onClick={() => setFilter(f.value)}
             >
@@ -153,13 +152,10 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, 
                     {/* Icon */}
                     <div style={{
                       width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: r.type === 'feed' ? 'var(--color-primary-bg)' : 'var(--color-pump-bg)',
+                      background: 'var(--color-primary-bg)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      {r.type === 'feed'
-                        ? <Droplets size={18} color="var(--color-primary)" />
-                        : <Zap size={18} color="var(--color-pump)" />
-                      }
+                      <Droplets size={18} color="var(--color-primary)" />
                     </div>
 
                     {/* Details */}
@@ -167,9 +163,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                           <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-                            {r.type === 'feed'
-                              ? `Bú ${r.side === 'left' ? 'trái' : r.side === 'right' ? 'phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}`
-                              : 'Hút sữa'}
+                            Bú {r.side === 'left' ? 'trái' : r.side === 'right' ? 'phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}
                           </span>
                           <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
                             {new Date(r.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
@@ -186,7 +180,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenPumpModal, 
                         {/* Actions */}
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                           <button
-                            onClick={() => r.type === 'feed' ? onOpenFeedModal(r) : onOpenPumpModal(r)}
+                            onClick={() => onOpenFeedModal(r)}
                             style={{
                               width: 30, height: 30, borderRadius: 8, border: 'none',
                               background: 'var(--color-surface-alt)', cursor: 'pointer',

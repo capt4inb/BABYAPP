@@ -16,19 +16,17 @@ function timeUntilNext(lastIso, intervalHours) {
   const next = new Date(new Date(lastIso).getTime() + intervalHours * 3600000);
   const diffMs = next - Date.now();
   if (diffMs <= 0) return { label: 'Đã đến giờ!', overdue: true };
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 60) return { label: `${mins} phút nữa`, overdue: false };
-  const hrs = Math.floor(mins / 60);
-  const rem = mins % 60;
-  return { label: `${hrs}g${rem > 0 ? ` ${rem}ph` : ''} nữa`, overdue: false };
+  
+  const hrs = next.getHours().toString().padStart(2, '0');
+  const mins = next.getMinutes().toString().padStart(2, '0');
+  return { label: `${hrs}:${mins}`, overdue: false };
 }
 
-export default function DashboardTab({ records, settings, onOpenFeedModal, onOpenPumpModal }) {
-  const { babyName, babyBirthDate, babyDueDate, feedIntervalHours, pumpIntervalHours } = settings;
+export default function DashboardTab({ records, settings, onOpenFeedModal }) {
+  const { babyName, babyBirthDate, babyDueDate, feedIntervalHours } = settings;
 
   // Last records
   const lastFeed = useMemo(() => records.find(r => r.type === 'feed'), [records]);
-  const lastPump = useMemo(() => records.find(r => r.type === 'pump'), [records]);
 
   // Today counts
   const todayStart = useMemo(() => {
@@ -38,12 +36,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
     records.filter(r => r.type === 'feed' && new Date(r.timestamp) >= todayStart),
     [records, todayStart]
   );
-  const todayPumps = useMemo(() =>
-    records.filter(r => r.type === 'pump' && new Date(r.timestamp) >= todayStart),
-    [records, todayStart]
-  );
   const todayFeedVol = todayFeeds.reduce((s, r) => s + (r.volume || 0), 0);
-  const todayPumpVol = todayPumps.reduce((s, r) => s + (r.volume || 0), 0);
 
   // Wonder weeks
   const weekAge = babyBirthDate
@@ -52,7 +45,6 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
   const wwStatus = weekAge !== null ? getWonderWeekStatus(weekAge) : null;
 
   const nextFeed = timeUntilNext(lastFeed?.timestamp, feedIntervalHours);
-  const nextPump = timeUntilNext(lastPump?.timestamp, pumpIntervalHours);
 
   // Recent 4 records for timeline
   const recent = records.slice(0, 5);
@@ -89,7 +81,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
       </div>
 
       {/* Quick Action Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '16px 16px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, padding: '16px 16px 0' }}>
         <button
           id="btn-log-feed"
           className="btn btn-primary"
@@ -108,29 +100,10 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
             </span>
           )}
         </button>
-
-        <button
-          id="btn-log-pump"
-          className="btn btn-pump"
-          onClick={() => onOpenPumpModal()}
-          style={{ flex: 1, padding: '16px 12px', borderRadius: 'var(--radius-md)', flexDirection: 'column', gap: 6, height: 'auto' }}
-        >
-          <Zap size={26} />
-          <span style={{ fontSize: 15 }}>Ghi hút sữa</span>
-          {nextPump && (
-            <span style={{
-              fontSize: 11, fontWeight: 700, opacity: 0.9,
-              background: 'rgba(255,255,255,0.2)',
-              padding: '2px 8px', borderRadius: 99,
-            }}>
-              {nextPump.overdue ? '⚠️ ' : '⏰ '}{nextPump.label}
-            </span>
-          )}
-        </button>
       </div>
 
       {/* Today's Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '12px 16px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, padding: '12px 16px 0' }}>
         <div className="card" style={{ padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <Droplets size={16} color="var(--color-primary)" />
@@ -147,26 +120,6 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
           {lastFeed && (
             <div style={{ fontSize: 11, color: 'var(--color-text-light)', marginTop: 6 }}>
               🕐 {timeSince(lastFeed.timestamp)}
-            </div>
-          )}
-        </div>
-
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <Zap size={16} color="var(--color-pump)" />
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Hôm nay hút
-            </span>
-          </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-pump)', lineHeight: 1 }}>
-            {todayPumps.length}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
-            lần{todayPumpVol > 0 ? ` · ${todayPumpVol} ml` : ''}
-          </div>
-          {lastPump && (
-            <div style={{ fontSize: 11, color: 'var(--color-text-light)', marginTop: 6 }}>
-              🕐 {timeSince(lastPump.timestamp)}
             </div>
           )}
         </div>
@@ -209,22 +162,20 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
               <div key={r.id} className="timeline-item" style={{ borderBottom: i < recent.length - 1 ? '1px solid var(--color-border)' : 'none' }}>
                 <div
                   className="timeline-dot"
-                  style={{ background: r.type === 'feed' ? 'var(--color-primary)' : 'var(--color-pump)' }}
+                  style={{ background: 'var(--color-primary)' }}
                 />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-                      {r.type === 'feed'
-                        ? `🍼 Bú ${r.side === 'left' ? 'bên trái' : r.side === 'right' ? 'bên phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}`
-                        : '⚡ Hút sữa'}
+                      🍼 Bú {r.side === 'left' ? 'bên trái' : r.side === 'right' ? 'bên phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--color-text-light)', whiteSpace: 'nowrap', marginLeft: 8 }}>
                       {timeSince(r.timestamp)}
                     </span>
                   </div>
-                  {(r.volume || r.duration) && (
+                  {r.volume && (
                     <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
-                      {r.volume ? `${r.volume} ml` : ''}{r.volume && r.duration ? ' · ' : ''}{r.duration ? `${r.duration} phút` : ''}
+                      {r.volume} ml
                     </div>
                   )}
                   {r.note && (
@@ -247,7 +198,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
             Bắt đầu ghi chép!
           </h3>
           <p style={{ margin: 0, fontSize: 14, color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
-            Nhấn "Ghi cữ bú" hoặc "Ghi hút sữa" ở trên để bắt đầu theo dõi.
+            Nhấn "Ghi cữ bú" ở trên để bắt đầu theo dõi.
           </p>
         </div>
       )}

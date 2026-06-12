@@ -39,28 +39,22 @@ export default function StatsTab({ records }) {
   );
 
   const feedRecords = useMemo(() => periodRecords.filter(r => r.type === 'feed'), [periodRecords]);
-  const pumpRecords = useMemo(() => periodRecords.filter(r => r.type === 'pump'), [periodRecords]);
 
   // Per-day stats for bar chart (last 7)
   const dailyStats = useMemo(() => {
     return days7.map(day => {
       const key = dayKey(day);
       const dayFeeds = records.filter(r => r.type === 'feed' && new Date(r.timestamp).toDateString() === key);
-      const dayPumps = records.filter(r => r.type === 'pump' && new Date(r.timestamp).toDateString() === key);
       const feedVol = dayFeeds.reduce((s, r) => s + (r.volume || 0), 0);
-      const pumpVol = dayPumps.reduce((s, r) => s + (r.volume || 0), 0);
-      return { day, label: shortDayLabel(day), feedCount: dayFeeds.length, pumpCount: dayPumps.length, feedVol, pumpVol };
+      return { day, label: shortDayLabel(day), feedCount: dayFeeds.length, feedVol };
     });
   }, [days7, records]);
 
   const maxFeed = Math.max(...dailyStats.map(d => d.feedCount), 1);
-  const maxPump = Math.max(...dailyStats.map(d => d.pumpCount), 1);
 
   // Summary stats
   const totalFeedVol = feedRecords.reduce((s, r) => s + (r.volume || 0), 0);
-  const totalPumpVol = pumpRecords.reduce((s, r) => s + (r.volume || 0), 0);
   const avgFeedPerDay = (feedRecords.length / (period === '7d' ? 7 : 30)).toFixed(1);
-  const avgPumpPerDay = (pumpRecords.length / (period === '7d' ? 7 : 30)).toFixed(1);
 
   // Feed side distribution
   const sideStats = useMemo(() => {
@@ -96,7 +90,7 @@ export default function StatsTab({ records }) {
       <div style={{ padding: '8px 16px 16px' }}>
 
         {/* Summary Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginBottom: 16 }}>
           {/* Feed summary */}
           <div className="card" style={{ padding: 16, background: 'var(--color-primary-bg)', borderColor: 'var(--color-primary-light)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
@@ -114,27 +108,6 @@ export default function StatsTab({ records }) {
             {totalFeedVol > 0 && (
               <div style={{ fontSize: 12, color: 'var(--color-primary)', marginTop: 4, fontWeight: 600 }}>
                 {totalFeedVol} ml tổng cộng
-              </div>
-            )}
-          </div>
-
-          {/* Pump summary */}
-          <div className="card" style={{ padding: 16, background: 'var(--color-pump-bg)', borderColor: 'var(--color-pump-light)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <Zap size={15} color="var(--color-pump)" />
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-pump)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Hút sữa
-              </span>
-            </div>
-            <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--color-pump)', lineHeight: 1 }}>
-              {pumpRecords.length}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
-              lần · TB {avgPumpPerDay}/ngày
-            </div>
-            {totalPumpVol > 0 && (
-              <div style={{ fontSize: 12, color: 'var(--color-pump)', marginTop: 4, fontWeight: 600 }}>
-                {totalPumpVol} ml tổng cộng
               </div>
             )}
           </div>
@@ -175,33 +148,6 @@ export default function StatsTab({ records }) {
             </div>
           </div>
 
-          {/* Pump bars */}
-          <div style={{ marginTop: 20 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-pump)', marginBottom: 8 }}>
-              ⚡ Hút sữa
-            </div>
-            <div className="bar-chart-container">
-              {dailyStats.map((d, i) => (
-                <div key={i} className="bar-wrap">
-                  {d.pumpCount > 0 && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-pump)' }}>
-                      {d.pumpCount}
-                    </span>
-                  )}
-                  <div
-                    className="bar"
-                    style={{
-                      height: `${(d.pumpCount / maxPump) * 80}%`,
-                      background: d.pumpCount > 0
-                        ? 'linear-gradient(180deg, var(--color-pump), var(--color-pump-light))'
-                        : 'var(--color-border)',
-                      minHeight: 4,
-                    }}
-                  />
-                  <div className="bar-label">{d.label}</div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
