@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Droplets, Clock, TrendingUp, AlertCircle, Activity } from 'lucide-react';
+import { Droplets, Clock, TrendingUp, AlertCircle, Activity, BellRing } from 'lucide-react';
+import { downloadICS } from '../utils/ics';
 import { getBabyWeekAge, getWonderWeekStatus } from '../data/wonderWeeks';
 import { getWHOMedianWeight, evaluateWeight, getMonthsBetween } from '../data/whoWeight';
 
@@ -20,7 +21,7 @@ function timeUntilNext(lastIso, intervalHours) {
   
   const hrs = next.getHours().toString().padStart(2, '0');
   const mins = next.getMinutes().toString().padStart(2, '0');
-  return { label: `${hrs}:${mins}`, overdue: false };
+  return { label: `${hrs}:${mins}`, overdue: false, nextDate: next };
 }
 
 export default function DashboardTab({ records, settings, onOpenFeedModal, onOpenWeightModal }) {
@@ -127,6 +128,33 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
           )}
         </button>
       </div>
+
+      {/* Alarm Action */}
+      {nextFeed && !nextFeed.overdue && nextFeed.nextDate && (
+        <div style={{ padding: '12px 16px 0' }}>
+          <button
+            className="btn btn-ghost"
+            onClick={() => downloadICS(nextFeed.nextDate, 'Đến giờ cho bé bú', 'Đã đến cữ bú tiếp theo của bé')}
+            style={{ 
+              width: '100%', 
+              padding: '12px', 
+              borderRadius: 'var(--radius-md)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: 8,
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-primary)',
+              fontWeight: 600,
+              fontSize: 14
+            }}
+          >
+            <BellRing size={18} />
+            Nhắc nhở cữ bú lúc {nextFeed.label}
+          </button>
+        </div>
+      )}
 
       {/* Today's Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: lastWeight ? '1fr 1fr' : '1fr', gap: 12, padding: '12px 16px 0' }}>
