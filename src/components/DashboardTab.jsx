@@ -1,6 +1,8 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Droplets, Clock, TrendingUp, AlertCircle, Activity, BellRing } from 'lucide-react';
 import { downloadICS } from '../utils/ics';
+import { openAppleShortcutAlarm } from '../utils/shortcuts';
+import ShortcutGuideModal from './ShortcutGuideModal';
 import { getBabyWeekAge, getWonderWeekStatus } from '../data/wonderWeeks';
 import { getWHOMedianWeight, evaluateWeight, getMonthsBetween } from '../data/whoWeight';
 
@@ -26,6 +28,7 @@ function timeUntilNext(lastIso, intervalHours) {
 
 export default function DashboardTab({ records, settings, onOpenFeedModal, onOpenWeightModal }) {
   const { babyName, babyBirthDate, babyDueDate, feedIntervalHours, babyGender } = settings;
+  const [showShortcutGuide, setShowShortcutGuide] = useState(false);
 
   // Last records
   const lastFeed = useMemo(() => records.find(r => r.type === 'feed'), [records]);
@@ -134,7 +137,13 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
         <div style={{ padding: '12px 16px 0' }}>
           <button
             className="btn btn-ghost"
-            onClick={() => downloadICS(nextFeed.nextDate, 'Đến giờ cho bé bú', 'Đã đến cữ bú tiếp theo của bé')}
+            onClick={() => {
+              if (localStorage.getItem('shortcut_guide_seen')) {
+                openAppleShortcutAlarm(nextFeed.label);
+              } else {
+                setShowShortcutGuide(true);
+              }
+            }}
             style={{ 
               width: '100%', 
               padding: '12px', 
@@ -143,17 +152,30 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
               alignItems: 'center', 
               justifyContent: 'center', 
               gap: 8,
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-primary)',
-              fontWeight: 600,
-              fontSize: 14
+              background: 'linear-gradient(135deg, #FF9500, #FFCC00)',
+              border: 'none',
+              color: 'white',
+              fontWeight: 700,
+              fontSize: 15,
+              boxShadow: '0 4px 12px rgba(255, 149, 0, 0.25)'
             }}
           >
             <BellRing size={18} />
-            Nhắc nhở cữ bú lúc {nextFeed.label}
+            Báo thức Đồng hồ lúc {nextFeed.label}
           </button>
         </div>
+      )}
+
+      {/* Shortcut Guide Modal */}
+      {showShortcutGuide && (
+        <ShortcutGuideModal
+          onClose={() => setShowShortcutGuide(false)}
+          onConfirm={() => {
+            localStorage.setItem('shortcut_guide_seen', 'true');
+            setShowShortcutGuide(false);
+            openAppleShortcutAlarm(nextFeed.label);
+          }}
+        />
       )}
 
       {/* Today's Summary Cards */}
