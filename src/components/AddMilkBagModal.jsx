@@ -143,7 +143,7 @@ export default function AddMilkBagModal({ onSave, onClose }) {
                 placeholder="Ví dụ: 120"
                 min="1"
                 max="500"
-                step="5"
+                step="any"
                 autoFocus
                 style={{ paddingRight: 50 }}
               />
