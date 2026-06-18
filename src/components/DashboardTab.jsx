@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Droplets, Clock, TrendingUp, AlertCircle, Activity, BellRing } from 'lucide-react';
+import { Droplets, Clock, TrendingUp, AlertCircle, Activity, BellRing, ChevronRight } from 'lucide-react';
 import { downloadICS } from '../utils/ics';
 import { openAppleShortcutAlarm } from '../utils/shortcuts';
 import ShortcutGuideModal from './ShortcutGuideModal';
 import { getBabyWeekAge, getWonderWeekStatus } from '../data/wonderWeeks';
 import { getWHOMedianWeight, evaluateWeight, getMonthsBetween } from '../data/whoWeight';
+import { getMilkSummary, getThawRecommendation, getAvgDailyMl } from '../utils/milkUtils';
 
 function timeSince(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -26,7 +27,7 @@ function timeUntilNext(lastIso, intervalHours) {
   return { label: `${hrs}:${mins}`, overdue: false, nextDate: next };
 }
 
-export default function DashboardTab({ records, settings, onOpenFeedModal, onOpenWeightModal }) {
+export default function DashboardTab({ records, settings, onOpenFeedModal, onOpenWeightModal, milkBags = [], onNavigateToMilk }) {
   const { babyName, babyBirthDate, babyDueDate, feedIntervalHours, babyGender } = settings;
   const [showShortcutGuide, setShowShortcutGuide] = useState(false);
 
@@ -64,6 +65,12 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
       weightEval = { months, median, ...evaluateWeight(lastWeight.weight, median) };
     }
   }
+
+  // Milk storage summary
+  const milkSummary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
+  const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
+  const thawRec = useMemo(() => getThawRecommendation(milkBags, avgDailyMl), [milkBags, avgDailyMl]);
+  const hasMilkData = milkBags.some(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
 
   return (
     <div className="animate-fade-in">
@@ -223,6 +230,74 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
           </div>
         )}
       </div>
+
+      {/* Milk Storage Widget */}
+      {(hasMilkData || onNavigateToMilk) && (
+        <div style={{ padding: '12px 16px 0' }}>
+          <button
+            id="btn-milk-widget"
+            onClick={onNavigateToMilk}
+            style={{
+              width: '100%', textAlign: 'left', background: 'none',
+              border: 'none', padding: 0, cursor: 'pointer',
+            }}
+          >
+            <div className="card" style={{
+              padding: '14px 16px',
+              background: 'linear-gradient(135deg, #EEF2FF, #F5F0FF)',
+              border: '1.5px solid #667EEA30',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>🍼</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#667EEA' }}>Kho sữa mẹ</span>
+                  {milkSummary.totalMl > 0 && (
+                    <span style={{
+                      padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
+                      background: '#667EEA', color: 'white',
+                    }}>
+                      {milkSummary.totalMl}ml
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#667EEA' }}>
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>Xem kho</span>
+                  <ChevronRight size={14} />
+                </div>
+              </div>
+
+              {hasMilkData ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {milkSummary.urgentBags?.length > 0 && (
+                    <div style={{ fontSize: 12, color: '#FF6B6B', fontWeight: 700 }}>
+                      🔴 {milkSummary.urgentBags.length} bịch cần dùng ngay!
+                    </div>
+                  )}
+                  {milkSummary.expiringSoonCount > 0 && (
+                    <div style={{ fontSize: 12, color: '#FF9A5C', fontWeight: 600 }}>
+                      ⚠️ Sắp hết hạn: {milkSummary.expiringSoonCount} bịch
+                    </div>
+                  )}
+                  {thawRec && (
+                    <div style={{ fontSize: 12, color: '#667EEA', fontWeight: 600 }}>
+                      💧 Nên rã đông {thawRec.toThaw.length} bịch tối nay (~{thawRec.neededMl}ml còn thiếu)
+                    </div>
+                  )}
+                  {!milkSummary.urgentBags?.length && !milkSummary.expiringSoonCount && !thawRec && (
+                    <div style={{ fontSize: 12, color: '#00C9A7', fontWeight: 600 }}>
+                      ✅ Kho sữa ổn định · {milkSummary.activeBagCount} bịch sẵn dùng
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+                  Chưa có dữ liệu · Thêm bịch sữa đầu tiên →
+                </div>
+              )}
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Wonder Week Banner */}
       {wwStatus?.currentLeap && (

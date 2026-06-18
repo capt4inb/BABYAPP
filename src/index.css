@@ -611,3 +611,93 @@
   font-weight: 600;
   text-align: center;
 }
+
+/* ============================================================
+   MILK STORAGE – Kho sữa mẹ
+   ============================================================ */
+
+/* Milk Bag Card */
+.milk-bag-card {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.milk-bag-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Milk Status Badge */
+.milk-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+/* Milk Countdown – pulses when urgent */
+.milk-countdown-urgent {
+  animation: pulse-soft 1.5s ease-in-out infinite;
+  color: var(--color-danger);
+  font-weight: 800;
+}
+
+/* Thaw Recommendation Banner */
+.milk-thaw-banner {
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  border: 1.5px solid rgba(102, 126, 234, 0.25);
+  padding: 14px 16px;
+}
+
+/* Thaw Method Button */
+.thaw-method-btn {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface-alt);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: 'Outfit', sans-serif;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.thaw-method-btn:hover {
+  border-color: #4FACFE;
+  background: #F0F8FF;
+}
+.thaw-method-btn.active {
+  border-color: #4FACFE;
+  background: #F0F8FF;
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.2);
+}
+
+/* Milk filter tab scrollbar hide */
+.milk-filter-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.milk-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* Priority indicator dot */
+.milk-priority-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}

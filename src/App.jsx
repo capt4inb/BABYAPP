@@ -1,17 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Home, Clock, BarChart2, Star, Settings } from 'lucide-react';
+import { Home, Clock, BarChart2, Star, Settings, Milk } from 'lucide-react';
 import DashboardTab from './components/DashboardTab';
 import HistoryTab from './components/HistoryTab';
 import StatsTab from './components/StatsTab';
 import WonderWeeksTab from './components/WonderWeeksTab';
 import SettingsTab from './components/SettingsTab';
+import MilkStorageTab from './components/MilkStorageTab';
 import RecordModal from './components/RecordModal';
-import { subscribeToRoom, updateRoomRecords, updateRoomSettings } from './services/firebase';
+import { subscribeToRoom, updateRoomRecords, updateRoomSettings, updateRoomMilkBags } from './services/firebase';
 
 // ── localStorage keys ─────────────────────────────────────────
 const STORAGE_KEYS = {
   RECORDS: 'bmt_records',
   SETTINGS: 'bmt_settings',
+  MILK_BAGS: 'bmt_milk_bags',
 };
 
 const DEFAULT_SETTINGS = {
@@ -27,9 +29,10 @@ const DEFAULT_SETTINGS = {
 const TABS = [
   { id: 'dashboard', label: 'Trang chủ', Icon: Home },
   { id: 'history',   label: 'Lịch sử',   Icon: Clock },
-  { id: 'stats',     label: 'Thống kê',   Icon: BarChart2 },
-  { id: 'wonder',    label: 'Tuần vàng',  Icon: Star },
-  { id: 'settings',  label: 'Cài đặt',   Icon: Settings },
+  { id: 'milk',      label: 'Kho sữa',   Icon: Milk },
+  { id: 'stats',     label: 'Thống kê',  Icon: BarChart2 },
+  { id: 'wonder',    label: 'Tuần vàng', Icon: Star },
+  { id: 'settings',  label: 'Cài đặt',  Icon: Settings },
 ];
 
 // ── Utility ───────────────────────────────────────────────────
@@ -59,6 +62,9 @@ export default function App() {
   const [settings, setSettings] = useState(() =>
     loadFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
   );
+  const [milkBags, setMilkBags] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.MILK_BAGS, [])
+  );
   const [modal, setModal] = useState(null); // null | { type: 'feed' | 'weight', editRecord: null | object }
   
   // Sync state
@@ -77,12 +83,14 @@ export default function App() {
     const unsubscribe = subscribeToRoom(
       syncPin,
       (remoteRecords) => {
-        // Only update if different to avoid looping (Firebase handles some of this, but it's safe to just set)
         setRecords(remoteRecords);
         setSyncStatus('connected');
       },
       (remoteSettings) => {
         setSettings(remoteSettings);
+      },
+      (remoteMilkBags) => {
+        setMilkBags(remoteMilkBags);
       }
     );
 
@@ -98,6 +106,11 @@ export default function App() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.SETTINGS, settings);
   }, [settings]);
+
+  // Persist milkBags to local storage as fallback
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.MILK_BAGS, milkBags);
+  }, [milkBags]);
 
   // ── Record CRUD ──────────────────────────────────────────────
   const addRecord = useCallback((record) => {
@@ -120,6 +133,31 @@ export default function App() {
     setRecords(prev => {
       const next = prev.filter(r => r.id !== id);
       if (syncPin) updateRoomRecords(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  // ── Milk Bag CRUD ────────────────────────────────────────────
+  const addMilkBag = useCallback((bag) => {
+    setMilkBags(prev => {
+      const next = [bag, ...prev];
+      if (syncPin) updateRoomMilkBags(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const updateMilkBag = useCallback((id, updated) => {
+    setMilkBags(prev => {
+      const next = prev.map(b => b.id === id ? { ...b, ...updated } : b);
+      if (syncPin) updateRoomMilkBags(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const deleteMilkBag = useCallback((id) => {
+    setMilkBags(prev => {
+      const next = prev.filter(b => b.id !== id);
+      if (syncPin) updateRoomMilkBags(syncPin, next).catch(console.error);
       return next;
     });
   }, [syncPin]);
@@ -164,8 +202,18 @@ export default function App() {
     <div style={{ maxWidth: 480, margin: '0 auto', position: 'relative', minHeight: '100dvh' }}>
       {/* Page Content */}
       <div className="page">
-        {activeTab === 'dashboard' && <DashboardTab {...sharedProps} />}
+        {activeTab === 'dashboard' && <DashboardTab {...sharedProps} milkBags={milkBags} onNavigateToMilk={() => setActiveTab('milk')} />}
         {activeTab === 'history'   && <HistoryTab   {...sharedProps} />}
+        {activeTab === 'milk'      && (
+          <MilkStorageTab
+            milkBags={milkBags}
+            records={records}
+            onAddMilkBag={addMilkBag}
+            onUpdateMilkBag={updateMilkBag}
+            onDeleteMilkBag={deleteMilkBag}
+            onNavigateToDashboard={() => setActiveTab('dashboard')}
+          />
+        )}
         {activeTab === 'stats'     && <StatsTab      {...sharedProps} />}
         {activeTab === 'wonder'    && <WonderWeeksTab {...sharedProps} />}
         {activeTab === 'settings'  && (

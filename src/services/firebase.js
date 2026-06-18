@@ -53,9 +53,10 @@ export const joinRoom = async (pin) => {
 };
 
 // Subscribe to real-time changes
-export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange) => {
+export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange, onMilkBagsChange) => {
   const recordsRef = ref(db, `rooms/${pin}/records`);
   const settingsRef = ref(db, `rooms/${pin}/settings`);
+  const milkBagsRef = ref(db, `rooms/${pin}/milkBags`);
 
   const unsubscribeRecords = onValue(recordsRef, (snapshot) => {
     onRecordsChange(snapshot.exists() ? snapshot.val() : []);
@@ -67,9 +68,16 @@ export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange) => {
     }
   });
 
+  const unsubscribeMilkBags = onMilkBagsChange
+    ? onValue(milkBagsRef, (snapshot) => {
+        onMilkBagsChange(snapshot.exists() ? snapshot.val() : []);
+      })
+    : () => {};
+
   return () => {
     unsubscribeRecords();
     unsubscribeSettings();
+    unsubscribeMilkBags();
   };
 };
 
@@ -83,4 +91,10 @@ export const updateRoomRecords = async (pin, records) => {
 export const updateRoomSettings = async (pin, settings) => {
   const settingsRef = ref(db, `rooms/${pin}/settings`);
   await set(settingsRef, settings);
+};
+
+// Update milk bags
+export const updateRoomMilkBags = async (pin, milkBags) => {
+  const milkBagsRef = ref(db, `rooms/${pin}/milkBags`);
+  await set(milkBagsRef, milkBags);
 };
