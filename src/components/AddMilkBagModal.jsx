@@ -54,7 +54,6 @@ export default function AddMilkBagModal({ onSave, onClose }) {
   const [volumeStr, setVolumeStr] = useState('');
   const [expressedAt, setExpressedAt] = useState(toLocalDatetimeInput(new Date()));
   const [storageStatus, setStorageStatus] = useState('fridge');
-  const [storageLocation, setStorageLocation] = useState('');
   const [note, setNote] = useState('');
   const [quickNotes, setQuickNotes] = useState([]);
   const [error, setError] = useState('');
@@ -83,7 +82,6 @@ export default function AddMilkBagModal({ onSave, onClose }) {
       volume_ml: vol,
       expressed_at: new Date(expressedAt).toISOString(),
       storage_status: storageStatus,
-      storage_location: storageLocation.trim(),
       note: combinedNote,
     });
     onSave(bag);
@@ -209,17 +207,6 @@ export default function AddMilkBagModal({ onSave, onClose }) {
             )}
           </div>
 
-          {/* Storage Location */}
-          <div className="form-group">
-            <label className="form-label">📍 Vị trí cụ thể (tùy chọn)</label>
-            <input
-              type="text"
-              className="form-input"
-              value={storageLocation}
-              onChange={e => setStorageLocation(e.target.value)}
-              placeholder="Ví dụ: Khay 1, Túi A, Hộp xanh..."
-            />
-          </div>
 
           {/* Quick Note chips */}
           <div className="form-group">

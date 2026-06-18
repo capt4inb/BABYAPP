@@ -357,13 +357,12 @@ export function formatDateShort(date) {
 /**
  * Create a new milk bag object with auto-calculated expiry.
  */
-export function createMilkBag({ volume_ml, expressed_at, storage_status, storage_location, note }) {
+export function createMilkBag({ volume_ml, expressed_at, storage_status, note }) {
   const bag = {
     id: crypto.randomUUID(),
     volume_ml: Number(volume_ml),
     expressed_at: new Date(expressed_at).toISOString(),
     storage_status,
-    storage_location: storage_location || '',
     thaw_method: null,
     thaw_started_at: null,
     fully_thawed_at: null,

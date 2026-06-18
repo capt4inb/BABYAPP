@@ -288,12 +288,10 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
               background: 'var(--color-surface-alt)', borderRadius: 10,
               padding: '10px 12px', marginBottom: 12,
             }}>
-              {bag.storage_location && (
-                <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
-                  <span style={{ color: 'var(--color-text-muted)', width: 80 }}>📍 Vị trí:</span>
-                  <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{bag.storage_location}</span>
-                </div>
-              )}
+              <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
+                <span style={{ color: 'var(--color-text-muted)', width: 80 }}>🏷️ ID Bịch:</span>
+                <span style={{ fontWeight: 600, color: 'var(--color-text)', letterSpacing: '0.05em' }}>{bag.id.substring(0, 6).toUpperCase()}</span>
+              </div>
               <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
                 <span style={{ color: 'var(--color-text-muted)', width: 80 }}>🕐 Hút lúc:</span>
                 <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{formatDateTime(bag.expressed_at)}</span>
@@ -393,7 +391,7 @@ function ThawRecommendationBanner({ recommendation, onThawBag }) {
                   </span>
                   <span style={{ fontSize: 11, color: 'var(--color-text-muted)', marginLeft: 6 }}>
                     Hút {formatDateShort(bag.expressed_at)}
-                    {bag.storage_location ? ` · ${bag.storage_location}` : ''}
+                    {` · ID: ${bag.id.substring(0, 6).toUpperCase()}`}
                   </span>
                 </div>
                 <button
@@ -515,7 +513,7 @@ export default function MilkStorageTab({
       </div>
 
       {/* Dashboard Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 16px 12px' }}>
+      <div className="stats-grid">
         {[
           { label: 'Tổng kho', value: `${summary.totalMl}ml`, emoji: '🍼', color: '#667EEA', bg: '#EEF2FF' },
           { label: 'Dùng hôm nay', value: `${summary.usableTodayMl}ml`, emoji: '✅', color: '#00C9A7', bg: '#F0FDFC' },
