@@ -45,7 +45,6 @@ const FILTERS = [
   { id: 'freezer',  label: '🧊 Ngăn đông' },
   { id: 'thawing',  label: '💧 Đang rã' },
   { id: 'thawed',   label: '✅ Đã rã' },
-  { id: 'using',    label: '🍼 Đang dùng' },
   { id: 'expiring', label: '⚠️ Sắp HH' },
   { id: 'done',     label: '✔️ Đã dùng' },
 ];
@@ -58,9 +57,10 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
   const [feedVolume, setFeedVolume] = useState('');
   const [feedError, setFeedError] = useState('');
 
-  const cfg = STATUS_CONFIG[bag.storage_status] || STATUS_CONFIG.fridge;
+  const displayStatus = bag.storage_status === 'using' ? (bag.previous_status || 'fridge') : bag.storage_status;
+  const cfg = STATUS_CONFIG[displayStatus] || STATUS_CONFIG.fridge;
   const remaining = bag.expiry_at ? getTimeRemaining(bag.expiry_at) : null;
-  const freezerAge = bag.storage_status === 'freezer' ? getFreezerAge(bag) : null;
+  const freezerAge = displayStatus === 'freezer' ? getFreezerAge(bag) : null;
 
   const isDone = bag.storage_status === 'used' || bag.storage_status === 'expired';
 
@@ -403,6 +403,18 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
                   {cfg.emoji} {cfg.label}
                 </span>
 
+                {bag.storage_status === 'using' && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    padding: '3px 10px', borderRadius: 99,
+                    background: '#FFF0F6', color: '#FF6B9D',
+                    fontSize: 11, fontWeight: 700,
+                    border: '1px solid #FFB3CC',
+                  }}>
+                    🍼 Đang dùng
+                  </span>
+                )}
+
                 {/* Urgency / Warning badge */}
                 {remaining && !remaining.expired && remaining.urgent && (
                   <span style={{
@@ -688,11 +700,14 @@ export default function MilkStorageTab({
 
     let list;
     switch (activeFilter) {
-      case 'fridge':   list = active.filter(b => b.storage_status === 'fridge'); break;
-      case 'freezer':  list = active.filter(b => b.storage_status === 'freezer'); break;
-      case 'thawing':  list = active.filter(b => b.storage_status === 'thawing'); break;
-      case 'thawed':   list = active.filter(b => b.storage_status === 'thawed' || b.storage_status === 'warmed'); break;
-      case 'using':    list = active.filter(b => b.storage_status === 'using'); break;
+      case 'fridge':   list = active.filter(b => b.storage_status === 'fridge' || (b.storage_status === 'using' && b.previous_status === 'fridge')); break;
+      case 'freezer':  list = active.filter(b => b.storage_status === 'freezer' || (b.storage_status === 'using' && b.previous_status === 'freezer')); break;
+      case 'thawing':  list = active.filter(b => b.storage_status === 'thawing' || (b.storage_status === 'using' && b.previous_status === 'thawing')); break;
+      case 'thawed':   list = active.filter(b => 
+        b.storage_status === 'thawed' || 
+        b.storage_status === 'warmed' || 
+        (b.storage_status === 'using' && (b.previous_status === 'thawed' || b.previous_status === 'warmed'))
+      ); break;
       case 'expiring': list = active.filter(b => {
         if (!b.expiry_at) return false;
         const r = getTimeRemaining(b.expiry_at);

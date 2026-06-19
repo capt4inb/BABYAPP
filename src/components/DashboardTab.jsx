@@ -51,6 +51,24 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
     : null;
   const wwStatus = weekAge !== null ? getWonderWeekStatus(weekAge) : null;
 
+  const ageInfo = useMemo(() => {
+    if (!babyBirthDate) return null;
+    const birth = new Date(babyBirthDate);
+    const today = new Date();
+    birth.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffTime = today - birth;
+    const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (totalDays < 0) {
+      return { totalDays: 0, weeks: 0, days: 0 };
+    }
+    
+    const weeks = Math.floor(totalDays / 7);
+    const remainingDays = totalDays % 7;
+    return { totalDays, weeks, days: remainingDays };
+  }, [babyBirthDate]);
+
   const nextFeed = timeUntilNext(lastFeed?.timestamp, feedIntervalHours);
 
   // Recent 4 records for timeline
@@ -84,10 +102,15 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
             <h1 style={{ margin: '2px 0 0', fontSize: 26, fontWeight: 800, color: 'var(--color-text)' }}>
               {babyName || 'Bé Yêu'}
             </h1>
-            {weekAge !== null && (
-              <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-muted)' }}>
-                Tuần tuổi: <strong style={{ color: 'var(--color-primary)' }}>{weekAge}</strong>
-              </p>
+            {ageInfo && (
+              <div style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-muted)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div>
+                  Ngày tuổi: <strong style={{ color: 'var(--color-primary)' }}>{ageInfo.totalDays} ngày</strong>
+                </div>
+                <div>
+                  Tuần tuổi: <strong style={{ color: 'var(--color-primary)' }}>{ageInfo.weeks} tuần {ageInfo.days} ngày</strong>
+                </div>
+              </div>
             )}
           </div>
           {/* Wonder week badge */}
