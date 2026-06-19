@@ -23,6 +23,7 @@ const FILTERS = [
   { id: 'freezer',  label: '🧊 Ngăn đông' },
   { id: 'thawing',  label: '💧 Đang rã' },
   { id: 'thawed',   label: '✅ Đã rã' },
+  { id: 'using',    label: '🍼 Đang dùng' },
   { id: 'expiring', label: '⚠️ Sắp HH' },
   { id: 'done',     label: '✔️ Đã dùng' },
 ];
@@ -645,7 +646,8 @@ export default function MilkStorageTab({
       case 'fridge':   list = active.filter(b => b.storage_status === 'fridge'); break;
       case 'freezer':  list = active.filter(b => b.storage_status === 'freezer'); break;
       case 'thawing':  list = active.filter(b => b.storage_status === 'thawing'); break;
-      case 'thawed':   list = active.filter(b => b.storage_status === 'thawed' || b.storage_status === 'warmed' || b.storage_status === 'using'); break;
+      case 'thawed':   list = active.filter(b => b.storage_status === 'thawed' || b.storage_status === 'warmed'); break;
+      case 'using':    list = active.filter(b => b.storage_status === 'using'); break;
       case 'expiring': list = active.filter(b => {
         if (!b.expiry_at) return false;
         const r = getTimeRemaining(b.expiry_at);
@@ -736,6 +738,13 @@ export default function MilkStorageTab({
         {[
           { label: 'Tổng kho', value: `${summary.totalMl}ml`, emoji: '🍼', color: '#667EEA', bg: '#EEF2FF' },
           { label: 'Dùng hôm nay', value: `${summary.usableTodayMl}ml`, emoji: '✅', color: '#00C9A7', bg: '#F0FDFC' },
+          {
+            label: 'Đang dùng',
+            value: summary.usingCount > 0 ? `${summary.usingCount} bịch` : '0',
+            emoji: '🍼',
+            color: summary.usingCount > 0 ? '#FF6B9D' : '#8E7DAE',
+            bg: summary.usingCount > 0 ? '#FFF0F6' : '#F8F4FF',
+          },
           {
             label: 'Sắp hết hạn',
             value: summary.expiringSoonCount,

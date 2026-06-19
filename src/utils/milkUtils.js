@@ -453,6 +453,8 @@ export function getMilkSummary(milkBags) {
     return remaining && !remaining.expired && remaining.hours < 2;
   });
 
+  const usingCount = active.filter(b => b.storage_status === 'using').length;
+
   return {
     totalMl,
     usableTodayMl,
@@ -460,5 +462,6 @@ export function getMilkSummary(milkBags) {
     needsThawingCount: needsThawing.length,
     urgentBags,
     activeBagCount: active.length,
+    usingCount,
   };
 }
