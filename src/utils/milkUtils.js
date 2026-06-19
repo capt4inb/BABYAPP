@@ -65,6 +65,14 @@ export const STATUS_CONFIG = {
     border: '#FFB3B3',
     priority: 0,
   },
+  using: {
+    label: 'Đang dùng',
+    emoji: '🍼',
+    color: '#FF6B9D',
+    bg: '#FFF0F6',
+    border: '#FFB3CC',
+    priority: -10,
+  },
   used: {
     label: 'Đã dùng',
     emoji: '✔️',
@@ -122,6 +130,7 @@ export function calculateExpiry(bag) {
       base.setHours(base.getHours() + MILK_RULES.THAWED_HOURS);
       return base.toISOString();
     }
+    case 'using':
     case 'warmed': {
       const base = warmed_at ? new Date(warmed_at) : new Date();
       base.setHours(base.getHours() + MILK_RULES.WARMED_HOURS);
@@ -183,6 +192,7 @@ export function getFreezerAge(bag) {
 export function getPriorityScore(bag) {
   const status = bag.storage_status;
 
+  if (status === 'using') return -10;
   if (status === 'warmed') return 0;
 
   if (status === 'thawed') {
@@ -391,6 +401,10 @@ export function transitionBag(bag, newStatus, extra = {}) {
       updated.fully_thawed_at = extra.fully_thawed_at || now;
       updated.expiry_at = calculateExpiry(updated);
       break;
+    case 'using':
+      updated.warmed_at = extra.warmed_at || bag.warmed_at || now;
+      updated.expiry_at = calculateExpiry(updated);
+      break;
     case 'warmed':
       updated.warmed_at = now;
       updated.expiry_at = calculateExpiry(updated);
@@ -421,7 +435,7 @@ export function getMilkSummary(milkBags) {
   const totalMl = active.reduce((s, b) => s + (b.volume_ml || 0), 0);
 
   const usableTodayMl = active
-    .filter(b => ['room_temp', 'fridge', 'thawed', 'warmed'].includes(b.storage_status))
+    .filter(b => ['room_temp', 'fridge', 'thawed', 'warmed', 'using'].includes(b.storage_status))
     .filter(b => !b.expiry_at || new Date(b.expiry_at) > new Date())
     .reduce((s, b) => s + (b.volume_ml || 0), 0);
 

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Plus, Milk, Flame, Snowflake, Droplets, AlertTriangle, ChevronRight, Trash2, CheckCheck, ArrowRightLeft } from 'lucide-react';
+import { Plus, Milk, Flame, Snowflake, Droplets, AlertTriangle, ChevronRight, Trash2, CheckCheck, ArrowRightLeft, Calendar, SlidersHorizontal } from 'lucide-react';
 import {
-  getSortedByPriority,
+  getPriorityScore,
   getTimeRemaining,
   getFreezerAge,
   getAvgDailyMl,
@@ -28,9 +28,12 @@ const FILTERS = [
 ];
 
 // ── MilkBagCard ───────────────────────────────────────────────
-function MilkBagCard({ bag, onUpdate, onDelete }) {
+function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
   const [expanded, setExpanded] = useState(false);
   const [showThawModal, setShowThawModal] = useState(false);
+  const [isFeedingPartially, setIsFeedingPartially] = useState(false);
+  const [feedVolume, setFeedVolume] = useState('');
+  const [feedError, setFeedError] = useState('');
 
   const cfg = STATUS_CONFIG[bag.storage_status] || STATUS_CONFIG.fridge;
   const remaining = bag.expiry_at ? getTimeRemaining(bag.expiry_at) : null;
@@ -40,8 +43,20 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
 
   // ── Action Handlers ─────────────────────────────────────────
   const handleTransition = useCallback((newStatus, extra = {}) => {
+    if (newStatus === 'used') {
+      if (onAddRecord && bag.volume_ml > 0) {
+        onAddRecord({
+          id: crypto.randomUUID(),
+          type: 'feed',
+          side: 'bottle',
+          volume: bag.volume_ml,
+          timestamp: new Date().toISOString(),
+          note: bag.note ? `Dùng hết bịch sữa: ${bag.note}` : `Dùng hết bịch sữa ${bag.id.substring(0, 6).toUpperCase()}`,
+        });
+      }
+    }
     onUpdate(bag.id, transitionBag(bag, newStatus, extra));
-  }, [bag, onUpdate]);
+  }, [bag, onUpdate, onAddRecord]);
 
   const handleMoveTo = useCallback((newStatus) => {
     handleTransition(newStatus);
@@ -51,6 +66,40 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
     onUpdate(updatedBag.id, updatedBag);
     setShowThawModal(false);
   }, [onUpdate]);
+
+  const handlePartialFeedSubmit = useCallback(() => {
+    const vol = parseFloat(feedVolume);
+    if (!vol || vol <= 0 || vol > bag.volume_ml) {
+      setFeedError(`Lượng sữa phải từ 1 đến ${bag.volume_ml}ml.`);
+      return;
+    }
+    setFeedError('');
+
+    if (onAddRecord) {
+      onAddRecord({
+        id: crypto.randomUUID(),
+        type: 'feed',
+        side: 'bottle',
+        volume: vol,
+        timestamp: new Date().toISOString(),
+        note: bag.note ? `Bú một phần: ${bag.note}` : `Bú một phần từ bịch ${bag.id.substring(0, 6).toUpperCase()}`,
+      });
+    }
+
+    const remainingVol = bag.volume_ml - vol;
+    if (remainingVol <= 0) {
+      onUpdate(bag.id, transitionBag(bag, 'used'));
+    } else {
+      onUpdate(bag.id, {
+        ...bag,
+        volume_ml: remainingVol,
+        note: bag.note ? `${bag.note} (Còn lại ${remainingVol}ml)` : `Còn lại ${remainingVol}ml`,
+      });
+    }
+
+    setIsFeedingPartially(false);
+    setFeedVolume('');
+  }, [bag, onUpdate, onAddRecord, feedVolume]);
 
   // ── Status-specific action buttons ──────────────────────────
   const renderActions = () => {
@@ -128,7 +177,10 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
         return (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <button style={btnStyle('#FF9A5C', '#FFF7F2')} onClick={() => handleTransition('warmed')}>
-              🔥 Hâm / Đưa ra ngoài
+              🔥 Hâm sữa
+            </button>
+            <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => handleTransition('using')}>
+              🍼 Cho bú (Đang dùng)
             </button>
             <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
               <CheckCheck size={12} /> Đã dùng
@@ -137,13 +189,117 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
         );
       case 'warmed':
         return (
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              style={{ ...btnStyle('#FF6B6B', '#FFF5F5'), flex: 'auto' }}
-              onClick={() => handleTransition('used')}
-            >
-              <CheckCheck size={12} /> Bé đã bú xong
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => handleTransition('using')}>
+              🍼 Cho bú (Đang dùng)
             </button>
+            <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
+              <CheckCheck size={12} /> Đã dùng
+            </button>
+          </div>
+        );
+      case 'using':
+        return (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flexDirection: 'column', width: '100%' }}>
+            <div style={{ display: 'flex', gap: 6, width: '100%' }}>
+              <button
+                style={{ ...btnStyle('#00C9A7', '#F0FDFC'), flex: 1 }}
+                onClick={() => handleTransition('used')}
+              >
+                <CheckCheck size={12} /> Bé bú xong (Hết bịch)
+              </button>
+              <button
+                style={{ ...btnStyle('#FF6B9D', '#FFF0F6'), flex: 1 }}
+                onClick={() => setIsFeedingPartially(prev => !prev)}
+              >
+                🍼 Bú một phần (Còn dư)
+              </button>
+            </div>
+
+            {isFeedingPartially && (
+              <div style={{
+                marginTop: 6,
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'var(--color-surface-alt)',
+                border: '1.5px dashed var(--color-primary-light)',
+                animation: 'fadeIn 0.25s ease-out',
+                width: '100%',
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  🍼 Nhập lượng sữa bé đã bú
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <input
+                      type="number"
+                      className="form-input"
+                      placeholder="Ví dụ: 80"
+                      value={feedVolume}
+                      onChange={e => setFeedVolume(e.target.value)}
+                      min="1"
+                      max={bag.volume_ml}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: 13,
+                        borderRadius: 8,
+                        border: '1.5px solid var(--color-border)',
+                        background: 'white',
+                        paddingRight: 36,
+                        width: '100%',
+                      }}
+                    />
+                    <span style={{
+                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                      fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)',
+                    }}>ml</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handlePartialFeedSubmit}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      border: 'none',
+                      background: 'var(--color-primary)',
+                      color: 'white',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: 'Outfit, sans-serif',
+                    }}
+                  >
+                    Lưu
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFeedingPartially(false);
+                      setFeedVolume('');
+                      setFeedError('');
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: 'none',
+                      background: 'var(--color-border)',
+                      color: 'var(--color-text-muted)',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontFamily: 'Outfit, sans-serif',
+                    }}
+                  >
+                    Huỷ
+                  </button>
+                </div>
+                {feedError && (
+                  <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--color-danger)', fontWeight: 600 }}>
+                    ⚠️ {feedError}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         );
       case 'used':
@@ -426,35 +582,98 @@ export default function MilkStorageTab({
   onUpdateMilkBag,
   onDeleteMilkBag,
   onNavigateToDashboard,
+  onAddRecord,
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [thawingBag, setThawingBag] = useState(null);
 
+  // Sorting and Date Filtering states
+  const [sortBy, setSortBy] = useState('priority');
+  const [dateFilterType, setDateFilterType] = useState('all');
+  const [customDate, setCustomDate] = useState('');
+
   const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
   const summary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
-  const sortedBags = useMemo(() => getSortedByPriority(milkBags), [milkBags]);
   const thawRec = useMemo(() => getThawRecommendation(milkBags, avgDailyMl), [milkBags, avgDailyMl]);
 
   // Filtered bags
   const filteredBags = useMemo(() => {
-    const active = milkBags.filter(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
-    const done = milkBags.filter(b => b.storage_status === 'used' || b.storage_status === 'expired');
+    // 1. Filter by expressed date
+    const dateFiltered = milkBags.filter(b => {
+      const bagDate = new Date(b.expressed_at);
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
 
+      switch (dateFilterType) {
+        case 'today':
+          return bagDate >= startOfToday;
+        case 'yesterday': {
+          const startOfYesterday = new Date(startOfToday);
+          startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+          return bagDate >= startOfYesterday && bagDate < startOfToday;
+        }
+        case '3-days': {
+          const limit = new Date(startOfToday);
+          limit.setDate(limit.getDate() - 2); // Today and 2 days before
+          return bagDate >= limit;
+        }
+        case '7-days': {
+          const limit = new Date(startOfToday);
+          limit.setDate(limit.getDate() - 6); // Today and 6 days before
+          return bagDate >= limit;
+        }
+        case 'custom': {
+          if (!customDate) return true;
+          const targetDate = new Date(customDate);
+          const start = new Date(targetDate);
+          start.setHours(0, 0, 0, 0);
+          const end = new Date(targetDate);
+          end.setHours(23, 59, 59, 999);
+          return bagDate >= start && bagDate <= end;
+        }
+        default:
+          return true;
+      }
+    });
+
+    const active = dateFiltered.filter(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
+    const done = dateFiltered.filter(b => b.storage_status === 'used' || b.storage_status === 'expired');
+
+    let list;
     switch (activeFilter) {
-      case 'fridge':   return active.filter(b => b.storage_status === 'fridge');
-      case 'freezer':  return active.filter(b => b.storage_status === 'freezer');
-      case 'thawing':  return active.filter(b => b.storage_status === 'thawing');
-      case 'thawed':   return active.filter(b => b.storage_status === 'thawed' || b.storage_status === 'warmed');
-      case 'expiring': return active.filter(b => {
+      case 'fridge':   list = active.filter(b => b.storage_status === 'fridge'); break;
+      case 'freezer':  list = active.filter(b => b.storage_status === 'freezer'); break;
+      case 'thawing':  list = active.filter(b => b.storage_status === 'thawing'); break;
+      case 'thawed':   list = active.filter(b => b.storage_status === 'thawed' || b.storage_status === 'warmed' || b.storage_status === 'using'); break;
+      case 'expiring': list = active.filter(b => {
         if (!b.expiry_at) return false;
         const r = getTimeRemaining(b.expiry_at);
         return r && !r.expired && r.hours < 24;
-      });
-      case 'done':     return done.slice(0, 20);
-      default:         return sortedBags;
+      }); break;
+      case 'done':     list = done; break;
+      default:         list = active; break; // active for 'all'
     }
-  }, [milkBags, activeFilter, sortedBags]);
+
+    // 2. Sort the list
+    const sorted = [...list];
+    if (sortBy === 'priority' && activeFilter !== 'done') {
+      sorted.sort((a, b) => getPriorityScore(a) - getPriorityScore(b));
+    } else if (sortBy === 'date-desc') {
+      sorted.sort((a, b) => new Date(b.expressed_at) - new Date(a.expressed_at));
+    } else if (sortBy === 'date-asc') {
+      sorted.sort((a, b) => new Date(a.expressed_at) - new Date(b.expressed_at));
+    } else if (sortBy === 'volume-desc') {
+      sorted.sort((a, b) => b.volume_ml - a.volume_ml);
+    } else if (sortBy === 'volume-asc') {
+      sorted.sort((a, b) => a.volume_ml - b.volume_ml);
+    }
+
+    if (activeFilter === 'done') {
+      return sorted.slice(0, 20);
+    }
+    return sorted;
+  }, [milkBags, activeFilter, sortBy, dateFilterType, customDate]);
 
   const handleAddSave = useCallback((bag) => {
     onAddMilkBag(bag);
@@ -601,6 +820,99 @@ export default function MilkStorageTab({
         ))}
       </div>
 
+      {/* Sort and Date Filter Controls */}
+      <div style={{
+        display: 'flex', gap: 10, padding: '0 16px 14px',
+        alignItems: 'center', flexWrap: 'wrap',
+      }}>
+        {/* Sort select */}
+        <div style={{ flex: 1, minWidth: 140, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <SlidersHorizontal size={11} /> Sắp xếp
+          </span>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1.5px solid var(--color-border)',
+              background: 'var(--color-card)',
+              color: 'var(--color-text)',
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: 'Outfit, sans-serif',
+              outline: 'none',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <option value="priority">💡 Gợi ý dùng trước</option>
+            <option value="date-desc">🕐 Hút mới nhất</option>
+            <option value="date-asc">🕐 Hút cũ nhất</option>
+            <option value="volume-desc">🥛 Nhiều ml nhất</option>
+            <option value="volume-asc">🥛 Ít ml nhất</option>
+          </select>
+        </div>
+
+        {/* Date Filter select */}
+        <div style={{ flex: 1, minWidth: 140, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Calendar size={11} /> Ngày hút
+          </span>
+          <select
+            value={dateFilterType}
+            onChange={e => setDateFilterType(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1.5px solid var(--color-border)',
+              background: 'var(--color-card)',
+              color: 'var(--color-text)',
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: 'Outfit, sans-serif',
+              outline: 'none',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <option value="all">Tất cả ngày</option>
+            <option value="today">Hôm nay</option>
+            <option value="yesterday">Hôm qua</option>
+            <option value="3-days">3 ngày gần nhất</option>
+            <option value="7-days">7 ngày gần nhất</option>
+            <option value="custom">Chọn ngày cụ thể...</option>
+          </select>
+        </div>
+
+        {/* Custom date input */}
+        {dateFilterType === 'custom' && (
+          <div style={{ flex: '1 0 100%', display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2, animation: 'slideDown 0.2s ease-out' }}>
+            <input
+              type="date"
+              value={customDate}
+              onChange={e => setCustomDate(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1.5px solid var(--color-border)',
+                background: 'var(--color-card)',
+                color: 'var(--color-text)',
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: 'Outfit, sans-serif',
+                outline: 'none',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            />
+          </div>
+        )}
+      </div>
+
       {/* Bag list */}
       <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {filteredBags.length === 0 ? (
@@ -636,6 +948,7 @@ export default function MilkStorageTab({
               bag={bag}
               onUpdate={(id, updated) => onUpdateMilkBag(id, updated)}
               onDelete={onDeleteMilkBag}
+              onAddRecord={onAddRecord}
             />
           ))
         )}
