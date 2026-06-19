@@ -16,6 +16,28 @@ import {
 import AddMilkBagModal from './AddMilkBagModal';
 import ThawModal from './ThawModal';
 
+// ── Custom Toggle ─────────────────────────────────────────────
+const CustomToggle = ({ checked, onChange }) => (
+  <div 
+    onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
+    style={{
+      width: 40, height: 22, borderRadius: 12,
+      background: checked ? '#FF6B9D' : '#E2E8F0',
+      position: 'relative', cursor: 'pointer',
+      transition: 'background 0.2s',
+      display: 'flex', alignItems: 'center', padding: 2,
+      flexShrink: 0
+    }}
+  >
+    <div style={{
+      width: 18, height: 18, borderRadius: '50%', background: 'white',
+      transform: checked ? 'translateX(18px)' : 'translateX(0)',
+      transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    }} />
+  </div>
+);
+
 // ── Filter Tabs ───────────────────────────────────────────────
 const FILTERS = [
   { id: 'all',      label: 'Tất cả' },
@@ -44,24 +66,35 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
 
   // ── Action Handlers ─────────────────────────────────────────
   const handleTransition = useCallback((newStatus, extra = {}) => {
-    if (newStatus === 'used') {
-      if (onAddRecord && bag.volume_ml > 0) {
-        onAddRecord({
-          id: crypto.randomUUID(),
-          type: 'feed',
-          side: 'bottle',
-          volume: bag.volume_ml,
-          timestamp: new Date().toISOString(),
-          note: bag.note ? `Dùng hết bịch sữa: ${bag.note}` : `Dùng hết bịch sữa ${bag.id.substring(0, 6).toUpperCase()}`,
-        });
-      }
-    }
     onUpdate(bag.id, transitionBag(bag, newStatus, extra));
-  }, [bag, onUpdate, onAddRecord]);
+  }, [bag, onUpdate]);
 
   const handleMoveTo = useCallback((newStatus) => {
     handleTransition(newStatus);
   }, [handleTransition]);
+
+  const handleFinishFeeding = useCallback(() => {
+    if (onAddRecord && bag.volume_ml > 0) {
+      onAddRecord({
+        id: crypto.randomUUID(),
+        type: 'feed',
+        side: 'bottle',
+        volume: bag.volume_ml,
+        timestamp: new Date().toISOString(),
+        note: bag.note ? `Dùng hết bịch sữa: ${bag.note}` : `Dùng hết bịch sữa ${bag.id.substring(0, 6).toUpperCase()}`,
+      });
+    }
+    onUpdate(bag.id, transitionBag(bag, 'used'));
+  }, [bag, onUpdate, onAddRecord]);
+
+  const handleToggleUsing = useCallback((checked) => {
+    if (checked) {
+      onUpdate(bag.id, transitionBag(bag, 'using', { previous_status: bag.storage_status }));
+    } else {
+      const prev = bag.previous_status || 'fridge';
+      onUpdate(bag.id, transitionBag(bag, prev));
+    }
+  }, [bag, onUpdate]);
 
   const handleThawSave = useCallback((updatedBag) => {
     onUpdate(updatedBag.id, updatedBag);
@@ -205,7 +238,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
             <div style={{ display: 'flex', gap: 6, width: '100%' }}>
               <button
                 style={{ ...btnStyle('#00C9A7', '#F0FDFC'), flex: 1 }}
-                onClick={() => handleTransition('used')}
+                onClick={handleFinishFeeding}
               >
                 <CheckCheck size={12} /> Bé bú xong (Hết bịch)
               </button>
@@ -358,42 +391,54 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
           {/* Main info */}
           <div style={{ flex: 1 }}>
             {/* Status + Priority */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '3px 10px', borderRadius: 99,
-                background: cfg.bg, color: cfg.color,
-                fontSize: 11, fontWeight: 700,
-                border: `1px solid ${cfg.border}`,
-              }}>
-                {cfg.emoji} {cfg.label}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '3px 10px', borderRadius: 99,
+                  background: cfg.bg, color: cfg.color,
+                  fontSize: 11, fontWeight: 700,
+                  border: `1px solid ${cfg.border}`,
+                }}>
+                  {cfg.emoji} {cfg.label}
+                </span>
 
-              {/* Urgency / Warning badge */}
-              {remaining && !remaining.expired && remaining.urgent && (
-                <span style={{
-                  padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
-                  background: '#FFF5F5', color: '#FF6B6B', border: '1px solid #FFB3B3',
-                  animation: 'pulse-soft 1.5s ease-in-out infinite',
-                }}>
-                  🔴 Dùng ngay!
-                </span>
-              )}
-              {remaining && !remaining.expired && remaining.warning && !remaining.urgent && (
-                <span style={{
-                  padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
-                  background: '#FFF7F2', color: '#FF9A5C', border: '1px solid #FFCBA4',
-                }}>
-                  🟠 Sắp hết hạn
-                </span>
-              )}
-              {freezerAge?.warnExpired && (
-                <span style={{
-                  padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
-                  background: '#FFF7F2', color: '#FF9A5C', border: '1px solid #FFCBA4',
-                }}>
-                  ⚠️ Quá 6 tháng
-                </span>
+                {/* Urgency / Warning badge */}
+                {remaining && !remaining.expired && remaining.urgent && (
+                  <span style={{
+                    padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
+                    background: '#FFF5F5', color: '#FF6B6B', border: '1px solid #FFB3B3',
+                    animation: 'pulse-soft 1.5s ease-in-out infinite',
+                  }}>
+                    🔴 Dùng ngay!
+                  </span>
+                )}
+                {remaining && !remaining.expired && remaining.warning && !remaining.urgent && (
+                  <span style={{
+                    padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
+                    background: '#FFF7F2', color: '#FF9A5C', border: '1px solid #FFCBA4',
+                  }}>
+                    🟠 Sắp hết hạn
+                  </span>
+                )}
+                {freezerAge?.warnExpired && (
+                  <span style={{
+                    padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
+                    background: '#FFF7F2', color: '#FF9A5C', border: '1px solid #FFCBA4',
+                  }}>
+                    ⚠️ Quá 6 tháng
+                  </span>
+                )}
+              </div>
+
+              {/* Toggle switch for usable bags */}
+              {['fridge', 'room_temp', 'thawed', 'warmed', 'using'].includes(bag.storage_status) && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: bag.storage_status === 'using' ? '#FF6B9D' : 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
+                    Đang dùng
+                  </span>
+                  <CustomToggle checked={bag.storage_status === 'using'} onChange={handleToggleUsing} />
+                </div>
               )}
             </div>
 
