@@ -849,7 +849,7 @@ export default function MilkStorageTab({
         display: 'flex', gap: 6, padding: '0 16px 12px',
         overflowX: 'auto', scrollbarWidth: 'none',
       }}>
-        {FILTERS.map(f => {
+        {FILTERS.filter(f => f.id !== 'expiring' && f.id !== 'done').map(f => {
           const vol = filterVolumes[f.id] || 0;
           return (
             <button
