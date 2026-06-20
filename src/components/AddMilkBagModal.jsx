@@ -42,34 +42,14 @@ const STORAGE_OPTIONS = [
   },
 ];
 
-const NOTE_QUICK = [
-  { label: '🌅 Cữ sáng', value: 'Cữ sáng' },
-  { label: '☀️ Cữ trưa', value: 'Cữ trưa' },
-  { label: '🌙 Cữ tối', value: 'Cữ tối' },
-  { label: '◀️ Bên trái', value: 'Bên trái' },
-  { label: '▶️ Bên phải', value: 'Bên phải' },
-  { label: '↔️ Cả hai', value: 'Cả hai' },
-];
-
 export default function AddMilkBagModal({ onSave, onClose }) {
   const [volumeStr, setVolumeStr] = useState('');
   const [expressedAt, setExpressedAt] = useState(toLocalDatetimeInput(new Date()));
   const [storageStatus, setStorageStatus] = useState('fridge');
   const [note, setNote] = useState('');
-  const [quickNotes, setQuickNotes] = useState([]);
   const [error, setError] = useState('');
 
-  const toggleQuickNote = (val) => {
-    setQuickNotes(prev => {
-      const next = prev.includes(val) ? prev.filter(n => n !== val) : [...prev, val];
-      return next;
-    });
-  };
-
-  const combinedNote = [
-    ...quickNotes,
-    ...(note.trim() ? [note.trim()] : []),
-  ].join(' · ');
+  const combinedNote = note.trim();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -208,39 +188,15 @@ export default function AddMilkBagModal({ onSave, onClose }) {
             )}
           </div>
 
-
-          {/* Quick Note chips */}
+          {/* Ghi chú */}
           <div className="form-group">
-            <label className="form-label">📝 Ghi chú nhanh</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-              {NOTE_QUICK.map(q => (
-                <button
-                  key={q.value}
-                  type="button"
-                  onClick={() => toggleQuickNote(q.value)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-full)',
-                    border: `2px solid ${quickNotes.includes(q.value) ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                    background: quickNotes.includes(q.value) ? 'var(--color-primary-bg)' : 'var(--color-surface-alt)',
-                    color: quickNotes.includes(q.value) ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    fontFamily: 'Outfit, sans-serif',
-                  }}
-                >
-                  {q.label}
-                </button>
-              ))}
-            </div>
+            <label className="form-label">📝 Ghi chú</label>
             <input
               type="text"
               className="form-input"
               value={note}
               onChange={e => setNote(e.target.value)}
-              placeholder="Ghi chú thêm..."
+              placeholder="Thêm ghi chú..."
             />
           </div>
 
