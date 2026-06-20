@@ -202,7 +202,15 @@ export default function App() {
     <div className="app-container">
       {/* Page Content */}
       <div className="page">
-        {activeTab === 'dashboard' && <DashboardTab {...sharedProps} milkBags={milkBags} onNavigateToMilk={() => setActiveTab('milk')} />}
+        {activeTab === 'dashboard' && (
+          <DashboardTab
+            {...sharedProps}
+            milkBags={milkBags}
+            onAddMilkBag={addMilkBag}
+            onUpdateMilkBag={updateMilkBag}
+            onNavigateToMilk={() => setActiveTab('milk')}
+          />
+        )}
         {activeTab === 'history'   && <HistoryTab   {...sharedProps} />}
         {activeTab === 'milk'      && (
           <MilkStorageTab

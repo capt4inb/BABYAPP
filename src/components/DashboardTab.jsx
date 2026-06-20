@@ -1,11 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Droplets, Clock, TrendingUp, AlertCircle, Activity, BellRing, ChevronRight } from 'lucide-react';
-import { downloadICS } from '../utils/ics';
-import { openAppleShortcutAlarm } from '../utils/shortcuts';
-import ShortcutGuideModal from './ShortcutGuideModal';
+import { Droplets, ChevronRight, Plus } from 'lucide-react';
 import { getBabyWeekAge, getWonderWeekStatus } from '../data/wonderWeeks';
 import { getWHOMedianWeight, evaluateWeight, getMonthsBetween } from '../data/whoWeight';
-import { getMilkSummary, getThawRecommendation, getAvgDailyMl } from '../utils/milkUtils';
+import { getMilkSummary, getThawRecommendation, getAvgDailyMl, transitionBag } from '../utils/milkUtils';
+import AddMilkBagModal from './AddMilkBagModal';
 
 function timeSince(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -20,16 +18,33 @@ function timeUntilNext(lastIso, intervalHours) {
   if (!lastIso) return null;
   const next = new Date(new Date(lastIso).getTime() + intervalHours * 3600000);
   const diffMs = next - Date.now();
-  if (diffMs <= 0) return { label: 'Đã đến giờ!', overdue: true };
   
   const hrs = next.getHours().toString().padStart(2, '0');
   const mins = next.getMinutes().toString().padStart(2, '0');
-  return { label: `${hrs}:${mins}`, overdue: false, nextDate: next };
+  
+  if (diffMs <= 0) {
+    return { label: `${hrs}:${mins}`, overdue: true, countdownLabel: 'Đã đến giờ bú!' };
+  }
+  
+  const diffMins = Math.floor(diffMs / 60000);
+  const countdownLabel = diffMins < 60
+    ? `sau ${diffMins} phút`
+    : `sau ${Math.floor(diffMins / 60)} giờ ${diffMins % 60} phút`;
+    
+  return { label: `${hrs}:${mins}`, overdue: false, nextDate: next, countdownLabel };
 }
 
-export default function DashboardTab({ records, settings, onOpenFeedModal, onOpenWeightModal, milkBags = [], onNavigateToMilk }) {
+export default function DashboardTab({
+  records,
+  settings,
+  onOpenFeedModal,
+  milkBags = [],
+  onAddMilkBag,
+  onUpdateMilkBag,
+  onNavigateToMilk
+}) {
   const { babyName, babyBirthDate, babyDueDate, feedIntervalHours, babyGender } = settings;
-  const [showShortcutGuide, setShowShortcutGuide] = useState(false);
+  const [showAddMilkBag, setShowAddMilkBag] = useState(false);
 
   // Last records
   const lastFeed = useMemo(() => records.find(r => r.type === 'feed'), [records]);
@@ -39,6 +54,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
   const todayStart = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d;
   }, []);
+  
   const todayFeeds = useMemo(() =>
     records.filter(r => r.type === 'feed' && new Date(r.timestamp) >= todayStart),
     [records, todayStart]
@@ -71,7 +87,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
 
   const nextFeed = timeUntilNext(lastFeed?.timestamp, feedIntervalHours);
 
-  // Recent 4 records for timeline
+  // Recent 5 records for timeline
   const recent = records.slice(0, 5);
 
   // Weight evaluation
@@ -88,28 +104,57 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
   const milkSummary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
   const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
   const thawRec = useMemo(() => getThawRecommendation(milkBags, avgDailyMl), [milkBags, avgDailyMl]);
-  const hasMilkData = milkBags.some(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
+
+  // Active bags breakdown for UI representation
+  const activeBags = useMemo(() => {
+    return milkBags.filter(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
+  }, [milkBags]);
+
+  const fridgeBags = useMemo(() => activeBags.filter(b => b.storage_status === 'fridge' || (b.storage_status === 'using' && b.previous_status === 'fridge')), [activeBags]);
+  const fridgeMl = fridgeBags.reduce((s, b) => s + (b.volume_ml || 0), 0);
+
+  const freezerBags = useMemo(() => activeBags.filter(b => b.storage_status === 'freezer' || (b.storage_status === 'using' && b.previous_status === 'freezer')), [activeBags]);
+  const freezerMl = freezerBags.reduce((s, b) => s + (b.volume_ml || 0), 0);
+
+  const thawedBags = useMemo(() => activeBags.filter(b => 
+    ['thawing', 'thawed', 'warmed'].includes(b.storage_status) || 
+    (b.storage_status === 'using' && ['thawing', 'thawed', 'warmed'].includes(b.previous_status))
+  ), [activeBags]);
+  const thawedMl = thawedBags.reduce((s, b) => s + (b.volume_ml || 0), 0);
+
+  const handleThawBags = () => {
+    if (!thawRec?.toThaw || !onUpdateMilkBag) return;
+    thawRec.toThaw.forEach(bag => {
+      const updated = transitionBag(bag, 'thawing');
+      onUpdateMilkBag(bag.id, updated);
+    });
+  };
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" style={{ paddingBottom: 24 }}>
       {/* Header */}
-      <div className="page-header">
+      <div className="page-header" style={{ borderBottom: '1px solid var(--color-border)', padding: '24px 20px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 600 }}>
-              Xin chào! 👋
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Nhật ký của bé 🍼
             </p>
-            <h1 style={{ margin: '2px 0 0', fontSize: 26, fontWeight: 800, color: 'var(--color-text)' }}>
+            <h1 style={{ margin: '4px 0 0', fontSize: 28, fontWeight: 800, color: 'var(--color-text)' }}>
               {babyName || 'Bé Yêu'}
             </h1>
             {ageInfo && (
-              <div style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-muted)', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div>
-                  Ngày tuổi: <strong style={{ color: 'var(--color-primary)' }}>{ageInfo.totalDays} ngày</strong>
-                </div>
-                <div>
-                  Tuần tuổi: <strong style={{ color: 'var(--color-primary)' }}>{ageInfo.weeks} tuần {ageInfo.days} ngày</strong>
-                </div>
+              <div style={{ margin: '8px 0 0', display: 'flex', flexWrap: 'wrap', gap: '8px 12px', alignItems: 'center' }}>
+                <span style={{ fontSize: 13, background: 'var(--color-primary-bg)', color: 'var(--color-primary)', padding: '4px 10px', borderRadius: 99, fontWeight: 700 }}>
+                  👶 {ageInfo.totalDays} ngày tuổi
+                </span>
+                <span style={{ fontSize: 13, background: 'var(--color-surface-alt)', color: 'var(--color-text)', padding: '4px 10px', borderRadius: 99, fontWeight: 600 }}>
+                  🗓️ {ageInfo.weeks} tuần {ageInfo.days} ngày
+                </span>
+                {lastWeight && weightEval && (
+                  <span style={{ fontSize: 13, background: 'linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1))', color: '#0070F3', padding: '4px 10px', borderRadius: 99, fontWeight: 600 }}>
+                    ⚖️ {lastWeight.weight} kg ({weightEval.status === 'normal' ? 'Chuẩn' : weightEval.label})
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -117,7 +162,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
           {wwStatus && wwStatus.status !== 'no_data' && (
             <div
               className={`status-pill ${wwStatus.status === 'stormy' ? 'stormy' : 'sunny'}`}
-              style={{ marginTop: 4 }}
+              style={{ marginTop: 4, padding: '6px 12px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}
             >
               <span>{wwStatus.status === 'stormy' ? '⛈️' : '☀️'}</span>
               {wwStatus.status === 'stormy' ? 'Tuần Storm' : 'Ổn định'}
@@ -127,195 +172,292 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
       </div>
 
       {/* Quick Action Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '16px 16px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '20px 16px 0' }}>
         <button
           id="btn-log-feed"
-          className="btn btn-primary"
+          className="btn"
           onClick={() => onOpenFeedModal()}
-          style={{ flex: 1, padding: '16px 12px', borderRadius: 'var(--radius-md)', flexDirection: 'column', gap: 6, height: 'auto' }}
+          style={{
+            flex: 1,
+            padding: '20px 16px',
+            borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, var(--color-primary), #FF8CB6)',
+            color: 'white',
+            boxShadow: '0 6px 20px rgba(255, 107, 157, 0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            height: 'auto',
+            border: 'none',
+            cursor: 'pointer'
+          }}
         >
-          <Droplets size={26} />
-          <span style={{ fontSize: 15 }}>Ghi cữ bú</span>
+          <div style={{ background: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Droplets size={26} color="white" />
+          </div>
+          <span style={{ fontSize: 16, fontWeight: 800 }}>Ghi cữ bú</span>
           {nextFeed && (
             <span style={{
-              fontSize: 11, fontWeight: 700, opacity: 0.9,
-              background: nextFeed.overdue ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.2)',
-              padding: '2px 8px', borderRadius: 99,
+              fontSize: 11, fontWeight: 700,
+              background: nextFeed.overdue ? 'rgba(255, 107, 107, 0.4)' : 'rgba(255,255,255,0.25)',
+              color: 'white',
+              padding: '3px 10px', borderRadius: 99,
             }}>
-              {nextFeed.overdue ? '⚠️ ' : '⏰ '}{nextFeed.label}
+              {nextFeed.overdue ? '⚠️ Đến giờ!' : `⏰ ${nextFeed.label}`}
             </span>
           )}
         </button>
 
         <button
+          id="btn-quick-add-milk"
           className="btn"
-          onClick={() => onOpenWeightModal()}
-          style={{ flex: 1, padding: '16px 12px', borderRadius: 'var(--radius-md)', flexDirection: 'column', gap: 6, height: 'auto', background: 'linear-gradient(135deg,#4FACFE,#00F2FE)', color: 'white', border: 'none', cursor: 'pointer' }}
+          onClick={() => setShowAddMilkBag(true)}
+          style={{
+            flex: 1,
+            padding: '20px 16px',
+            borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, #4FACFE, #9B59B6)',
+            color: 'white',
+            boxShadow: '0 6px 20px rgba(79, 172, 254, 0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            height: 'auto',
+            border: 'none',
+            cursor: 'pointer'
+          }}
         >
-          <span style={{ fontSize: 26, lineHeight: 1 }}>⚖️</span>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>Ghi cân nặng</span>
-          {lastWeight && (
-            <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.9 }}>
-              Gần nhất: {lastWeight.weight} kg
-            </span>
-          )}
+          <div style={{ background: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Plus size={26} color="white" />
+          </div>
+          <span style={{ fontSize: 16, fontWeight: 800 }}>Thêm bịch sữa</span>
+          <span style={{
+            fontSize: 11, fontWeight: 700,
+            background: 'rgba(255,255,255,0.25)',
+            color: 'white',
+            padding: '3px 10px', borderRadius: 99,
+          }}>
+            🍼 Kho: {milkSummary.totalMl}ml
+          </span>
         </button>
       </div>
 
-      {/* Alarm Action */}
-      {nextFeed && !nextFeed.overdue && nextFeed.nextDate && (
-        <div style={{ padding: '12px 16px 0' }}>
-          <button
-            className="btn btn-ghost"
-            onClick={() => {
-              if (localStorage.getItem('shortcut_guide_seen')) {
-                openAppleShortcutAlarm(nextFeed.label);
-              } else {
-                setShowShortcutGuide(true);
-              }
-            }}
-            style={{ 
-              width: '100%', 
-              padding: '12px', 
-              borderRadius: 'var(--radius-md)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: 8,
-              background: 'linear-gradient(135deg, #FF9500, #FFCC00)',
-              border: 'none',
-              color: 'white',
-              fontWeight: 700,
-              fontSize: 15,
-              boxShadow: '0 4px 12px rgba(255, 149, 0, 0.25)'
-            }}
-          >
-            <BellRing size={18} />
-            Báo thức Đồng hồ lúc {nextFeed.label}
-          </button>
-        </div>
-      )}
-
-      {/* Shortcut Guide Modal */}
-      {showShortcutGuide && (
-        <ShortcutGuideModal
-          onClose={() => setShowShortcutGuide(false)}
-          onConfirm={() => {
-            localStorage.setItem('shortcut_guide_seen', 'true');
-            setShowShortcutGuide(false);
-            openAppleShortcutAlarm(nextFeed.label);
-          }}
-        />
-      )}
-
-      {/* Today's Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: lastWeight ? '1fr 1fr' : '1fr', gap: 12, padding: '12px 16px 0' }}>
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <Droplets size={16} color="var(--color-primary)" />
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Hôm nay bú
+      {/* Main Info Cards */}
+      <div style={{ padding: '16px 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        
+        {/* 1. Feeding Session Card */}
+        <div className="card" style={{ padding: 20, borderLeft: '5px solid var(--color-primary)', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 20 }}>🍼</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Chi tiết cữ bú
+              </span>
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 700, background: 'var(--color-primary-bg)', color: 'var(--color-primary)', padding: '4px 10px', borderRadius: 8 }}>
+              Hôm nay
             </span>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-primary)', lineHeight: 1 }}>
-            {todayFeeds.length}
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 600 }}>Số cữ bú</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text)', marginTop: 4 }}>
+                {todayFeeds.length} <span style={{ fontSize: 15, color: 'var(--color-text-muted)', fontWeight: 600 }}>cữ</span>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 600 }}>Tổng lượng bú</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-primary)', marginTop: 4 }}>
+                {todayFeedVol} <span style={{ fontSize: 15, color: 'var(--color-text-muted)', fontWeight: 600 }}>ml</span>
+              </div>
+            </div>
           </div>
-          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
-            cữ{todayFeedVol > 0 ? ` · ${todayFeedVol} ml` : ''}
+
+          {/* Last Feed Info */}
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 600, marginBottom: 6 }}>Cữ bú gần nhất:</div>
+            {lastFeed ? (
+              <div style={{ background: 'var(--color-surface-alt)', borderRadius: 12, padding: '10px 14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>
+                    {lastFeed.side === 'left' ? '◀️ Bú ngực Trái' : lastFeed.side === 'right' ? '▶️ Bú ngực Phải' : lastFeed.side === 'bottle' ? '🍼 Bú Bình' : '↔️ Bú Hai Bên'}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                    {timeSince(lastFeed.timestamp)}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: 'var(--color-text-muted)' }}>
+                  <span>Thời gian: {new Date(lastFeed.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                  {lastFeed.volume && <strong style={{ color: 'var(--color-primary)' }}>{lastFeed.volume} ml</strong>}
+                </div>
+                {lastFeed.note && (
+                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: 4, borderTop: '1px dashed var(--color-border)', paddingTop: 4 }}>
+                    "{lastFeed.note}"
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Chưa có cữ bú nào được ghi chép.</div>
+            )}
           </div>
-          {lastFeed && (
-            <div style={{ fontSize: 11, color: 'var(--color-text-light)', marginTop: 6 }}>
-              🕐 {timeSince(lastFeed.timestamp)}
+
+          {/* Next Feed Banner */}
+          {nextFeed && (
+            <div style={{
+              marginTop: 14,
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: nextFeed.overdue ? 'rgba(255, 107, 107, 0.08)' : 'rgba(255, 154, 92, 0.08)',
+              border: `1.5px solid ${nextFeed.overdue ? 'rgba(255, 107, 107, 0.2)' : 'rgba(255, 154, 92, 0.2)'}`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10
+            }}>
+              <span style={{ fontSize: 18 }}>{nextFeed.overdue ? '⚠️' : '⏰'}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: nextFeed.overdue ? 'var(--color-danger)' : 'var(--color-pump)' }}>
+                  {nextFeed.overdue ? 'Đã đến giờ bú!' : 'Thời gian cữ bú tiếp theo'}
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text)', marginTop: 2 }}>
+                  Dự kiến lúc <span style={{ color: nextFeed.overdue ? 'var(--color-danger)' : 'var(--color-primary)' }}>{nextFeed.label}</span> {nextFeed.countdownLabel ? `(${nextFeed.countdownLabel})` : ''}
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        {lastWeight && weightEval && (
-          <div className="card" style={{ padding: 16, background: weightEval.status === 'normal' ? 'var(--color-surface)' : 'rgba(255, 107, 107, 0.05)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Activity size={16} color="var(--color-text)" />
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Chuẩn WHO
+        {/* 2. Milk Storage Card */}
+        <div className="card" style={{ padding: 20, borderLeft: '5px solid #667EEA', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 20 }}>❄️</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: '#667EEA', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Quản lý kho sữa
               </span>
             </div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text)', lineHeight: 1 }}>
-              {lastWeight.weight} <span style={{ fontSize: 14 }}>kg</span>
+            <button
+              onClick={onNavigateToMilk}
+              style={{
+                background: 'none', border: 'none', color: '#667EEA', fontSize: 12, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer', padding: 0
+              }}
+            >
+              Chi tiết <ChevronRight size={14} />
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 600 }}>Tổng dung tích kho</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#667EEA', marginTop: 4 }}>
+                {milkSummary.totalMl} <span style={{ fontSize: 15, color: 'var(--color-text-muted)', fontWeight: 600 }}>ml</span>
+              </div>
             </div>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
-              Lúc {weightEval.months} tháng tuổi
-            </div>
-            <div style={{ 
-              fontSize: 11, marginTop: 6, fontWeight: 700, 
-              color: weightEval.status === 'normal' ? '#2ECC71' : 'var(--color-danger)'
-            }}>
-              {weightEval.label} (Chuẩn: {weightEval.median}kg)
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 600 }}>Tổng số bịch sữa</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text)', marginTop: 4 }}>
+                {milkSummary.activeBagCount} <span style={{ fontSize: 15, color: 'var(--color-text-muted)', fontWeight: 600 }}>bịch</span>
+              </div>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Milk Storage Widget */}
-      {(hasMilkData || onNavigateToMilk) && (
-        <div style={{ padding: '12px 16px 0' }}>
-          <button
-            id="btn-milk-widget"
-            onClick={onNavigateToMilk}
-            style={{
-              width: '100%', textAlign: 'left', background: 'none',
-              border: 'none', padding: 0, cursor: 'pointer',
-            }}
-          >
-            <div className="card" style={{
-              padding: '14px 16px',
-              background: 'linear-gradient(135deg, #EEF2FF, #F5F0FF)',
-              border: '1.5px solid #667EEA30',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>🍼</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: '#667EEA' }}>Kho sữa mẹ</span>
-                  {milkSummary.totalMl > 0 && (
-                    <span style={{
-                      padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
-                      background: '#667EEA', color: 'white',
-                    }}>
-                      {milkSummary.totalMl}ml
-                    </span>
-                  )}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#667EEA' }}>
-                  <span style={{ fontSize: 12, fontWeight: 600 }}>Xem kho</span>
-                  <ChevronRight size={14} />
-                </div>
+          {/* Location breakdown */}
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 600, marginBottom: 8 }}>Vị trí lưu trữ:</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 90, background: '#F0F8FF', border: '1px solid #A8D8FE', borderRadius: 12, padding: '8px 10px', textAlign: 'center' }}>
+                <span style={{ fontSize: 16, display: 'block', marginBottom: 2 }}>❄️</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#4FACFE', display: 'block' }}>Ngăn mát</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text)' }}>{fridgeMl} ml ({fridgeBags.length} b)</span>
               </div>
+              <div style={{ flex: 1, minWidth: 90, background: '#FBF5FF', border: '1px solid #D7BDE2', borderRadius: 12, padding: '8px 10px', textAlign: 'center' }}>
+                <span style={{ fontSize: 16, display: 'block', marginBottom: 2 }}>🧊</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#9B59B6', display: 'block' }}>Ngăn đông</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text)' }}>{freezerMl} ml ({freezerBags.length} b)</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 90, background: '#F0FDFC', border: '1px solid #A8E6E2', borderRadius: 12, padding: '8px 10px', textAlign: 'center' }}>
+                <span style={{ fontSize: 16, display: 'block', marginBottom: 2 }}>💧</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#00C9A7', display: 'block' }}>Đã rã/Dùng</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text)' }}>{thawedMl} ml ({thawedBags.length} b)</span>
+              </div>
+            </div>
+          </div>
 
-              {hasMilkData ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  {milkSummary.urgentBags?.length > 0 && (
-                    <div style={{ fontSize: 12, color: '#FF6B6B', fontWeight: 700 }}>
-                      🔴 {milkSummary.urgentBags.length} bịch cần dùng ngay!
-                    </div>
-                  )}
-                  {milkSummary.expiringSoonCount > 0 && (
-                    <div style={{ fontSize: 12, color: '#FF9A5C', fontWeight: 600 }}>
-                      ⚠️ Sắp hết hạn: {milkSummary.expiringSoonCount} bịch
-                    </div>
-                  )}
-                  {!milkSummary.urgentBags?.length && !milkSummary.expiringSoonCount && (
-                    <div style={{ fontSize: 12, color: '#00C9A7', fontWeight: 600 }}>
-                      ✅ Kho sữa ổn định · {milkSummary.activeBagCount} bịch sẵn dùng
-                    </div>
-                  )}
+          {/* Expiry alerts */}
+          {(milkSummary.urgentBags?.length > 0 || milkSummary.expiringSoonCount > 0) && (
+            <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {milkSummary.urgentBags?.length > 0 && (
+                <div style={{ background: '#FFF5F5', border: '1px solid #FFB3B3', borderRadius: 12, padding: '8px 12px', fontSize: 12, color: 'var(--color-danger)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>🔴</span> {milkSummary.urgentBags.length} bịch sữa cần dùng ngay!
                 </div>
-              ) : (
-                <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
-                  Chưa có dữ liệu · Thêm bịch sữa đầu tiên →
+              )}
+              {milkSummary.expiringSoonCount > 0 && (
+                <div style={{ background: '#FFF7F2', border: '1px solid #FFCBA4', borderRadius: 12, padding: '8px 12px', fontSize: 12, color: 'var(--color-pump)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>⚠️</span> Có {milkSummary.expiringSoonCount} bịch sắp hết hạn trong 24h
                 </div>
               )}
             </div>
-          </button>
+          )}
+
+          {/* Thaw Recommendation inline */}
+          {thawRec && (
+            <div style={{
+              marginTop: 14,
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08))',
+              border: '1.5px solid rgba(102, 126, 234, 0.2)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>💡</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#5B4FCF' }}>
+                    Gợi ý rã đông tối nay
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2, lineHeight: 1.4 }}>
+                    Bé cần ~{thawRec.avgDailyMl}ml/ngày. Nên rã đông thêm <strong style={{ color: 'var(--color-pump)' }}>~{thawRec.neededMl}ml</strong> ({thawRec.toThaw.length} bịch):
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                    {thawRec.toThaw.map((bag) => (
+                      <div key={bag.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: '1px solid rgba(102, 126, 234, 0.1)', borderRadius: 8, padding: '6px 10px', fontSize: 11 }}>
+                        <span style={{ fontWeight: 700, color: '#5B4FCF' }}>🧊 {bag.volume_ml}ml</span>
+                        <span style={{ color: 'var(--color-text-muted)' }}>Hút: {new Date(bag.expressed_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleThawBags}
+                    style={{
+                      marginTop: 10,
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #667EEA, #764BA2)',
+                      color: 'white',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: 'Outfit, sans-serif',
+                      boxShadow: '0 4px 10px rgba(102, 126, 234, 0.2)'
+                    }}
+                  >
+                    Rã đông {thawRec.toThaw.length} bịch này
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+
+      </div>
 
       {/* Wonder Week Banner */}
       {wwStatus?.currentLeap && (
@@ -323,7 +465,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
           className="hero-card"
           style={{
             background: `linear-gradient(135deg, ${wwStatus.currentLeap.color}CC, ${wwStatus.currentLeap.color}88)`,
-            marginTop: 12,
+            marginTop: 16,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -345,16 +487,16 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
 
       {/* Recent Timeline */}
       {recent.length > 0 && (
-        <div style={{ padding: '20px 16px 8px' }}>
+        <div style={{ padding: '24px 16px 8px' }}>
           <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Hoạt động gần đây
           </h3>
           <div className="card">
             {recent.map((r, i) => (
-              <div key={r.id} className="timeline-item" style={{ borderBottom: i < recent.length - 1 ? '1px solid var(--color-border)' : 'none' }}>
+              <div key={r.id} className="timeline-item" style={{ borderBottom: i < recent.length - 1 ? '1px solid var(--color-border)' : 'none', padding: '14px 16px' }}>
                 <div
                   className="timeline-dot"
-                  style={{ background: 'var(--color-primary)' }}
+                  style={{ background: r.type === 'feed' ? 'var(--color-primary)' : '#0070F3' }}
                 />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -398,6 +540,17 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
             Nhấn "Ghi cữ bú" ở trên để bắt đầu theo dõi.
           </p>
         </div>
+      )}
+
+      {/* Add Milk Bag Modal */}
+      {showAddMilkBag && (
+        <AddMilkBagModal
+          onSave={(bag) => {
+            onAddMilkBag(bag);
+            setShowAddMilkBag(false);
+          }}
+          onClose={() => setShowAddMilkBag(false)}
+        />
       )}
     </div>
   );
