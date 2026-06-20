@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle } from 'lucide-react';
 import { transitionBag } from '../utils/milkUtils';
 
@@ -51,7 +52,7 @@ export default function ThawModal({ bag, onSave, onClose }) {
     onSave(updated);
   };
 
-  return (
+  return createPortal(
     <>
       <div className="modal-backdrop" onClick={onClose} />
       <div className="modal-sheet animate-modal">
@@ -212,6 +213,7 @@ export default function ThawModal({ bag, onSave, onClose }) {
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

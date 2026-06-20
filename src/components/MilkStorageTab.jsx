@@ -630,6 +630,29 @@ export default function MilkStorageTab({
   const summary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
   const thawRec = useMemo(() => getThawRecommendation(milkBags, avgDailyMl), [milkBags, avgDailyMl]);
 
+  const filterVolumes = useMemo(() => {
+    const active = milkBags.filter(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
+    const done = milkBags.filter(b => b.storage_status === 'used' || b.storage_status === 'expired');
+    const sum = (list) => list.reduce((s, b) => s + (b.volume_ml || 0), 0);
+    return {
+      all: sum(active),
+      fridge: sum(active.filter(b => b.storage_status === 'fridge' || (b.storage_status === 'using' && b.previous_status === 'fridge'))),
+      freezer: sum(active.filter(b => b.storage_status === 'freezer' || (b.storage_status === 'using' && b.previous_status === 'freezer'))),
+      thawing: sum(active.filter(b => b.storage_status === 'thawing' || (b.storage_status === 'using' && b.previous_status === 'thawing'))),
+      thawed: sum(active.filter(b => 
+        b.storage_status === 'thawed' || 
+        b.storage_status === 'warmed' || 
+        (b.storage_status === 'using' && (b.previous_status === 'thawed' || b.previous_status === 'warmed'))
+      )),
+      expiring: sum(active.filter(b => {
+        if (!b.expiry_at) return false;
+        const r = getTimeRemaining(b.expiry_at);
+        return r && !r.expired && r.hours < 24;
+      })),
+      done: sum(done),
+    };
+  }, [milkBags]);
+
   // Filtered bags
   const filteredBags = useMemo(() => {
     // 1. Filter by expressed date
@@ -826,24 +849,27 @@ export default function MilkStorageTab({
         display: 'flex', gap: 6, padding: '0 16px 12px',
         overflowX: 'auto', scrollbarWidth: 'none',
       }}>
-        {FILTERS.map(f => (
-          <button
-            key={f.id}
-            onClick={() => setActiveFilter(f.id)}
-            style={{
-              padding: '6px 14px', borderRadius: 'var(--radius-full)',
-              border: `2px solid ${activeFilter === f.id ? '#667EEA' : 'var(--color-border)'}`,
-              background: activeFilter === f.id ? '#667EEA' : 'var(--color-surface-alt)',
-              color: activeFilter === f.id ? 'white' : 'var(--color-text-muted)',
-              fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.15s ease', whiteSpace: 'nowrap',
-              fontFamily: 'Outfit, sans-serif',
-              flexShrink: 0,
-            }}
-          >
-            {f.label}
-          </button>
-        ))}
+        {FILTERS.map(f => {
+          const vol = filterVolumes[f.id] || 0;
+          return (
+            <button
+              key={f.id}
+              onClick={() => setActiveFilter(f.id)}
+              style={{
+                padding: '6px 14px', borderRadius: 'var(--radius-full)',
+                border: `2px solid ${activeFilter === f.id ? '#667EEA' : 'var(--color-border)'}`,
+                background: activeFilter === f.id ? '#667EEA' : 'var(--color-surface-alt)',
+                color: activeFilter === f.id ? 'white' : 'var(--color-text-muted)',
+                fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.15s ease', whiteSpace: 'nowrap',
+                fontFamily: 'Outfit, sans-serif',
+                flexShrink: 0,
+              }}
+            >
+              {f.label} ({vol}ml)
+            </button>
+          );
+        })}
       </div>
 
       {/* Sort and Date Filter Controls */}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Droplets, Thermometer, Snowflake, Wind } from 'lucide-react';
 import { createMilkBag } from '../utils/milkUtils';
 
@@ -89,7 +90,7 @@ export default function AddMilkBagModal({ onSave, onClose }) {
 
   const selectedStorage = STORAGE_OPTIONS.find(o => o.value === storageStatus);
 
-  return (
+  return createPortal(
     <>
       <div className="modal-backdrop" onClick={onClose} />
       <div className="modal-sheet animate-modal">
@@ -263,6 +264,7 @@ export default function AddMilkBagModal({ onSave, onClose }) {
           </div>
         </form>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
