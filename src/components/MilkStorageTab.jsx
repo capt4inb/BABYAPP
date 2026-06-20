@@ -16,27 +16,7 @@ import {
 import AddMilkBagModal from './AddMilkBagModal';
 import ThawModal from './ThawModal';
 
-// ── Custom Toggle ─────────────────────────────────────────────
-const CustomToggle = ({ checked, onChange }) => (
-  <div 
-    onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
-    style={{
-      width: 40, height: 22, borderRadius: 12,
-      background: checked ? '#FF6B9D' : '#E2E8F0',
-      position: 'relative', cursor: 'pointer',
-      transition: 'background 0.2s',
-      display: 'flex', alignItems: 'center', padding: 2,
-      flexShrink: 0
-    }}
-  >
-    <div style={{
-      width: 18, height: 18, borderRadius: '50%', background: 'white',
-      transform: checked ? 'translateX(18px)' : 'translateX(0)',
-      transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }} />
-  </div>
-);
+// Custom Toggle removed
 
 // ── Filter Tabs ───────────────────────────────────────────────
 const FILTERS = [
@@ -87,14 +67,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
     onUpdate(bag.id, transitionBag(bag, 'used'));
   }, [bag, onUpdate, onAddRecord]);
 
-  const handleToggleUsing = useCallback((checked) => {
-    if (checked) {
-      onUpdate(bag.id, transitionBag(bag, 'using', { previous_status: bag.storage_status }));
-    } else {
-      const prev = bag.previous_status || 'fridge';
-      onUpdate(bag.id, transitionBag(bag, prev));
-    }
-  }, [bag, onUpdate]);
+
 
   const handleThawSave = useCallback((updatedBag) => {
     onUpdate(updatedBag.id, updatedBag);
@@ -156,33 +129,130 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
       whiteSpace: 'nowrap',
     });
 
+    const partialFeedInput = isFeedingPartially && (
+      <div style={{
+        marginTop: 6,
+        padding: '12px 14px',
+        borderRadius: 12,
+        background: 'var(--color-surface-alt)',
+        border: '1.5px dashed var(--color-primary-light)',
+        animation: 'fadeIn 0.25s ease-out',
+        width: '100%',
+      }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+          🍼 Nhập lượng sữa bé đã bú
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <input
+              type="number"
+              className="form-input"
+              placeholder="Ví dụ: 80"
+              value={feedVolume}
+              onChange={e => setFeedVolume(e.target.value)}
+              min="1"
+              max={bag.volume_ml}
+              style={{
+                padding: '8px 12px',
+                fontSize: 13,
+                borderRadius: 8,
+                border: '1.5px solid var(--color-border)',
+                background: 'white',
+                paddingRight: 36,
+                width: '100%',
+              }}
+            />
+            <span style={{
+              position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+              fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)',
+            }}>ml</span>
+          </div>
+          <button
+            type="button"
+            onClick={handlePartialFeedSubmit}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: 'none',
+              background: 'var(--color-primary)',
+              color: 'white',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'Outfit, sans-serif',
+            }}
+          >
+            Lưu
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsFeedingPartially(false);
+              setFeedVolume('');
+              setFeedError('');
+            }}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: 'none',
+              background: 'var(--color-border)',
+              color: 'var(--color-text-muted)',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'Outfit, sans-serif',
+            }}
+          >
+            Huỷ
+          </button>
+        </div>
+        {feedError && (
+          <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--color-danger)', fontWeight: 600 }}>
+            ⚠️ {feedError}
+          </p>
+        )}
+      </div>
+    );
+
     switch (bag.storage_status) {
       case 'room_temp':
         return (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button style={btnStyle('#4FACFE', '#F0F8FF')} onClick={() => handleMoveTo('fridge')}>
-              ❄️ Ngăn mát
-            </button>
-            <button style={btnStyle('#9B59B6', '#FBF5FF')} onClick={() => handleMoveTo('freezer')}>
-              🧊 Ngăn đông
-            </button>
-            <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
-              <CheckCheck size={12} /> Đã dùng
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button style={btnStyle('#4FACFE', '#F0F8FF')} onClick={() => handleMoveTo('fridge')}>
+                ❄️ Ngăn mát
+              </button>
+              <button style={btnStyle('#9B59B6', '#FBF5FF')} onClick={() => handleMoveTo('freezer')}>
+                🧊 Ngăn đông
+              </button>
+              <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
+                <CheckCheck size={12} /> Đã dùng
+              </button>
+              <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
+                🍼 Bú một phần
+              </button>
+            </div>
+            {partialFeedInput}
           </div>
         );
       case 'fridge':
         return (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button style={btnStyle('#9B59B6', '#FBF5FF')} onClick={() => handleMoveTo('freezer')}>
-              🧊 Vào ngăn đông
-            </button>
-            <button style={btnStyle('#4FACFE', '#F0F8FF')} onClick={() => setShowThawModal(true)}>
-              💧 Lấy ra rã đông
-            </button>
-            <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
-              <CheckCheck size={12} /> Đã dùng
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button style={btnStyle('#9B59B6', '#FBF5FF')} onClick={() => handleMoveTo('freezer')}>
+                🧊 Vào ngăn đông
+              </button>
+              <button style={btnStyle('#4FACFE', '#F0F8FF')} onClick={() => setShowThawModal(true)}>
+                💧 Lấy ra rã đông
+              </button>
+              <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
+                <CheckCheck size={12} /> Đã dùng
+              </button>
+              <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
+                🍼 Bú một phần
+              </button>
+            </div>
+            {partialFeedInput}
           </div>
         );
       case 'freezer':
@@ -209,131 +279,44 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
         );
       case 'thawed':
         return (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button style={btnStyle('#FF9A5C', '#FFF7F2')} onClick={() => handleTransition('warmed')}>
-              🔥 Hâm sữa
-            </button>
-            <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => handleTransition('using')}>
-              🍼 Cho bú (Đang dùng)
-            </button>
-            <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
-              <CheckCheck size={12} /> Đã dùng
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button style={btnStyle('#FF9A5C', '#FFF7F2')} onClick={() => handleTransition('warmed')}>
+                🔥 Hâm sữa
+              </button>
+              <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
+                <CheckCheck size={12} /> Đã dùng
+              </button>
+              <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
+                🍼 Bú một phần
+              </button>
+            </div>
+            {partialFeedInput}
           </div>
         );
       case 'warmed':
         return (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => handleTransition('using')}>
-              🍼 Cho bú (Đang dùng)
-            </button>
-            <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
-              <CheckCheck size={12} /> Đã dùng
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
+                <CheckCheck size={12} /> Đã dùng
+              </button>
+              <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
+                🍼 Bú một phần
+              </button>
+            </div>
+            {partialFeedInput}
           </div>
         );
       case 'using':
         return (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flexDirection: 'column', width: '100%' }}>
-            <div style={{ display: 'flex', gap: 6, width: '100%' }}>
-              <button
-                style={{ ...btnStyle('#00C9A7', '#F0FDFC'), flex: 1 }}
-                onClick={handleFinishFeeding}
-              >
-                <CheckCheck size={12} /> Bé bú xong (Hết bịch)
-              </button>
-              <button
-                style={{ ...btnStyle('#FF6B9D', '#FFF0F6'), flex: 1 }}
-                onClick={() => setIsFeedingPartially(prev => !prev)}
-              >
-                🍼 Bú một phần (Còn dư)
-              </button>
-            </div>
-
-            {isFeedingPartially && (
-              <div style={{
-                marginTop: 6,
-                padding: '12px 14px',
-                borderRadius: 12,
-                background: 'var(--color-surface-alt)',
-                border: '1.5px dashed var(--color-primary-light)',
-                animation: 'fadeIn 0.25s ease-out',
-                width: '100%',
-              }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  🍼 Nhập lượng sữa bé đã bú
-                </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ position: 'relative', flex: 1 }}>
-                    <input
-                      type="number"
-                      className="form-input"
-                      placeholder="Ví dụ: 80"
-                      value={feedVolume}
-                      onChange={e => setFeedVolume(e.target.value)}
-                      min="1"
-                      max={bag.volume_ml}
-                      style={{
-                        padding: '8px 12px',
-                        fontSize: 13,
-                        borderRadius: 8,
-                        border: '1.5px solid var(--color-border)',
-                        background: 'white',
-                        paddingRight: 36,
-                        width: '100%',
-                      }}
-                    />
-                    <span style={{
-                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                      fontSize: 12, fontWeight: 700, color: 'var(--color-text-muted)',
-                    }}>ml</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handlePartialFeedSubmit}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: 8,
-                      border: 'none',
-                      background: 'var(--color-primary)',
-                      color: 'white',
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontFamily: 'Outfit, sans-serif',
-                    }}
-                  >
-                    Lưu
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsFeedingPartially(false);
-                      setFeedVolume('');
-                      setFeedError('');
-                    }}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      border: 'none',
-                      background: 'var(--color-border)',
-                      color: 'var(--color-text-muted)',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      fontFamily: 'Outfit, sans-serif',
-                    }}
-                  >
-                    Huỷ
-                  </button>
-                </div>
-                {feedError && (
-                  <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--color-danger)', fontWeight: 600 }}>
-                    ⚠️ {feedError}
-                  </p>
-                )}
-              </div>
-            )}
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              style={{ ...btnStyle('#00C9A7', '#F0FDFC'), flex: 'auto' }}
+              onClick={handleFinishFeeding}
+            >
+              <CheckCheck size={12} /> Bé bú xong (Hết bịch)
+            </button>
           </div>
         );
       case 'used':
@@ -443,15 +426,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
                 )}
               </div>
 
-              {/* Toggle switch for usable bags */}
-              {['fridge', 'room_temp', 'thawed', 'warmed', 'using'].includes(bag.storage_status) && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: bag.storage_status === 'using' ? '#FF6B9D' : 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
-                    Đang dùng
-                  </span>
-                  <CustomToggle checked={bag.storage_status === 'using'} onChange={handleToggleUsing} />
-                </div>
-              )}
+
             </div>
 
             {/* Expressed time */}
@@ -799,25 +774,11 @@ export default function MilkStorageTab({
           { label: 'Tổng kho', value: `${summary.totalMl}ml`, emoji: '🍼', color: '#667EEA', bg: '#EEF2FF' },
           { label: 'Dùng hôm nay', value: `${summary.usableTodayMl}ml`, emoji: '✅', color: '#00C9A7', bg: '#F0FDFC' },
           {
-            label: 'Đang dùng',
-            value: summary.usingCount > 0 ? `${summary.usingCount} bịch` : '0',
-            emoji: '🍼',
-            color: summary.usingCount > 0 ? '#FF6B9D' : '#8E7DAE',
-            bg: summary.usingCount > 0 ? '#FFF0F6' : '#F8F4FF',
-          },
-          {
             label: 'Sắp hết hạn',
             value: summary.expiringSoonCount,
             emoji: '⚠️',
             color: summary.expiringSoonCount > 0 ? '#FF9A5C' : '#8E7DAE',
             bg: summary.expiringSoonCount > 0 ? '#FFF7F2' : '#F8F4FF',
-          },
-          {
-            label: 'Cần rã đông',
-            value: thawRec ? `${thawRec.toThaw.length} bịch` : '–',
-            emoji: '💧',
-            color: thawRec ? '#667EEA' : '#8E7DAE',
-            bg: thawRec ? '#EEF2FF' : '#F8F4FF',
           },
         ].map((stat, i) => (
           <div key={i} className="card" style={{ padding: '12px 14px', background: stat.bg, border: `1px solid ${stat.color}20` }}>
@@ -858,11 +819,7 @@ export default function MilkStorageTab({
         </div>
       )}
 
-      {/* Thaw Recommendation */}
-      <ThawRecommendationBanner
-        recommendation={thawRec}
-        onThawBag={handleThawFromRec}
-      />
+      {/* Thaw Recommendation - Hidden by user request */}
 
       {/* Filter tabs */}
       <div style={{

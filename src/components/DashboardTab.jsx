@@ -301,12 +301,7 @@ export default function DashboardTab({ records, settings, onOpenFeedModal, onOpe
                       ⚠️ Sắp hết hạn: {milkSummary.expiringSoonCount} bịch
                     </div>
                   )}
-                  {thawRec && (
-                    <div style={{ fontSize: 12, color: '#667EEA', fontWeight: 600 }}>
-                      💧 Nên rã đông {thawRec.toThaw.length} bịch tối nay (~{thawRec.neededMl}ml còn thiếu)
-                    </div>
-                  )}
-                  {!milkSummary.urgentBags?.length && !milkSummary.expiringSoonCount && !thawRec && (
+                  {!milkSummary.urgentBags?.length && !milkSummary.expiringSoonCount && (
                     <div style={{ fontSize: 12, color: '#00C9A7', fontWeight: 600 }}>
                       ✅ Kho sữa ổn định · {milkSummary.activeBagCount} bịch sẵn dùng
                     </div>
