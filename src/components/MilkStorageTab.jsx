@@ -30,7 +30,7 @@ const FILTERS = [
 ];
 
 // ── MilkBagCard ───────────────────────────────────────────────
-function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
+function MilkBagCard({ bag, onUpdate, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const [showThawModal, setShowThawModal] = useState(false);
   const [isFeedingPartially, setIsFeedingPartially] = useState(false);
@@ -54,18 +54,8 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
   }, [handleTransition]);
 
   const handleFinishFeeding = useCallback(() => {
-    if (onAddRecord && bag.volume_ml > 0) {
-      onAddRecord({
-        id: crypto.randomUUID(),
-        type: 'feed',
-        side: 'bottle',
-        volume: bag.volume_ml,
-        timestamp: new Date().toISOString(),
-        note: bag.note ? `Dùng hết bịch sữa: ${bag.note}` : `Dùng hết bịch sữa ${bag.id.substring(0, 6).toUpperCase()}`,
-      });
-    }
     onUpdate(bag.id, transitionBag(bag, 'used'));
-  }, [bag, onUpdate, onAddRecord]);
+  }, [bag, onUpdate]);
 
 
 
@@ -82,17 +72,6 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
     }
     setFeedError('');
 
-    if (onAddRecord) {
-      onAddRecord({
-        id: crypto.randomUUID(),
-        type: 'feed',
-        side: 'bottle',
-        volume: vol,
-        timestamp: new Date().toISOString(),
-        note: bag.note ? `Bú một phần: ${bag.note}` : `Bú một phần từ bịch ${bag.id.substring(0, 6).toUpperCase()}`,
-      });
-    }
-
     const remainingVol = bag.volume_ml - vol;
     if (remainingVol <= 0) {
       onUpdate(bag.id, transitionBag(bag, 'used'));
@@ -106,7 +85,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onAddRecord }) {
 
     setIsFeedingPartially(false);
     setFeedVolume('');
-  }, [bag, onUpdate, onAddRecord, feedVolume]);
+  }, [bag, onUpdate, feedVolume]);
 
   // ── Status-specific action buttons ──────────────────────────
   const renderActions = () => {
@@ -615,7 +594,6 @@ export default function MilkStorageTab({
   onUpdateMilkBag,
   onDeleteMilkBag,
   onNavigateToDashboard,
-  onAddRecord,
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -1000,7 +978,6 @@ export default function MilkStorageTab({
               bag={bag}
               onUpdate={(id, updated) => onUpdateMilkBag(id, updated)}
               onDelete={onDeleteMilkBag}
-              onAddRecord={onAddRecord}
             />
           ))
         )}

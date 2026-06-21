@@ -220,7 +220,6 @@ export default function App() {
             onUpdateMilkBag={updateMilkBag}
             onDeleteMilkBag={deleteMilkBag}
             onNavigateToDashboard={() => setActiveTab('dashboard')}
-            onAddRecord={addRecord}
           />
         )}
         {activeTab === 'stats'     && <StatsTab      {...sharedProps} />}
