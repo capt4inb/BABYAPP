@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Droplets, Thermometer, Snowflake, Wind } from 'lucide-react';
-import { createMilkBag } from '../utils/milkUtils';
+import { X, Droplets, Thermometer, Snowflake } from 'lucide-react';
+import { createMilkBag, calculateExpiry, STATUS_CONFIG } from '../utils/milkUtils';
 
 function toLocalDatetimeInput(date) {
   const d = new Date(date);
@@ -42,12 +42,28 @@ const STORAGE_OPTIONS = [
   },
 ];
 
-export default function AddMilkBagModal({ onSave, onClose }) {
+export default function AddMilkBagModal({ onSave, onClose, editBag }) {
   const [volumeStr, setVolumeStr] = useState('');
-  const [expressedAt, setExpressedAt] = useState(toLocalDatetimeInput(new Date()));
+  const [expressedAt, setExpressedAt] = useState('');
   const [storageStatus, setStorageStatus] = useState('fridge');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+
+  // Pre-populate if editing
+  useEffect(() => {
+    if (editBag) {
+      setVolumeStr(editBag.volume_ml.toString());
+      setExpressedAt(toLocalDatetimeInput(editBag.expressed_at));
+      setStorageStatus(editBag.storage_status);
+      setNote(editBag.note || '');
+    } else {
+      setVolumeStr('');
+      setExpressedAt(toLocalDatetimeInput(new Date()));
+      setStorageStatus('fridge');
+      setNote('');
+    }
+    setError('');
+  }, [editBag]);
 
   const combinedNote = note.trim();
 
@@ -59,16 +75,63 @@ export default function AddMilkBagModal({ onSave, onClose }) {
       return;
     }
     setError('');
-    const bag = createMilkBag({
-      volume_ml: vol,
-      expressed_at: new Date(expressedAt).toISOString(),
-      storage_status: storageStatus,
-      note: combinedNote,
-    });
-    onSave(bag);
+
+    if (editBag) {
+      // Maintain transition logic but recalculate expiry based on new expressed time and updated storage status
+      const updatedBag = {
+        ...editBag,
+        volume_ml: vol,
+        expressed_at: new Date(expressedAt).toISOString(),
+        storage_status: storageStatus,
+        note: combinedNote,
+      };
+      
+      // If we modified storage status away from used/expired, clean up fed_at, etc.
+      if (storageStatus !== 'used' && updatedBag.fed_at) {
+        updatedBag.fed_at = null;
+      }
+      if (storageStatus !== 'expired' && storageStatus !== 'used') {
+        // Recalculate expiry
+        updatedBag.expiry_at = calculateExpiry(updatedBag);
+      } else {
+        updatedBag.expiry_at = null;
+      }
+
+      onSave(updatedBag);
+    } else {
+      const bag = createMilkBag({
+        volume_ml: vol,
+        expressed_at: new Date(expressedAt).toISOString(),
+        storage_status: storageStatus,
+        note: combinedNote,
+      });
+      onSave(bag);
+    }
   };
 
-  const selectedStorage = STORAGE_OPTIONS.find(o => o.value === storageStatus);
+  // Build options list, appending current special status if needed
+  const options = [...STORAGE_OPTIONS];
+  if (editBag && !['room_temp', 'fridge', 'freezer'].includes(editBag.storage_status)) {
+    const statusCfg = STATUS_CONFIG[editBag.storage_status] || {
+      label: editBag.storage_status,
+      emoji: '🏷️',
+      color: '#8E7DAE',
+      bg: '#F8F4FF',
+      border: '#D7BDE2',
+    };
+    options.push({
+      value: editBag.storage_status,
+      label: statusCfg.label,
+      desc: `Trạng thái hiện tại`,
+      emoji: statusCfg.emoji,
+      color: statusCfg.color,
+      bg: statusCfg.bg,
+      border: statusCfg.border,
+      Icon: Droplets,
+    });
+  }
+
+  const selectedStorage = options.find(o => o.value === storageStatus);
 
   return createPortal(
     <>
@@ -89,10 +152,10 @@ export default function AddMilkBagModal({ onSave, onClose }) {
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
-                Thêm bịch sữa mới
+                {editBag ? 'Sửa thông tin bịch sữa' : 'Thêm bịch sữa mới'}
               </h2>
               <p style={{ margin: 0, fontSize: 12, color: 'var(--color-text-muted)' }}>
-                App tự tính hạn dùng theo CDC
+                {editBag ? 'Cập nhật số ml, thời gian hoặc nơi cất' : 'App tự tính hạn dùng theo CDC'}
               </p>
             </div>
           </div>
@@ -114,7 +177,7 @@ export default function AddMilkBagModal({ onSave, onClose }) {
 
           {/* Volume */}
           <div className="form-group">
-            <label className="form-label">🥛 Số ml hút được</label>
+            <label className="form-label">🥛 Số ml sữa</label>
             <div style={{ position: 'relative' }}>
               <input
                 type="number"
@@ -150,9 +213,9 @@ export default function AddMilkBagModal({ onSave, onClose }) {
 
           {/* Storage */}
           <div className="form-group">
-            <label className="form-label">🗂️ Nơi lưu trữ</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-              {STORAGE_OPTIONS.map(opt => (
+            <label className="form-label">🗂️ Nơi lưu trữ / Trạng thái</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: 8 }}>
+              {options.map(opt => (
                 <button
                   key={opt.value}
                   type="button"
@@ -215,7 +278,7 @@ export default function AddMilkBagModal({ onSave, onClose }) {
                 boxShadow: '0 4px 15px rgba(79, 172, 254, 0.35)',
               }}
             >
-              🍼 Lưu bịch sữa
+              {editBag ? 'Lưu thay đổi' : '🍼 Lưu bịch sữa'}
             </button>
           </div>
         </form>

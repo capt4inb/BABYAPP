@@ -15,6 +15,7 @@ import {
 } from '../utils/milkUtils';
 import AddMilkBagModal from './AddMilkBagModal';
 import ThawModal from './ThawModal';
+import SwipeToComplete from './SwipeToComplete';
 
 // Custom Toggle removed
 
@@ -30,7 +31,7 @@ const FILTERS = [
 ];
 
 // ── MilkBagCard ───────────────────────────────────────────────
-function MilkBagCard({ bag, onUpdate, onDelete }) {
+function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
   const [expanded, setExpanded] = useState(false);
   const [showThawModal, setShowThawModal] = useState(false);
   const [isFeedingPartially, setIsFeedingPartially] = useState(false);
@@ -204,12 +205,15 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
               <button style={btnStyle('#9B59B6', '#FBF5FF')} onClick={() => handleMoveTo('freezer')}>
                 🧊 Ngăn đông
               </button>
-              <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
-                <CheckCheck size={12} /> Đã dùng
-              </button>
               <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
                 🍼 Bú một phần
               </button>
+            </div>
+            <div style={{ marginTop: 4 }}>
+              <SwipeToComplete
+                label="Trượt để hoàn thành bịch sữa"
+                onComplete={() => handleTransition('used')}
+              />
             </div>
             {partialFeedInput}
           </div>
@@ -221,15 +225,15 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
               <button style={btnStyle('#9B59B6', '#FBF5FF')} onClick={() => handleMoveTo('freezer')}>
                 🧊 Vào ngăn đông
               </button>
-              <button style={btnStyle('#4FACFE', '#F0F8FF')} onClick={() => setShowThawModal(true)}>
-                💧 Lấy ra rã đông
-              </button>
-              <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
-                <CheckCheck size={12} /> Đã dùng
-              </button>
               <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
                 🍼 Bú một phần
               </button>
+            </div>
+            <div style={{ marginTop: 4 }}>
+              <SwipeToComplete
+                label="Trượt để hoàn thành bịch sữa"
+                onComplete={() => handleTransition('used')}
+              />
             </div>
             {partialFeedInput}
           </div>
@@ -263,12 +267,15 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
               <button style={btnStyle('#FF9A5C', '#FFF7F2')} onClick={() => handleTransition('warmed')}>
                 🔥 Hâm sữa
               </button>
-              <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
-                <CheckCheck size={12} /> Đã dùng
-              </button>
               <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
                 🍼 Bú một phần
               </button>
+            </div>
+            <div style={{ marginTop: 4 }}>
+              <SwipeToComplete
+                label="Trượt để hoàn thành bịch sữa"
+                onComplete={() => handleTransition('used')}
+              />
             </div>
             {partialFeedInput}
           </div>
@@ -277,25 +284,28 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button style={btnStyle('#00C9A7', '#F0FDFC')} onClick={() => handleTransition('used')}>
-                <CheckCheck size={12} /> Đã dùng
-              </button>
               <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
                 🍼 Bú một phần
               </button>
+            </div>
+            <div style={{ marginTop: 4 }}>
+              <SwipeToComplete
+                label="Trượt để hoàn thành bịch sữa"
+                onComplete={() => handleTransition('used')}
+              />
             </div>
             {partialFeedInput}
           </div>
         );
       case 'using':
         return (
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              style={{ ...btnStyle('#00C9A7', '#F0FDFC'), flex: 'auto' }}
-              onClick={handleFinishFeeding}
-            >
-              <CheckCheck size={12} /> Bé bú xong (Hết bịch)
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
+            <div>
+              <SwipeToComplete
+                label="Trượt để hoàn thành (Hết bịch)"
+                onComplete={handleFinishFeeding}
+              />
+            </div>
           </div>
         );
       case 'used':
@@ -499,6 +509,34 @@ function MilkBagCard({ bag, onUpdate, onDelete }) {
                   <span style={{ fontWeight: 600, color: 'var(--color-text)', fontStyle: 'italic' }}>{bag.note}</span>
                 </div>
               )}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10, borderTop: '1px dashed var(--color-border)', paddingTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(bag);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    border: '1.5px solid var(--color-primary-light)',
+                    background: 'white',
+                    color: 'var(--color-primary)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontFamily: 'Outfit, sans-serif',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-primary-bg)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = 'white'; }}
+                >
+                  ✏️ Sửa bịch sữa
+                </button>
+              </div>
             </div>
 
             {/* Actions */}
@@ -597,6 +635,7 @@ export default function MilkStorageTab({
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingBag, setEditingBag] = useState(null);
   const [thawingBag, setThawingBag] = useState(null);
 
   // Sorting and Date Filtering states
@@ -717,6 +756,11 @@ export default function MilkStorageTab({
     onAddMilkBag(bag);
     setShowAddModal(false);
   }, [onAddMilkBag]);
+
+  const handleEditSave = useCallback((updatedBag) => {
+    onUpdateMilkBag(updatedBag.id, updatedBag);
+    setEditingBag(null);
+  }, [onUpdateMilkBag]);
 
   const handleThawFromRec = useCallback((bag) => {
     setThawingBag(bag);
@@ -978,16 +1022,21 @@ export default function MilkStorageTab({
               bag={bag}
               onUpdate={(id, updated) => onUpdateMilkBag(id, updated)}
               onDelete={onDeleteMilkBag}
+              onEdit={(b) => setEditingBag(b)}
             />
           ))
         )}
       </div>
 
       {/* Modals */}
-      {showAddModal && (
+      {(showAddModal || editingBag) && (
         <AddMilkBagModal
-          onSave={handleAddSave}
-          onClose={() => setShowAddModal(false)}
+          editBag={editingBag}
+          onSave={editingBag ? handleEditSave : handleAddSave}
+          onClose={() => {
+            setShowAddModal(false);
+            setEditingBag(null);
+          }}
         />
       )}
 
