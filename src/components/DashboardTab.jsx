@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Droplets, ChevronRight, Plus } from 'lucide-react';
+import { Droplets, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { getBabyWeekAge, getWonderWeekStatus } from '../data/wonderWeeks';
 import { getWHOMedianWeight, evaluateWeight, getMonthsBetween } from '../data/whoWeight';
 import { getMilkSummary, getThawRecommendation, getAvgDailyMl, transitionBag } from '../utils/milkUtils';
@@ -41,10 +41,53 @@ export default function DashboardTab({
   milkBags = [],
   onAddMilkBag,
   onUpdateMilkBag,
-  onNavigateToMilk
+  onNavigateToMilk,
+  memos = [],
+  onAddMemo,
+  onDeleteMemo
 }) {
   const { babyName, babyBirthDate, babyDueDate, feedIntervalHours, babyGender } = settings;
   const [showAddMilkBag, setShowAddMilkBag] = useState(false);
+
+  // Notes state
+  const [isWritingMemo, setIsWritingMemo] = useState(false);
+  const [memoContent, setMemoContent] = useState('');
+  const [memoAuthor, setMemoAuthor] = useState('Mẹ');
+  const [customAuthor, setCustomAuthor] = useState('');
+  const [showCustomAuthor, setShowCustomAuthor] = useState(false);
+
+  const handleSaveMemo = (e) => {
+    e.preventDefault();
+    if (!memoContent.trim()) return;
+    const finalAuthor = showCustomAuthor ? (customAuthor.trim() || 'Người thân') : memoAuthor;
+    onAddMemo({
+      id: crypto.randomUUID(),
+      content: memoContent.trim(),
+      author: finalAuthor,
+      createdAt: new Date().toISOString()
+    });
+    setMemoContent('');
+    setIsWritingMemo(false);
+    setCustomAuthor('');
+    setShowCustomAuthor(false);
+  };
+
+  const AUTHOR_MAP = {
+    'Mẹ': { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: '#FF6B9D' },
+    'Bố': { emoji: '👨', color: '#0070F3', bg: 'rgba(0, 112, 243, 0.08)', text: '#0070F3' },
+    'Bà': { emoji: 'Bà', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' },
+    'Ông': { emoji: 'Ông', color: 'var(--color-wonder)', bg: 'var(--color-wonder-bg)', text: 'var(--color-wonder)' },
+  };
+
+  // Convert text initials or emojis for display
+  const getAuthorMeta = (author) => {
+    const defaultMeta = { emoji: author.slice(0, 2), color: 'var(--color-text-muted)', bg: 'var(--color-surface-alt)', text: 'var(--color-text)' };
+    if (author === 'Mẹ') return { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: '#FF6B9D' };
+    if (author === 'Bố') return { emoji: '👨', color: '#0070F3', bg: 'rgba(0, 112, 243, 0.08)', text: '#0070F3' };
+    if (author === 'Bà') return { emoji: '👵', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' };
+    if (author === 'Ông') return { emoji: '👴', color: 'var(--color-wonder)', bg: 'var(--color-wonder-bg)', text: 'var(--color-wonder)' };
+    return defaultMeta;
+  };
 
   // Last records
   const lastFeed = useMemo(() => records.find(r => r.type === 'feed'), [records]);
@@ -455,6 +498,189 @@ export default function DashboardTab({
               </div>
             </div>
           )}
+        </div>
+
+        {/* 3. Family Notes Card */}
+        <div className="card" style={{ padding: 20, borderLeft: '5px solid var(--color-pump)', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 20 }}>📌</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-pump)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Ghi chú gia đình
+              </span>
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 700, background: 'var(--color-pump-bg)', color: 'var(--color-pump)', padding: '4px 10px', borderRadius: 8 }}>
+              {memos.length} ghi chú
+            </span>
+          </div>
+
+          {/* Notes list */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+            marginTop: memos.length > 0 ? 8 : 0,
+            maxHeight: 280,
+            overflowY: 'auto',
+            paddingRight: 4
+          }}>
+            {memos.length === 0 ? (
+              <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: 13 }}>
+                Chưa có ghi chú nào. Hãy để lại lời nhắn cho cả nhà! 📝
+              </div>
+            ) : (
+              memos.map(memo => {
+                const meta = getAuthorMeta(memo.author);
+                return (
+                  <div key={memo.id} style={{
+                    display: 'flex', gap: 12, padding: 12, borderRadius: 14,
+                    background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
+                    alignItems: 'flex-start', position: 'relative'
+                  }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%', background: meta.bg,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0
+                    }}>
+                      {meta.emoji}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: meta.text }}>
+                          {memo.author}
+                        </span>
+                        <span style={{ fontSize: 10, color: 'var(--color-text-light)', fontWeight: 600 }}>
+                          {timeSince(memo.createdAt)}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text)', lineHeight: 1.4, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                        {memo.content}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => onDeleteMemo(memo.id)}
+                      style={{
+                        background: 'none', border: 'none', color: 'var(--color-text-light)',
+                        cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        borderRadius: 6, transition: 'all 0.2s', flexShrink: 0, marginLeft: 4
+                      }}
+                      title="Xoá ghi chú"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Add Note Section */}
+          <div style={{ marginTop: 14, borderTop: '1px solid var(--color-border)', paddingTop: 14 }}>
+            {!isWritingMemo ? (
+              <button
+                onClick={() => setIsWritingMemo(true)}
+                style={{
+                  width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px dashed var(--color-primary-light)',
+                  background: 'var(--color-primary-bg)', color: 'var(--color-primary)', fontSize: 13, fontWeight: 700,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  fontFamily: 'Outfit, sans-serif'
+                }}
+              >
+                <Plus size={16} /> Để lại ghi chú mới...
+              </button>
+            ) : (
+              <form onSubmit={handleSaveMemo} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <textarea
+                  className="form-input"
+                  placeholder="Nhập ghi chú (ví dụ: Bé đã bú xong, Bé đang ngủ, cần mua tã...)"
+                  value={memoContent}
+                  onChange={e => setMemoContent(e.target.value)}
+                  rows={2}
+                  required
+                  style={{ resize: 'none', padding: '10px 12px', fontSize: 13, fontFamily: 'inherit', borderRadius: 12 }}
+                />
+
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+                    Người viết ghi chú:
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {['Mẹ', 'Bố', 'Bà', 'Ông'].map(author => {
+                      const isSelected = memoAuthor === author && !showCustomAuthor;
+                      const meta = getAuthorMeta(author);
+                      return (
+                        <button
+                          key={author}
+                          type="button"
+                          onClick={() => {
+                            setMemoAuthor(author);
+                            setShowCustomAuthor(false);
+                          }}
+                          style={{
+                            padding: '6px 12px', borderRadius: 20, border: `1.5px solid ${isSelected ? meta.text : 'var(--color-border)'}`,
+                            background: isSelected ? meta.bg : 'var(--color-surface)',
+                            color: isSelected ? meta.text : 'var(--color-text-muted)',
+                            fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+                            transition: 'all 0.2s', fontFamily: 'inherit'
+                          }}
+                        >
+                          <span>{meta.emoji}</span> {author}
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomAuthor(true)}
+                      style={{
+                        padding: '6px 12px', borderRadius: 20,
+                        border: `1.5px solid ${showCustomAuthor ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                        background: showCustomAuthor ? 'var(--color-primary-bg)' : 'var(--color-surface)',
+                        color: showCustomAuthor ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                        fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+                        transition: 'all 0.2s', fontFamily: 'inherit'
+                      }}
+                    >
+                      <span>👤</span> {showCustomAuthor ? 'Khác:' : 'Khác...'}
+                    </button>
+                  </div>
+
+                  {showCustomAuthor && (
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Tên của bạn (ví dụ: Cô giúp việc, Ông nội...)"
+                      value={customAuthor}
+                      onChange={e => setCustomAuthor(e.target.value)}
+                      required
+                      style={{ marginTop: 8, padding: '6px 10px', fontSize: 12, borderRadius: 8 }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => {
+                      setIsWritingMemo(false);
+                      setMemoContent('');
+                      setShowCustomAuthor(false);
+                      setCustomAuthor('');
+                    }}
+                    style={{ padding: '8px 14px', fontSize: 12, height: 'auto', borderRadius: 10 }}
+                  >
+                    Huỷ
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ padding: '8px 16px', fontSize: 12, height: 'auto', borderRadius: 10, background: 'linear-gradient(135deg, var(--color-primary), #FF8CB6)', border: 'none' }}
+                  >
+                    Lưu ghi chú
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
 
       </div>

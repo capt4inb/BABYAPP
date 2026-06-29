@@ -7,13 +7,14 @@ import WonderWeeksTab from './components/WonderWeeksTab';
 import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
 import RecordModal from './components/RecordModal';
-import { subscribeToRoom, updateRoomRecords, updateRoomSettings, updateRoomMilkBags } from './services/firebase';
+import { subscribeToRoom, updateRoomRecords, updateRoomSettings, updateRoomMilkBags, updateRoomMemos } from './services/firebase';
 
 // ── localStorage keys ─────────────────────────────────────────
 const STORAGE_KEYS = {
   RECORDS: 'bmt_records',
   SETTINGS: 'bmt_settings',
   MILK_BAGS: 'bmt_milk_bags',
+  MEMOS: 'bmt_memos',
 };
 
 const DEFAULT_SETTINGS = {
@@ -65,6 +66,9 @@ export default function App() {
   const [milkBags, setMilkBags] = useState(() =>
     loadFromStorage(STORAGE_KEYS.MILK_BAGS, [])
   );
+  const [memos, setMemos] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.MEMOS, [])
+  );
   const [modal, setModal] = useState(null); // null | { type: 'feed' | 'weight', editRecord: null | object }
   
   // Sync state
@@ -91,6 +95,9 @@ export default function App() {
       },
       (remoteMilkBags) => {
         setMilkBags(remoteMilkBags);
+      },
+      (remoteMemos) => {
+        setMemos(remoteMemos);
       }
     );
 
@@ -111,6 +118,11 @@ export default function App() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.MILK_BAGS, milkBags);
   }, [milkBags]);
+
+  // Persist memos to local storage as fallback
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.MEMOS, memos);
+  }, [memos]);
 
   // ── Record CRUD ──────────────────────────────────────────────
   const addRecord = useCallback((record) => {
@@ -162,6 +174,23 @@ export default function App() {
     });
   }, [syncPin]);
 
+  // ── Memo CRUD ────────────────────────────────────────────────
+  const addMemo = useCallback((memo) => {
+    setMemos(prev => {
+      const next = [memo, ...prev];
+      if (syncPin) updateRoomMemos(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const deleteMemo = useCallback((id) => {
+    setMemos(prev => {
+      const next = prev.filter(m => m.id !== id);
+      if (syncPin) updateRoomMemos(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
   const handleSaveSettings = useCallback((newSettings) => {
     setSettings(newSettings);
     if (syncPin) updateRoomSettings(syncPin, newSettings).catch(console.error);
@@ -209,6 +238,9 @@ export default function App() {
             onAddMilkBag={addMilkBag}
             onUpdateMilkBag={updateMilkBag}
             onNavigateToMilk={() => setActiveTab('milk')}
+            memos={memos}
+            onAddMemo={addMemo}
+            onDeleteMemo={deleteMemo}
           />
         )}
         {activeTab === 'history'   && <HistoryTab   {...sharedProps} />}
@@ -232,6 +264,16 @@ export default function App() {
             onImportRecords={(recs) => {
               setRecords(recs);
               if (syncPin) updateRoomRecords(syncPin, recs).catch(console.error);
+            }}
+            milkBags={milkBags}
+            onImportMilkBags={(bags) => {
+              setMilkBags(bags);
+              if (syncPin) updateRoomMilkBags(syncPin, bags).catch(console.error);
+            }}
+            memos={memos}
+            onImportMemos={(mems) => {
+              setMemos(mems);
+              if (syncPin) updateRoomMemos(syncPin, mems).catch(console.error);
             }}
             syncPin={syncPin}
             syncStatus={syncStatus}

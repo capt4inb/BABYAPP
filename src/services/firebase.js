@@ -21,7 +21,7 @@ export const generatePin = () => {
 };
 
 // Create a new room with a random PIN
-export const createRoom = async (initialRecords, initialSettings) => {
+export const createRoom = async (initialRecords, initialSettings, initialMilkBags, initialMemos) => {
   let pin = generatePin();
   let roomRef = ref(db, `rooms/${pin}`);
   let snapshot = await get(roomRef);
@@ -36,6 +36,8 @@ export const createRoom = async (initialRecords, initialSettings) => {
   await set(roomRef, {
     records: initialRecords || [],
     settings: initialSettings || {},
+    milkBags: initialMilkBags || [],
+    memos: initialMemos || [],
     createdAt: new Date().toISOString()
   });
 
@@ -53,10 +55,11 @@ export const joinRoom = async (pin) => {
 };
 
 // Subscribe to real-time changes
-export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange, onMilkBagsChange) => {
+export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange, onMilkBagsChange, onMemosChange) => {
   const recordsRef = ref(db, `rooms/${pin}/records`);
   const settingsRef = ref(db, `rooms/${pin}/settings`);
   const milkBagsRef = ref(db, `rooms/${pin}/milkBags`);
+  const memosRef = ref(db, `rooms/${pin}/memos`);
 
   const unsubscribeRecords = onValue(recordsRef, (snapshot) => {
     onRecordsChange(snapshot.exists() ? snapshot.val() : []);
@@ -74,10 +77,17 @@ export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange, onMilkBa
       })
     : () => {};
 
+  const unsubscribeMemos = onMemosChange
+    ? onValue(memosRef, (snapshot) => {
+        onMemosChange(snapshot.exists() ? snapshot.val() : []);
+      })
+    : () => {};
+
   return () => {
     unsubscribeRecords();
     unsubscribeSettings();
     unsubscribeMilkBags();
+    unsubscribeMemos();
   };
 };
 
@@ -97,4 +107,10 @@ export const updateRoomSettings = async (pin, settings) => {
 export const updateRoomMilkBags = async (pin, milkBags) => {
   const milkBagsRef = ref(db, `rooms/${pin}/milkBags`);
   await set(milkBagsRef, milkBags);
+};
+
+// Update memos
+export const updateRoomMemos = async (pin, memos) => {
+  const memosRef = ref(db, `rooms/${pin}/memos`);
+  await set(memosRef, memos);
 };

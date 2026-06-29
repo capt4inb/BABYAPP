@@ -14,7 +14,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
   const [timestamp, setTimestamp] = useState(toLocalDatetimeInput(new Date()));
   const [volume, setVolume] = useState('');
   const [weight, setWeight] = useState('');
-  const [side, setSide] = useState('both');     // left|right|both|bottle
+  const [side, setSide] = useState('bottle');     // default to bottle
   const [note, setNote] = useState('');
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
       setTimestamp(toLocalDatetimeInput(editRecord.timestamp));
       setVolume(editRecord.volume ?? '');
       setWeight(editRecord.weight ?? '');
-      setSide(editRecord.side ?? 'both');
+      setSide(editRecord.side ?? 'bottle');
       setNote(editRecord.note ?? '');
     }
   }, [editRecord]);
@@ -43,13 +43,6 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
     }
     onSave(record);
   };
-
-  const feedSides = [
-    { value: 'left',   label: 'Trái', emoji: '◀️' },
-    { value: 'right',  label: 'Phải', emoji: '▶️' },
-    { value: 'both',   label: 'Hai bên', emoji: '↔️' },
-    { value: 'bottle', label: 'Bình sữa', emoji: '🍼' },
-  ];
 
   return (
     <>
@@ -77,7 +70,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
                 {editRecord ? 'Chỉnh sửa' : 'Ghi lại'} {isFeed ? 'cữ bú' : 'cân nặng'}
               </h2>
               <p style={{ margin: 0, fontSize: 12, color: 'var(--color-text-muted)' }}>
-                {isFeed ? 'Theo dõi lượng sữa mẹ / bình' : 'Theo dõi sự phát triển của bé'}
+                {isFeed ? 'Theo dõi lượng sữa bú bình' : 'Theo dõi sự phát triển của bé'}
               </p>
             </div>
           </div>
@@ -108,39 +101,6 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
               required
             />
           </div>
-
-          {/* Feed side selector */}
-          {isFeed && (
-            <div className="form-group">
-              <label className="form-label">Cách bú</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {feedSides.map(s => (
-                  <button
-                    key={s.value}
-                    type="button"
-                    onClick={() => setSide(s.value)}
-                    style={{
-                      padding: '10px 12px',
-                      borderRadius: 'var(--radius-sm)',
-                      border: `2px solid ${side === s.value ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                      background: side === s.value ? 'var(--color-primary-bg)' : 'var(--color-surface-alt)',
-                      color: side === s.value ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                      fontFamily: 'Outfit, sans-serif',
-                      fontSize: 14,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                    }}
-                  >
-                    <span>{s.emoji}</span> {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Volume */}
           {isFeed && (

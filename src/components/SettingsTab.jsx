@@ -4,6 +4,7 @@ import { createRoom, joinRoom } from '../services/firebase';
 
 export default function SettingsTab({ 
   settings, onSaveSettings, records, onImportRecords,
+  milkBags = [], onImportMilkBags, memos = [], onImportMemos,
   syncPin, syncStatus, onJoinSync, onLeaveSync 
 }) {
   const [form, setForm] = useState({ ...settings });
@@ -27,7 +28,7 @@ export default function SettingsTab({
 
   // Export JSON
   const handleExport = () => {
-    const data = { records, settings, exportedAt: new Date().toISOString() };
+    const data = { records, settings, milkBags, memos, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -52,7 +53,13 @@ export default function SettingsTab({
           onSaveSettings(data.settings);
           setForm({ ...data.settings });
         }
-        alert(`✅ Đã nhập ${data.records.length} bản ghi thành công!`);
+        if (Array.isArray(data.milkBags)) {
+          onImportMilkBags(data.milkBags);
+        }
+        if (Array.isArray(data.memos)) {
+          onImportMemos(data.memos);
+        }
+        alert(`✅ Đã nhập dữ liệu thành công!`);
       } catch (err) {
         setImportError('Tệp không hợp lệ. Vui lòng chọn tệp xuất từ ứng dụng này.');
       }
@@ -64,6 +71,8 @@ export default function SettingsTab({
   const handleClearData = () => {
     if (showClearConfirm) {
       onImportRecords([]);
+      onImportMilkBags([]);
+      onImportMemos([]);
       setShowClearConfirm(false);
     } else {
       setShowClearConfirm(true);
@@ -75,7 +84,7 @@ export default function SettingsTab({
     try {
       setSyncLoading(true);
       setSyncError('');
-      const pin = await createRoom(records, settings);
+      const pin = await createRoom(records, settings, milkBags, memos);
       onJoinSync(pin);
     } catch (err) {
       setSyncError(err.message);
@@ -98,6 +107,8 @@ export default function SettingsTab({
         onSaveSettings(initialData.settings);
         setForm(initialData.settings);
       }
+      onImportMilkBags(initialData.milkBags || []);
+      onImportMemos(initialData.memos || []);
       onJoinSync(joinPin);
     } catch (err) {
       setSyncError(err.message);
