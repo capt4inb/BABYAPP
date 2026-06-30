@@ -18,19 +18,19 @@ function timeUntilNext(lastIso, intervalHours) {
   if (!lastIso) return null;
   const next = new Date(new Date(lastIso).getTime() + intervalHours * 3600000);
   const diffMs = next - Date.now();
-  
+
   const hrs = next.getHours().toString().padStart(2, '0');
   const mins = next.getMinutes().toString().padStart(2, '0');
-  
+
   if (diffMs <= 0) {
     return { label: `${hrs}:${mins}`, overdue: true, countdownLabel: 'Đã đến giờ bú!' };
   }
-  
+
   const diffMins = Math.floor(diffMs / 60000);
   const countdownLabel = diffMins < 60
     ? `sau ${diffMins} phút`
     : `sau ${Math.floor(diffMins / 60)} giờ ${diffMins % 60} phút`;
-    
+
   return { label: `${hrs}:${mins}`, overdue: false, nextDate: next, countdownLabel };
 }
 
@@ -97,7 +97,7 @@ export default function DashboardTab({
   const todayStart = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d;
   }, []);
-  
+
   const todayFeeds = useMemo(() =>
     records.filter(r => r.type === 'feed' && new Date(r.timestamp) >= todayStart),
     [records, todayStart]
@@ -118,11 +118,11 @@ export default function DashboardTab({
     today.setHours(0, 0, 0, 0);
     const diffTime = today - birth;
     const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (totalDays < 0) {
       return { totalDays: 0, weeks: 0, days: 0 };
     }
-    
+
     const weeks = Math.floor(totalDays / 7);
     const remainingDays = totalDays % 7;
     return { totalDays, weeks, days: remainingDays };
@@ -159,8 +159,8 @@ export default function DashboardTab({
   const freezerBags = useMemo(() => activeBags.filter(b => b.storage_status === 'freezer' || (b.storage_status === 'using' && b.previous_status === 'freezer')), [activeBags]);
   const freezerMl = freezerBags.reduce((s, b) => s + (b.volume_ml || 0), 0);
 
-  const thawedBags = useMemo(() => activeBags.filter(b => 
-    ['thawing', 'thawed', 'warmed'].includes(b.storage_status) || 
+  const thawedBags = useMemo(() => activeBags.filter(b =>
+    ['thawing', 'thawed', 'warmed'].includes(b.storage_status) ||
     (b.storage_status === 'using' && ['thawing', 'thawed', 'warmed'].includes(b.previous_status))
   ), [activeBags]);
   const thawedMl = thawedBags.reduce((s, b) => s + (b.volume_ml || 0), 0);
@@ -291,7 +291,7 @@ export default function DashboardTab({
 
       {/* Main Info Cards */}
       <div style={{ padding: '16px 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        
+
         {/* 1. Feeding Session Card */}
         <div className="card" style={{ padding: 20, borderLeft: '5px solid var(--color-primary)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -465,7 +465,7 @@ export default function DashboardTab({
                   <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2, lineHeight: 1.4 }}>
                     Bé cần ~{thawRec.avgDailyMl}ml/ngày. Nên rã đông thêm <strong style={{ color: 'var(--color-pump)' }}>~{thawRec.neededMl}ml</strong> ({thawRec.toThaw.length} bịch):
                   </div>
-                  
+
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
                     {thawRec.toThaw.map((bag) => (
                       <div key={bag.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: '1px solid rgba(102, 126, 234, 0.1)', borderRadius: 8, padding: '6px 10px', fontSize: 11 }}>
@@ -604,7 +604,7 @@ export default function DashboardTab({
                     Người viết ghi chú:
                   </div>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                    {['Mẹ', 'Bố', 'Bà', 'Ông'].map(author => {
+                    {['Mèo', 'Gốu', 'Má chôu', 'Be'].map(author => {
                       const isSelected = memoAuthor === author && !showCustomAuthor;
                       const meta = getAuthorMeta(author);
                       return (
