@@ -20,73 +20,73 @@ export const STATUS_CONFIG = {
   room_temp: {
     label: 'Để ngoài',
     emoji: '🌡️',
-    color: '#FF9A5C',
-    bg: '#FFF7F2',
-    border: '#FFCBA4',
+    color: '#DF9A63',
+    bg: '#FFF6EF',
+    border: '#F3D3B8',
     priority: 1,
   },
   fridge: {
     label: 'Ngăn mát',
     emoji: '❄️',
-    color: '#4FACFE',
-    bg: '#F0F8FF',
-    border: '#A8D8FE',
+    color: '#7581D5',
+    bg: '#F4F5FF',
+    border: '#CFD5FF',
     priority: 3,
   },
   freezer: {
     label: 'Ngăn đông',
     emoji: '🧊',
-    color: '#9B59B6',
-    bg: '#FBF5FF',
-    border: '#D7BDE2',
+    color: '#837ACB',
+    bg: '#F5F3FF',
+    border: '#D7D2FB',
     priority: 4,
   },
   thawing: {
     label: 'Đang rã đông',
     emoji: '💧',
-    color: '#00C9A7',
-    bg: '#F0FDFC',
-    border: '#A8E6E2',
+    color: '#39A98F',
+    bg: '#F1FBF7',
+    border: '#BFE7DB',
     priority: 2,
   },
   thawed: {
     label: 'Đã rã đông',
     emoji: '✅',
-    color: '#00C9A7',
-    bg: '#F0FDFC',
-    border: '#A8E6E2',
+    color: '#39A98F',
+    bg: '#F1FBF7',
+    border: '#BFE7DB',
     priority: 2,
   },
   warmed: {
     label: 'Đã hâm',
     emoji: '🔥',
-    color: '#FF6B6B',
-    bg: '#FFF5F5',
-    border: '#FFB3B3',
+    color: '#E36B74',
+    bg: '#FFF3F4',
+    border: '#F2C1C5',
     priority: 0,
   },
   using: {
     label: 'Đang dùng',
     emoji: '🍼',
-    color: '#FF6B9D',
-    bg: '#FFF0F6',
-    border: '#FFB3CC',
+    color: '#D875A2',
+    bg: '#FFF3F8',
+    border: '#F4BED4',
     priority: -10,
   },
   used: {
     label: 'Đã dùng',
     emoji: '✔️',
-    color: '#8E7DAE',
-    bg: '#F8F4FF',
-    border: '#D7BDE2',
+    color: '#837ACB',
+    bg: '#F5F3FF',
+    border: '#D7D2FB',
     priority: 99,
   },
   expired: {
     label: 'Hết hạn',
     emoji: '⚠️',
-    color: '#FF6B6B',
-    bg: '#FFF5F5',
-    border: '#FFB3B3',
+    color: '#E36B74',
+    bg: '#FFF3F4',
+    border: '#F2C1C5',
     priority: 98,
   },
 };
@@ -172,6 +172,20 @@ export function getTimeRemaining(expiryAt) {
 }
 
 // ── Freezer Age ───────────────────────────────────────────────
+export function getDailyTotals(bags) {
+  // Sum volumes per expressed date (only active bags)
+  const active = bags.filter(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
+  const totals = {};
+  active.forEach(bag => {
+    const date = formatDateShort(bag.expressed_at);
+    totals[date] = (totals[date] || 0) + (bag.volume_ml || 0);
+  });
+  // Convert to array sorted by date descending (most recent first)
+  return Object.entries(totals)
+    .map(([date, total]) => ({ date, total }))
+    .sort((a, b) => new Date(b.date.split('/').reverse().join('-')) - new Date(a.date.split('/').reverse().join('-')));
+}
+
 export function getFreezerAge(bag) {
   if (bag.storage_status !== 'freezer') return null;
   const diffMs = Date.now() - new Date(bag.expressed_at).getTime();

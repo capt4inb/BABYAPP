@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { TrendingUp, Droplets, Zap, Calendar } from 'lucide-react';
+import GameIcon from './GameIcon';
 
 function getLast7Days() {
   const days = [];
@@ -94,7 +94,7 @@ export default function StatsTab({ records }) {
           {/* Feed summary */}
           <div className="card" style={{ padding: 16, background: 'var(--color-primary-bg)', borderColor: 'var(--color-primary-light)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <Droplets size={15} color="var(--color-primary)" />
+              <GameIcon name="drop" size={26} variant="pink" />
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Cữ bú
               </span>

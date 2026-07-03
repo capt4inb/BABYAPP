@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Droplets, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { getBabyWeekAge, getWonderWeekStatus } from '../data/wonderWeeks';
 import { getWHOMedianWeight, evaluateWeight, getMonthsBetween } from '../data/whoWeight';
 import { getMilkSummary, getThawRecommendation, getAvgDailyMl, transitionBag } from '../utils/milkUtils';
 import AddMilkBagModal from './AddMilkBagModal';
+import GameIcon from './GameIcon';
 
 function timeSince(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -32,6 +32,23 @@ function timeUntilNext(lastIso, intervalHours) {
     : `sau ${Math.floor(diffMins / 60)} giờ ${diffMins % 60} phút`;
 
   return { label: `${hrs}:${mins}`, overdue: false, nextDate: next, countdownLabel };
+}
+
+function getLast7Days() {
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - (6 - index));
+    return day;
+  });
+}
+
+function dayKey(date) {
+  return date.toDateString();
+}
+
+function shortDayLabel(date) {
+  return date.toLocaleDateString('vi-VN', { weekday: 'short' }).slice(0, 2);
 }
 
 export default function DashboardTab({
@@ -73,8 +90,8 @@ export default function DashboardTab({
   };
 
   const AUTHOR_MAP = {
-    'Mẹ': { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: '#FF6B9D' },
-    'Bố': { emoji: '👨', color: '#0070F3', bg: 'rgba(0, 112, 243, 0.08)', text: '#0070F3' },
+    'Mẹ': { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: 'var(--color-primary)' },
+    'Bố': { emoji: '👨', color: 'var(--color-baby)', bg: 'var(--color-baby-bg)', text: 'var(--color-baby)' },
     'Bà': { emoji: 'Bà', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' },
     'Ông': { emoji: 'Ông', color: 'var(--color-wonder)', bg: 'var(--color-wonder-bg)', text: 'var(--color-wonder)' },
   };
@@ -82,8 +99,8 @@ export default function DashboardTab({
   // Convert text initials or emojis for display
   const getAuthorMeta = (author) => {
     const defaultMeta = { emoji: author.slice(0, 2), color: 'var(--color-text-muted)', bg: 'var(--color-surface-alt)', text: 'var(--color-text)' };
-    if (author === 'Mẹ') return { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: '#FF6B9D' };
-    if (author === 'Bố') return { emoji: '👨', color: '#0070F3', bg: 'rgba(0, 112, 243, 0.08)', text: '#0070F3' };
+    if (author === 'Mẹ') return { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: 'var(--color-primary)' };
+    if (author === 'Bố') return { emoji: '👨', color: 'var(--color-baby)', bg: 'var(--color-baby-bg)', text: 'var(--color-baby)' };
     if (author === 'Bà') return { emoji: '👵', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' };
     if (author === 'Ông') return { emoji: '👴', color: 'var(--color-wonder)', bg: 'var(--color-wonder-bg)', text: 'var(--color-wonder)' };
     return defaultMeta;
@@ -148,6 +165,20 @@ export default function DashboardTab({
   const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
   const thawRec = useMemo(() => getThawRecommendation(milkBags, avgDailyMl), [milkBags, avgDailyMl]);
 
+  const days7 = useMemo(() => getLast7Days(), []);
+  const dailyStats = useMemo(() => {
+    return days7.map(day => {
+      const key = dayKey(day);
+      const dayFeeds = records.filter(r => r.type === 'feed' && new Date(r.timestamp).toDateString() === key);
+      const feedVol = dayFeeds.reduce((sum, r) => sum + (r.volume || 0), 0);
+      return { label: shortDayLabel(day), feedCount: dayFeeds.length, feedVol };
+    });
+  }, [days7, records]);
+  const maxFeedCount = Math.max(...dailyStats.map(d => d.feedCount), 1);
+  const weekFeedRecords = useMemo(() => records.filter(r => r.type === 'feed' && new Date(r.timestamp) >= days7[0]), [records, days7]);
+  const weekFeedVolume = weekFeedRecords.reduce((sum, r) => sum + (r.volume || 0), 0);
+  const bottleFeeds = weekFeedRecords.filter(r => r.side === 'bottle').length;
+
   // Active bags breakdown for UI representation
   const activeBags = useMemo(() => {
     return milkBags.filter(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
@@ -174,9 +205,97 @@ export default function DashboardTab({
   };
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: 24 }}>
+    <div className="animate-fade-in dashboard-game" style={{ paddingBottom: 24 }}>
+      <section className="game-hero-card">
+        <div className="game-brand-row">
+          <div className="game-logo-mark">BM</div>
+          <span>Baby Milk Tracker</span>
+        </div>
+
+        <div className="game-hero-copy">
+          <p>Baby's daily quest</p>
+          <h1>{babyName || 'Bé Yêu'}</h1>
+          <span>Milk • growth • wonder weeks</span>
+        </div>
+
+        <div className="game-mascot-stage" aria-hidden="true">
+          <div className="game-mascot-ring" />
+          <img src="/mascot-baby-girl.png" alt="" className="game-mascot-img" />
+        </div>
+
+        <div className="game-item-row">
+          <div className="game-item-chip pink"><GameIcon name="bottle" size={34} variant="pink" /></div>
+          <div className="game-item-chip blue"><GameIcon name="weight" size={34} variant="blue" /></div>
+          <div className="game-item-chip green"><GameIcon name="sparkles" size={34} variant="green" /></div>
+          <div className="game-item-chip peach"><GameIcon name="snow" size={34} variant="orange" /></div>
+        </div>
+
+        <div className="game-stat-panel">
+          <div>
+            <strong>{todayFeeds.length}</strong>
+            <span>Cữ bú</span>
+          </div>
+          <div>
+            <strong>{todayFeedVol}</strong>
+            <span>ml hôm nay</span>
+          </div>
+          <div>
+            <strong>{ageInfo ? ageInfo.totalDays : '--'}</strong>
+            <span>ngày tuổi</span>
+          </div>
+          <div>
+            <strong>{milkSummary.totalMl}</strong>
+            <span>ml trong kho</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="game-clock-section">
+        <div className="game-section-title">
+          <h2>Clock in</h2>
+          {wwStatus && wwStatus.status !== 'no_data' && (
+            <span className={`status-pill ${wwStatus.status === 'stormy' ? 'stormy' : 'sunny'}`}>
+              {wwStatus.status === 'stormy' ? 'Tuần storm' : 'Ổn định'}
+            </span>
+          )}
+        </div>
+
+        <div className="game-action-grid">
+          <button
+            id="btn-log-feed"
+            className="game-action-card pink"
+            onClick={() => onOpenFeedModal()}
+          >
+            <span className="game-action-icon"><GameIcon name="drop" size={30} variant="pink" /></span>
+            <strong>Ghi cữ bú</strong>
+            <small>{nextFeed ? (nextFeed.overdue ? 'Đến giờ bú' : nextFeed.label) : 'Bắt đầu'}</small>
+            <span className="game-action-plus">+</span>
+          </button>
+
+          <button
+            id="btn-quick-add-milk"
+            className="game-action-card purple"
+            onClick={() => setShowAddMilkBag(true)}
+          >
+            <span className="game-action-icon"><GameIcon name="plus" size={30} variant="lavender" /></span>
+            <strong>Thêm sữa</strong>
+            <small>Kho {milkSummary.totalMl}ml</small>
+            <span className="game-action-plus">+</span>
+          </button>
+
+          <button
+            className="game-action-card orange"
+            onClick={() => onNavigateToMilk?.()}
+          >
+            <span className="game-action-icon"><GameIcon name="snow" size={30} variant="orange" /></span>
+            <strong>Kho sữa</strong>
+            <small>{milkSummary.activeBagCount || 0} bịch</small>
+            <span className="game-action-plus">+</span>
+          </button>
+        </div>
+      </section>
       {/* Header */}
-      <div className="page-header" style={{ borderBottom: '1px solid var(--color-border)', padding: '24px 20px 20px' }}>
+      <div className="legacy-dashboard-header" style={{ display: 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -194,7 +313,7 @@ export default function DashboardTab({
                   🗓️ {ageInfo.weeks} tuần {ageInfo.days} ngày
                 </span>
                 {lastWeight && weightEval && (
-                  <span style={{ fontSize: 13, background: 'linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1))', color: '#0070F3', padding: '4px 10px', borderRadius: 99, fontWeight: 600 }}>
+                  <span style={{ fontSize: 13, background: 'linear-gradient(135deg, rgba(117, 129, 213, 0.1), rgba(145, 200, 197, 0.1))', color: 'var(--color-baby)', padding: '4px 10px', borderRadius: 99, fontWeight: 600 }}>
                     ⚖️ {lastWeight.weight} kg ({weightEval.status === 'normal' ? 'Chuẩn' : weightEval.label})
                   </span>
                 )}
@@ -215,7 +334,7 @@ export default function DashboardTab({
       </div>
 
       {/* Quick Action Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '20px 16px 0' }}>
+      <div className="legacy-dashboard-actions" style={{ display: 'none' }}>
         <button
           id="btn-log-feed"
           className="btn"
@@ -224,7 +343,7 @@ export default function DashboardTab({
             flex: 1,
             padding: '20px 16px',
             borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, var(--color-primary), #FF8CB6)',
+            background: 'linear-gradient(135deg, var(--color-primary), #e99fbd)',
             color: 'white',
             boxShadow: '0 6px 20px rgba(255, 107, 157, 0.25)',
             display: 'flex',
@@ -238,7 +357,7 @@ export default function DashboardTab({
           }}
         >
           <div style={{ background: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Droplets size={26} color="white" />
+            <GameIcon name="drop" size={30} variant="pink" />
           </div>
           <span style={{ fontSize: 16, fontWeight: 800 }}>Ghi cữ bú</span>
           {nextFeed && (
@@ -261,7 +380,7 @@ export default function DashboardTab({
             flex: 1,
             padding: '20px 16px',
             borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, #4FACFE, #9B59B6)',
+            background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
             color: 'white',
             boxShadow: '0 6px 20px rgba(79, 172, 254, 0.25)',
             display: 'flex',
@@ -275,7 +394,7 @@ export default function DashboardTab({
           }}
         >
           <div style={{ background: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Plus size={26} color="white" />
+            <GameIcon name="plus" size={30} variant="lavender" />
           </div>
           <span style={{ fontSize: 16, fontWeight: 800 }}>Thêm bịch sữa</span>
           <span style={{
@@ -290,13 +409,13 @@ export default function DashboardTab({
       </div>
 
       {/* Main Info Cards */}
-      <div style={{ padding: '16px 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="game-content-stack">
 
         {/* 1. Feeding Session Card */}
         <div className="card" style={{ padding: 20, borderLeft: '5px solid var(--color-primary)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>🍼</span>
+              <GameIcon name="bottle" size={30} variant="pink" />
               <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Chi tiết cữ bú
               </span>
@@ -374,30 +493,72 @@ export default function DashboardTab({
           )}
         </div>
 
+        <div className="card compact-stat-card">
+          <div className="compact-stat-head">
+            <div>
+              <span>THỐNG KÊ NHANH</span>
+              <h3>7 ngày gần nhất</h3>
+            </div>
+            <GameIcon name="stats" size={34} variant="lavender" />
+          </div>
+
+          <div className="compact-stat-grid">
+            <div>
+              <strong>{weekFeedRecords.length}</strong>
+              <span>cữ bú</span>
+            </div>
+            <div>
+              <strong>{weekFeedVolume}</strong>
+              <span>ml tổng</span>
+            </div>
+            <div>
+              <strong>{avgDailyMl || 0}</strong>
+              <span>ml/ngày</span>
+            </div>
+            <div>
+              <strong>{bottleFeeds}</strong>
+              <span>bình</span>
+            </div>
+          </div>
+
+          <div className="compact-bars" aria-label="Biểu đồ cữ bú 7 ngày">
+            {dailyStats.map((d, i) => (
+              <div className="compact-bar-wrap" key={`${d.label}-${i}`}>
+                <span>{d.feedCount || ''}</span>
+                <div
+                  className="compact-bar"
+                  style={{ height: `${Math.max(10, (d.feedCount / maxFeedCount) * 76)}%` }}
+                />
+                <small>{d.label}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* 2. Milk Storage Card */}
-        <div className="card" style={{ padding: 20, borderLeft: '5px solid #667EEA', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="card" style={{ padding: 20, borderLeft: '5px solid var(--color-baby)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>❄️</span>
-              <span style={{ fontSize: 15, fontWeight: 800, color: '#667EEA', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <GameIcon name="snow" size={30} variant="blue" />
+              <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-baby)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Quản lý kho sữa
               </span>
             </div>
             <button
               onClick={onNavigateToMilk}
               style={{
-                background: 'none', border: 'none', color: '#667EEA', fontSize: 12, fontWeight: 700,
+                background: 'none', border: 'none', color: 'var(--color-baby)', fontSize: 12, fontWeight: 700,
                 display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer', padding: 0
               }}
             >
-              Chi tiết <ChevronRight size={14} />
+              Chi tiết <GameIcon name="right" size={18} variant="cream" />
             </button>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
             <div>
               <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 600 }}>Tổng dung tích kho</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#667EEA', marginTop: 4 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-baby)', marginTop: 4 }}>
                 {milkSummary.totalMl} <span style={{ fontSize: 15, color: 'var(--color-text-muted)', fontWeight: 600 }}>ml</span>
               </div>
             </div>
@@ -414,18 +575,18 @@ export default function DashboardTab({
             <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 600, marginBottom: 8 }}>Vị trí lưu trữ:</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: 90, background: '#F0F8FF', border: '1px solid #A8D8FE', borderRadius: 12, padding: '8px 10px', textAlign: 'center' }}>
-                <span style={{ fontSize: 16, display: 'block', marginBottom: 2 }}>❄️</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#4FACFE', display: 'block' }}>Ngăn mát</span>
+                <GameIcon name="snow" size={28} variant="blue" />
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-baby)', display: 'block' }}>Ngăn mát</span>
                 <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text)' }}>{fridgeMl} ml ({fridgeBags.length} b)</span>
               </div>
               <div style={{ flex: 1, minWidth: 90, background: '#FBF5FF', border: '1px solid #D7BDE2', borderRadius: 12, padding: '8px 10px', textAlign: 'center' }}>
-                <span style={{ fontSize: 16, display: 'block', marginBottom: 2 }}>🧊</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#9B59B6', display: 'block' }}>Ngăn đông</span>
+                <GameIcon name="snow" size={28} variant="lavender" />
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-wonder)', display: 'block' }}>Ngăn đông</span>
                 <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text)' }}>{freezerMl} ml ({freezerBags.length} b)</span>
               </div>
               <div style={{ flex: 1, minWidth: 90, background: '#F0FDFC', border: '1px solid #A8E6E2', borderRadius: 12, padding: '8px 10px', textAlign: 'center' }}>
-                <span style={{ fontSize: 16, display: 'block', marginBottom: 2 }}>💧</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#00C9A7', display: 'block' }}>Đã rã/Dùng</span>
+                <GameIcon name="drop" size={28} variant="green" />
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-success)', display: 'block' }}>Đã rã/Dùng</span>
                 <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text)' }}>{thawedMl} ml ({thawedBags.length} b)</span>
               </div>
             </div>
@@ -436,12 +597,12 @@ export default function DashboardTab({
             <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {milkSummary.urgentBags?.length > 0 && (
                 <div style={{ background: '#FFF5F5', border: '1px solid #FFB3B3', borderRadius: 12, padding: '8px 12px', fontSize: 12, color: 'var(--color-danger)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>🔴</span> {milkSummary.urgentBags.length} bịch sữa cần dùng ngay!
+                  <GameIcon name="warning" size={24} variant="orange" /> {milkSummary.urgentBags.length} bịch sữa cần dùng ngay!
                 </div>
               )}
               {milkSummary.expiringSoonCount > 0 && (
                 <div style={{ background: '#FFF7F2', border: '1px solid #FFCBA4', borderRadius: 12, padding: '8px 12px', fontSize: 12, color: 'var(--color-pump)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>⚠️</span> Có {milkSummary.expiringSoonCount} bịch sắp hết hạn trong 24h
+                  <GameIcon name="warning" size={24} variant="orange" /> Có {milkSummary.expiringSoonCount} bịch sắp hết hạn trong 24h
                 </div>
               )}
             </div>
@@ -457,7 +618,7 @@ export default function DashboardTab({
               border: '1.5px solid rgba(102, 126, 234, 0.2)',
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <span style={{ fontSize: 18 }}>💡</span>
+                <GameIcon name="light" size={28} variant="orange" />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 800, color: '#5B4FCF' }}>
                     Gợi ý rã đông tối nay
@@ -469,7 +630,9 @@ export default function DashboardTab({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
                     {thawRec.toThaw.map((bag) => (
                       <div key={bag.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: '1px solid rgba(102, 126, 234, 0.1)', borderRadius: 8, padding: '6px 10px', fontSize: 11 }}>
-                        <span style={{ fontWeight: 700, color: '#5B4FCF' }}>🧊 {bag.volume_ml}ml</span>
+                        <span style={{ fontWeight: 700, color: 'var(--color-wonder)', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                          <GameIcon name="snow" size={20} variant="lavender" /> {bag.volume_ml}ml
+                        </span>
                         <span style={{ color: 'var(--color-text-muted)' }}>Hút: {new Date(bag.expressed_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
                       </div>
                     ))}
@@ -483,7 +646,7 @@ export default function DashboardTab({
                       padding: '8px 12px',
                       borderRadius: 8,
                       border: 'none',
-                      background: 'linear-gradient(135deg, #667EEA, #764BA2)',
+                      background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
                       color: 'white',
                       fontSize: 12,
                       fontWeight: 700,
@@ -565,7 +728,7 @@ export default function DashboardTab({
                       }}
                       title="Xoá ghi chú"
                     >
-                      <Trash2 size={14} />
+                      <GameIcon name="trash" size={18} variant="cream" />
                     </button>
                   </div>
                 );
@@ -585,7 +748,7 @@ export default function DashboardTab({
                   fontFamily: 'Outfit, sans-serif'
                 }}
               >
-                <Plus size={16} /> Để lại ghi chú mới...
+                <GameIcon name="plus" size={20} variant="pink" /> Để lại ghi chú mới...
               </button>
             ) : (
               <form onSubmit={handleSaveMemo} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -673,7 +836,7 @@ export default function DashboardTab({
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    style={{ padding: '8px 16px', fontSize: 12, height: 'auto', borderRadius: 10, background: 'linear-gradient(135deg, var(--color-primary), #FF8CB6)', border: 'none' }}
+                    style={{ padding: '8px 16px', fontSize: 12, height: 'auto', borderRadius: 10, background: 'linear-gradient(135deg, var(--color-primary), #e99fbd)', border: 'none' }}
                   >
                     Lưu ghi chú
                   </button>
@@ -722,7 +885,7 @@ export default function DashboardTab({
               <div key={r.id} className="timeline-item" style={{ borderBottom: i < recent.length - 1 ? '1px solid var(--color-border)' : 'none', padding: '14px 16px' }}>
                 <div
                   className="timeline-dot"
-                  style={{ background: r.type === 'feed' ? 'var(--color-primary)' : '#0070F3' }}
+                  style={{ background: r.type === 'feed' ? 'var(--color-primary)' : 'var(--color-baby)' }}
                 />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

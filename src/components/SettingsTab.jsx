@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Save, Download, Upload, Trash2, AlertTriangle, Users, LogOut, Loader2, Cloud } from 'lucide-react';
 import { createRoom, joinRoom } from '../services/firebase';
+import GameIcon from './GameIcon';
 
 export default function SettingsTab({ 
   settings, onSaveSettings, records, onImportRecords,
@@ -203,14 +203,14 @@ export default function SettingsTab({
           onClick={handleSave}
           style={{ width: '100%', marginBottom: 20 }}
         >
-          <Save size={18} />
+          <GameIcon name="save" size={28} variant="cream" />
           {saved ? '✅ Đã lưu!' : 'Lưu cài đặt'}
         </button>
 
         {/* Family Sync */}
         <div className="card" style={{ padding: 20, marginBottom: 16 }}>
           <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Users size={18} color="var(--color-text)" />
+            <GameIcon name="users" size={28} variant="lavender" />
             Đồng bộ gia đình
           </h2>
 
@@ -225,7 +225,7 @@ export default function SettingsTab({
                     {syncPin}
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                    <Cloud size={14} /> 
+                    <GameIcon name="cloud" size={24} variant="cream" /> 
                     {syncStatus === 'connecting' ? 'Đang kết nối...' : 'Đã kết nối'}
                   </div>
                 </div>
@@ -234,7 +234,7 @@ export default function SettingsTab({
                   onClick={onLeaveSync}
                   style={{ padding: '8px 12px', color: 'var(--color-danger)' }}
                 >
-                  <LogOut size={16} /> Ngắt kết nối
+                  <GameIcon name="logout" size={24} variant="orange" /> Ngắt kết nối
                 </button>
               </div>
             </div>
@@ -246,7 +246,7 @@ export default function SettingsTab({
 
               {syncError && (
                 <div style={{ marginBottom: 16, padding: '10px 12px', background: 'rgba(255,107,107,0.1)', color: 'var(--color-danger)', fontSize: 13, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <AlertTriangle size={16} /> {syncError}
+                  <GameIcon name="warning" size={26} variant="orange" /> {syncError}
                 </div>
               )}
 
@@ -266,7 +266,7 @@ export default function SettingsTab({
                   disabled={syncLoading}
                   style={{ whiteSpace: 'nowrap' }}
                 >
-                  {syncLoading ? <Loader2 size={18} className="animate-spin" /> : 'Tham gia'}
+                  {syncLoading ? <GameIcon name="clock" size={28} variant="cream" className="animate-spin" /> : 'Tham gia'}
                 </button>
               </div>
 
@@ -280,7 +280,7 @@ export default function SettingsTab({
                 disabled={syncLoading}
                 style={{ width: '100%', background: 'var(--color-surface-alt)' }}
               >
-                {syncLoading ? <Loader2 size={18} className="animate-spin" /> : 'Tạo mã phòng mới'}
+                {syncLoading ? <GameIcon name="clock" size={28} variant="cream" className="animate-spin" /> : 'Tạo mã phòng mới'}
               </button>
             </div>
           )}
@@ -301,7 +301,7 @@ export default function SettingsTab({
               onClick={handleExport}
               style={{ width: '100%', justifyContent: 'flex-start' }}
             >
-              <Download size={18} />
+              <GameIcon name="download" size={28} variant="cream" />
               Xuất dữ liệu (.json)
             </button>
 
@@ -314,7 +314,7 @@ export default function SettingsTab({
                 transition: 'all 0.2s ease',
               }}
             >
-              <Upload size={18} />
+              <GameIcon name="upload" size={28} variant="cream" />
               Nhập dữ liệu (.json)
               <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
             </label>
@@ -325,7 +325,7 @@ export default function SettingsTab({
                 background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.3)',
                 fontSize: 13, color: 'var(--color-danger)', display: 'flex', gap: 8, alignItems: 'center',
               }}>
-                <AlertTriangle size={16} /> {importError}
+                <GameIcon name="warning" size={26} variant="orange" /> {importError}
               </div>
             )}
           </div>
@@ -344,7 +344,7 @@ export default function SettingsTab({
             onClick={handleClearData}
             style={{ width: '100%' }}
           >
-            <Trash2 size={18} />
+            <GameIcon name="trash" size={28} variant="cream" />
             {showClearConfirm ? '⚠️ Nhấn lần nữa để xác nhận xoá tất cả!' : 'Xoá tất cả dữ liệu'}
           </button>
         </div>

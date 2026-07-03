@@ -1,4 +1,4 @@
-import { X, CheckCircle, ExternalLink, Clock } from 'lucide-react';
+import GameIcon from './GameIcon';
 
 export default function ShortcutGuideModal({ onClose, onConfirm }) {
   return (
@@ -11,10 +11,10 @@ export default function ShortcutGuideModal({ onClose, onConfirm }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 40, height: 40, borderRadius: 12,
-              background: 'linear-gradient(135deg, #FF9500, #FFCC00)',
+              background: 'linear-gradient(135deg, var(--color-pump), #edbd91)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <Clock size={20} color="white" />
+              <GameIcon name="clock" size={30} variant="orange" />
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
@@ -34,7 +34,7 @@ export default function ShortcutGuideModal({ onClose, onConfirm }) {
               color: 'var(--color-text-muted)',
             }}
           >
-            <X size={18} />
+            <GameIcon name="close" size={28} variant="cream" />
           </button>
         </div>
 
@@ -63,8 +63,8 @@ export default function ShortcutGuideModal({ onClose, onConfirm }) {
             <button className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>
               Để sau
             </button>
-            <button className="btn btn-primary" onClick={onConfirm} style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#FF9500' }}>
-              <CheckCircle size={18} />
+            <button className="btn btn-primary" onClick={onConfirm} style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--color-pump)' }}>
+              <GameIcon name="check" size={28} variant="green" />
               Đã tạo xong, Thử ngay!
             </button>
           </div>

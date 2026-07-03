@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Home, Clock, BarChart2, Star, Settings, Milk } from 'lucide-react';
 import DashboardTab from './components/DashboardTab';
 import HistoryTab from './components/HistoryTab';
-import StatsTab from './components/StatsTab';
 import WonderWeeksTab from './components/WonderWeeksTab';
 import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
 import RecordModal from './components/RecordModal';
+import GameIcon from './components/GameIcon';
 import { subscribeToRoom, updateRoomRecords, updateRoomSettings, updateRoomMilkBags, updateRoomMemos } from './services/firebase';
 
 // ── localStorage keys ─────────────────────────────────────────
@@ -28,12 +27,11 @@ const DEFAULT_SETTINGS = {
 
 // ── Tab config ────────────────────────────────────────────────
 const TABS = [
-  { id: 'dashboard', label: 'Trang chủ', Icon: Home },
-  { id: 'history',   label: 'Lịch sử',   Icon: Clock },
-  { id: 'milk',      label: 'Kho sữa',   Icon: Milk },
-  { id: 'stats',     label: 'Thống kê',  Icon: BarChart2 },
-  { id: 'wonder',    label: 'Tuần vàng', Icon: Star },
-  { id: 'settings',  label: 'Cài đặt',  Icon: Settings },
+  { id: 'dashboard', label: 'Trang chủ', icon: 'home', tone: 'pink' },
+  { id: 'history',   label: 'Lịch sử',   icon: 'history', tone: 'green' },
+  { id: 'milk',      label: 'Kho sữa',   icon: 'milk', tone: 'blue' },
+  { id: 'wonder',    label: 'Tuần vàng', icon: 'wonder', tone: 'orange' },
+  { id: 'settings',  label: 'Cài đặt',   icon: 'settings', tone: 'blue' },
 ];
 
 // ── Utility ───────────────────────────────────────────────────
@@ -254,7 +252,6 @@ export default function App() {
             onNavigateToDashboard={() => setActiveTab('dashboard')}
           />
         )}
-        {activeTab === 'stats'     && <StatsTab      {...sharedProps} />}
         {activeTab === 'wonder'    && <WonderWeeksTab {...sharedProps} />}
         {activeTab === 'settings'  && (
           <SettingsTab
@@ -285,15 +282,17 @@ export default function App() {
 
       {/* Bottom Tab Navigation */}
       <nav className="tab-bar">
-        {TABS.map(({ id, label, Icon }) => (
+        {TABS.map(({ id, label, icon, tone }) => (
           <button
             key={id}
             className={`tab-item ${activeTab === id ? 'active' : ''}`}
             onClick={() => setActiveTab(id)}
             aria-label={label}
+            aria-current={activeTab === id ? 'page' : undefined}
+            title={label}
           >
             <div className="tab-icon">
-              <Icon size={22} strokeWidth={activeTab === id ? 2.5 : 1.8} />
+              <GameIcon name={icon} size={activeTab === id ? 32 : 30} variant={tone} />
             </div>
             <span>{label}</span>
           </button>

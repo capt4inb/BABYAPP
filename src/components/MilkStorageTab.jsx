@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Plus, Milk, Flame, Snowflake, Droplets, AlertTriangle, ChevronRight, Trash2, CheckCheck, ArrowRightLeft, Calendar, SlidersHorizontal } from 'lucide-react';
 import {
   getPriorityScore,
   getTimeRemaining,
@@ -11,11 +10,12 @@ import {
   formatDateTime,
   formatDateShort,
   formatTime,
-  STATUS_CONFIG,
+  STATUS_CONFIG, getDailyTotals,
 } from '../utils/milkUtils';
 import AddMilkBagModal from './AddMilkBagModal';
 import ThawModal from './ThawModal';
 import SwipeToComplete from './SwipeToComplete';
+import GameIcon from './GameIcon';
 
 // Custom Toggle removed
 
@@ -199,14 +199,14 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button style={btnStyle('#4FACFE', '#F0F8FF')} onClick={() => handleMoveTo('fridge')}>
-                ❄️ Ngăn mát
+              <button style={btnStyle('#7581D5', '#F4F5FF')} onClick={() => handleMoveTo('fridge')}>
+                <GameIcon name="snow" size={22} variant="blue" /> Ngăn mát
               </button>
-              <button style={btnStyle('#9B59B6', '#FBF5FF')} onClick={() => handleMoveTo('freezer')}>
-                🧊 Ngăn đông
+              <button style={btnStyle('#837ACB', '#F5F3FF')} onClick={() => handleMoveTo('freezer')}>
+                <GameIcon name="snow" size={22} variant="lavender" /> Ngăn đông
               </button>
-              <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
-                🍼 Bú một phần
+              <button style={btnStyle('#D875A2', '#FFF3F8')} onClick={() => setIsFeedingPartially(prev => !prev)}>
+                <GameIcon name="bottle" size={22} variant="pink" /> Bú một phần
               </button>
             </div>
             <div style={{ marginTop: 4 }}>
@@ -222,11 +222,11 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button style={btnStyle('#9B59B6', '#FBF5FF')} onClick={() => handleMoveTo('freezer')}>
-                🧊 Vào ngăn đông
+              <button style={btnStyle('#837ACB', '#F5F3FF')} onClick={() => handleMoveTo('freezer')}>
+                <GameIcon name="snow" size={22} variant="lavender" /> Vào ngăn đông
               </button>
-              <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
-                🍼 Bú một phần
+              <button style={btnStyle('#D875A2', '#FFF3F8')} onClick={() => setIsFeedingPartially(prev => !prev)}>
+                <GameIcon name="bottle" size={22} variant="pink" /> Bú một phần
               </button>
             </div>
             <div style={{ marginTop: 4 }}>
@@ -242,10 +242,10 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         return (
           <div style={{ display: 'flex', gap: 6 }}>
             <button
-              style={{ ...btnStyle('#4FACFE', '#F0F8FF'), flex: 'auto' }}
+              style={{ ...btnStyle('#7581D5', '#F4F5FF'), flex: 'auto' }}
               onClick={() => setShowThawModal(true)}
             >
-              💧 Lấy ra rã đông
+              <GameIcon name="drop" size={22} variant="blue" /> Lấy ra rã đông
             </button>
           </div>
         );
@@ -253,10 +253,10 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         return (
           <div style={{ display: 'flex', gap: 6 }}>
             <button
-              style={{ ...btnStyle('#00C9A7', '#F0FDFC'), flex: 'auto' }}
+              style={{ ...btnStyle('#39A98F', '#F1FBF7'), flex: 'auto' }}
               onClick={() => setShowThawModal(true)}
             >
-              ✅ Đánh dấu đã tan hoàn toàn
+              <GameIcon name="check" size={22} variant="green" /> Đánh dấu đã tan hoàn toàn
             </button>
           </div>
         );
@@ -264,11 +264,11 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button style={btnStyle('#FF9A5C', '#FFF7F2')} onClick={() => handleTransition('warmed')}>
-                🔥 Hâm sữa
+              <button style={btnStyle('#DF9A63', '#FFF6EF')} onClick={() => handleTransition('warmed')}>
+                <GameIcon name="flame" size={22} variant="orange" /> Hâm sữa
               </button>
-              <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
-                🍼 Bú một phần
+              <button style={btnStyle('#D875A2', '#FFF3F8')} onClick={() => setIsFeedingPartially(prev => !prev)}>
+                <GameIcon name="bottle" size={22} variant="pink" /> Bú một phần
               </button>
             </div>
             <div style={{ marginTop: 4 }}>
@@ -284,8 +284,8 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 6 }}>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button style={btnStyle('#FF6B9D', '#FFF0F6')} onClick={() => setIsFeedingPartially(prev => !prev)}>
-                🍼 Bú một phần
+              <button style={btnStyle('#D875A2', '#FFF3F8')} onClick={() => setIsFeedingPartially(prev => !prev)}>
+                <GameIcon name="bottle" size={22} variant="pink" /> Bú một phần
               </button>
             </div>
             <div style={{ marginTop: 4 }}>
@@ -313,10 +313,10 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         return (
           <div style={{ display: 'flex', gap: 6 }}>
             <button
-              style={{ ...btnStyle('#FF6B6B', '#FFF5F5'), flex: 'auto' }}
+              style={{ ...btnStyle('#E36B74', '#FFF3F4'), flex: 'auto' }}
               onClick={() => onDelete(bag.id)}
             >
-              <Trash2 size={12} /> Xoá khỏi kho
+              <GameIcon name="trash" size={22} variant="orange" /> Xoá khỏi kho
             </button>
           </div>
         );
@@ -379,7 +379,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     padding: '3px 10px', borderRadius: 99,
-                    background: '#FFF0F6', color: '#FF6B9D',
+                    background: '#FFF3F8', color: 'var(--color-primary)',
                     fontSize: 11, fontWeight: 700,
                     border: '1px solid #FFB3CC',
                   }}>
@@ -391,7 +391,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                 {remaining && !remaining.expired && remaining.urgent && (
                   <span style={{
                     padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
-                    background: '#FFF5F5', color: '#FF6B6B', border: '1px solid #FFB3B3',
+                    background: '#FFF3F4', color: 'var(--color-danger)', border: '1px solid #F2C1C5',
                     animation: 'pulse-soft 1.5s ease-in-out infinite',
                   }}>
                     🔴 Dùng ngay!
@@ -400,7 +400,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                 {remaining && !remaining.expired && remaining.warning && !remaining.urgent && (
                   <span style={{
                     padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
-                    background: '#FFF7F2', color: '#FF9A5C', border: '1px solid #FFCBA4',
+                    background: '#FFF6EF', color: 'var(--color-pump)', border: '1px solid #F3D3B8',
                   }}>
                     🟠 Sắp hết hạn
                   </span>
@@ -408,7 +408,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                 {freezerAge?.warnExpired && (
                   <span style={{
                     padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
-                    background: '#FFF7F2', color: '#FF9A5C', border: '1px solid #FFCBA4',
+                    background: '#FFF6EF', color: 'var(--color-pump)', border: '1px solid #F3D3B8',
                   }}>
                     ⚠️ Quá 6 tháng
                   </span>
@@ -427,7 +427,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
             {remaining && (
               <div style={{
                 fontSize: 12, fontWeight: 700,
-                color: remaining.urgent ? '#FF6B6B' : remaining.warning ? '#FF9A5C' : remaining.expired ? '#FF6B6B' : '#00C9A7',
+                color: remaining.urgent ? 'var(--color-danger)' : remaining.warning ? 'var(--color-pump)' : remaining.expired ? 'var(--color-danger)' : 'var(--color-success)',
               }}>
                 {remaining.expired
                   ? '❌ Đã hết hạn'
@@ -437,23 +437,24 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
             {freezerAge && (
               <div style={{
                 fontSize: 12, fontWeight: 600,
-                color: freezerAge.warnExpired ? '#FF9A5C' : 'var(--color-text-muted)',
+                color: freezerAge.warnExpired ? 'var(--color-pump)' : 'var(--color-text-muted)',
               }}>
                 🧊 Đã trữ {freezerAge.label}
                 {freezerAge.warnExpired ? ' · nên dùng sớm' : ''}
               </div>
             )}
             {bag.storage_status === 'thawing' && (
-              <div style={{ fontSize: 12, color: '#4FACFE', fontWeight: 600 }}>
+              <div style={{ fontSize: 12, color: 'var(--color-baby)', fontWeight: 600 }}>
                 💧 Đang rã đông · cần đánh dấu khi tan xong
               </div>
             )}
           </div>
 
           {/* Expand chevron */}
-          <ChevronRight
-            size={18}
-            color="var(--color-text-light)"
+          <GameIcon
+            name="right"
+            size={24}
+            variant="cream"
             style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}
           />
         </button>
@@ -483,13 +484,13 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
               {bag.fully_thawed_at && (
                 <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
                   <span style={{ color: 'var(--color-text-muted)', width: 80 }}>✅ Tan hoàn toàn:</span>
-                  <span style={{ fontWeight: 600, color: '#00C9A7' }}>{formatDateTime(bag.fully_thawed_at)}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-success)' }}>{formatDateTime(bag.fully_thawed_at)}</span>
                 </div>
               )}
               {bag.warmed_at && (
                 <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
                   <span style={{ color: 'var(--color-text-muted)', width: 80 }}>🔥 Hâm lúc:</span>
-                  <span style={{ fontWeight: 600, color: '#FF9A5C' }}>{formatDateTime(bag.warmed_at)}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-pump)' }}>{formatDateTime(bag.warmed_at)}</span>
                 </div>
               )}
               {bag.expiry_at && (
@@ -497,7 +498,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                   <span style={{ color: 'var(--color-text-muted)', width: 80 }}>⏰ Hạn dùng:</span>
                   <span style={{
                     fontWeight: 700,
-                    color: remaining?.urgent ? '#FF6B6B' : remaining?.warning ? '#FF9A5C' : '#00C9A7',
+                    color: remaining?.urgent ? 'var(--color-danger)' : remaining?.warning ? 'var(--color-pump)' : 'var(--color-success)',
                   }}>
                     {formatDateTime(bag.expiry_at)}
                   </span>
@@ -566,8 +567,8 @@ function ThawRecommendationBanner({ recommendation, onThawBag }) {
     <div style={{
       margin: '0 16px 12px',
       borderRadius: 'var(--radius-md)',
-      background: 'linear-gradient(135deg, #667EEA20, #764BA220)',
-      border: '1.5px solid #667EEA40',
+      background: 'linear-gradient(135deg, rgba(117, 129, 213, 0.12), rgba(131, 122, 203, 0.12))',
+      border: '1.5px solid rgba(117, 129, 213, 0.22)',
       padding: '14px 16px',
       animation: 'fadeIn 0.3s ease-out',
     }}>
@@ -579,7 +580,7 @@ function ThawRecommendationBanner({ recommendation, onThawBag }) {
           </div>
           <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 10, lineHeight: 1.5 }}>
             Bé cần ~{avgDailyMl}ml/ngày. Sẵn dùng ngày mai: ~{availableMl}ml.
-            Nên rã đông thêm <strong style={{ color: '#FF9A5C' }}>~{neededMl}ml</strong>:
+            Nên rã đông thêm <strong style={{ color: 'var(--color-pump)' }}>~{neededMl}ml</strong>:
           </div>
 
           {/* Bags to thaw */}
@@ -589,7 +590,7 @@ function ThawRecommendationBanner({ recommendation, onThawBag }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 background: 'rgba(255,255,255,0.7)', borderRadius: 10,
                 padding: '8px 12px',
-                border: '1px solid #667EEA20',
+                border: '1px solid rgba(117, 129, 213, 0.14)',
               }}>
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#5B4FCF' }}>
@@ -604,7 +605,7 @@ function ThawRecommendationBanner({ recommendation, onThawBag }) {
                   onClick={() => onThawBag(bag)}
                   style={{
                     padding: '4px 12px', borderRadius: 99,
-                    border: 'none', background: '#667EEA',
+                    border: 'none', background: 'var(--color-baby)',
                     color: 'white', fontSize: 11, fontWeight: 700,
                     cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
                   }}
@@ -646,6 +647,8 @@ export default function MilkStorageTab({
   const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
   const summary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
   const thawRec = useMemo(() => getThawRecommendation(milkBags, avgDailyMl), [milkBags, avgDailyMl]);
+  // Daily total milk per expressed date
+  const dailyTotals = useMemo(() => getDailyTotals(milkBags), [milkBags]);
 
   const filterVolumes = useMemo(() => {
     const active = milkBags.filter(b => b.storage_status !== 'used' && b.storage_status !== 'expired');
@@ -779,7 +782,7 @@ export default function MilkStorageTab({
       {/* Header */}
       <div style={{
         padding: '20px 16px 16px',
-        background: 'linear-gradient(160deg, #EEF2FF 0%, var(--color-surface) 100%)',
+        background: 'linear-gradient(160deg, #F4F5FF 0%, rgba(170, 164, 223, 0.72) 100%)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
@@ -791,7 +794,7 @@ export default function MilkStorageTab({
             </h1>
             {avgDailyMl > 0 && (
               <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--color-text-muted)' }}>
-                Bé bú TB <strong style={{ color: '#667EEA' }}>{avgDailyMl}ml/ngày</strong> (7 ngày gần nhất)
+                Bé bú TB <strong style={{ color: 'var(--color-baby)' }}>{avgDailyMl}ml/ngày</strong> (7 ngày gần nhất)
               </p>
             )}
           </div>
@@ -802,13 +805,13 @@ export default function MilkStorageTab({
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '10px 16px', borderRadius: 'var(--radius-full)',
               border: 'none', cursor: 'pointer',
-              background: 'linear-gradient(135deg, #4FACFE, #9B59B6)',
+              background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
               color: 'white', fontFamily: 'Outfit, sans-serif',
               fontSize: 14, fontWeight: 700,
               boxShadow: '0 4px 15px rgba(79, 172, 254, 0.35)',
             }}
           >
-            <Plus size={18} /> Thêm bịch
+            <GameIcon name="plus" size={28} variant="cream" /> Thêm bịch
           </button>
         </div>
       </div>
@@ -816,14 +819,14 @@ export default function MilkStorageTab({
       {/* Dashboard Stats */}
       <div className="stats-grid">
         {[
-          { label: 'Tổng kho', value: `${summary.totalMl}ml`, emoji: '🍼', color: '#667EEA', bg: '#EEF2FF' },
-          { label: 'Dùng hôm nay', value: `${summary.usableTodayMl}ml`, emoji: '✅', color: '#00C9A7', bg: '#F0FDFC' },
+          { label: 'Tổng kho', value: `${summary.totalMl}ml`, emoji: '◉', color: 'var(--color-baby)', bg: '#F4F5FF' },
+          { label: 'Dùng hôm nay', value: `${summary.usableTodayMl}ml`, emoji: '✓', color: 'var(--color-success)', bg: '#F1FBF7' },
           {
             label: 'Sắp hết hạn',
             value: summary.expiringSoonCount,
             emoji: '⚠️',
-            color: summary.expiringSoonCount > 0 ? '#FF9A5C' : '#8E7DAE',
-            bg: summary.expiringSoonCount > 0 ? '#FFF7F2' : '#F8F4FF',
+            color: summary.expiringSoonCount > 0 ? 'var(--color-pump)' : 'var(--color-wonder)',
+            bg: summary.expiringSoonCount > 0 ? '#FFF6EF' : '#F5F3FF',
           },
         ].map((stat, i) => (
           <div key={i} className="card" style={{ padding: '12px 14px', background: stat.bg, border: `1px solid ${stat.color}20` }}>
@@ -843,13 +846,13 @@ export default function MilkStorageTab({
           margin: '0 16px 12px',
           padding: '12px 14px',
           borderRadius: 'var(--radius-md)',
-          background: 'linear-gradient(135deg, #FF6B6B15, #FF9A5C10)',
-          border: '2px solid #FF6B6B40',
+          background: 'linear-gradient(135deg, rgba(227, 107, 116, 0.1), rgba(223, 154, 99, 0.1))',
+          border: '2px solid rgba(227, 107, 116, 0.24)',
           animation: 'pulse-soft 2s ease-in-out infinite',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <AlertTriangle size={16} color="#FF6B6B" />
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#FF6B6B' }}>
+            <GameIcon name="warning" size={28} variant="orange" />
+            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-danger)' }}>
               {urgentBags.length} bịch cần dùng ngay!
             </span>
           </div>
@@ -866,6 +869,16 @@ export default function MilkStorageTab({
 
       {/* Thaw Recommendation - Hidden by user request */}
 
+<div style={{ padding: '0 16px 12px' }}>
+  <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: 'var(--color-text)' }}>Tổng lượng sữa mỗi ngày</h2>
+  {dailyTotals.map(item => (
+    <div key={item.date} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0', borderBottom: '1px solid var(--color-border)' }}>
+      <span>{item.date}</span>
+      <span>{item.total}ml</span>
+    </div>
+  ))}
+</div>
+
       {/* Filter tabs */}
       <div style={{
         display: 'flex', gap: 6, padding: '0 16px 12px',
@@ -879,8 +892,8 @@ export default function MilkStorageTab({
               onClick={() => setActiveFilter(f.id)}
               style={{
                 padding: '6px 14px', borderRadius: 'var(--radius-full)',
-                border: `2px solid ${activeFilter === f.id ? '#667EEA' : 'var(--color-border)'}`,
-                background: activeFilter === f.id ? '#667EEA' : 'var(--color-surface-alt)',
+                border: `2px solid ${activeFilter === f.id ? 'var(--color-baby)' : 'var(--color-border)'}`,
+                background: activeFilter === f.id ? 'var(--color-baby)' : 'var(--color-surface-alt)',
                 color: activeFilter === f.id ? 'white' : 'var(--color-text-muted)',
                 fontSize: 12, fontWeight: 700, cursor: 'pointer',
                 transition: 'all 0.15s ease', whiteSpace: 'nowrap',
@@ -902,7 +915,7 @@ export default function MilkStorageTab({
         {/* Sort select */}
         <div style={{ flex: 1, minWidth: 140, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <SlidersHorizontal size={11} /> Sắp xếp
+            <GameIcon name="sliders" size={22} variant="cream" /> Sắp xếp
           </span>
           <select
             value={sortBy}
@@ -933,7 +946,7 @@ export default function MilkStorageTab({
         {/* Date Filter select */}
         <div style={{ flex: 1, minWidth: 140, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Calendar size={11} /> Ngày hút
+            <GameIcon name="calendar" size={22} variant="cream" /> Ngày hút
           </span>
           <select
             value={dateFilterType}
@@ -1007,11 +1020,11 @@ export default function MilkStorageTab({
                 className="btn"
                 onClick={() => setShowAddModal(true)}
                 style={{
-                  background: 'linear-gradient(135deg, #4FACFE, #9B59B6)',
-                  color: 'white', boxShadow: '0 4px 15px rgba(79,172,254,0.35)',
+                  background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
+                  color: 'white', boxShadow: '0 4px 15px rgba(117,129,213,0.22)',
                 }}
               >
-                <Plus size={18} /> Thêm bịch đầu tiên
+                <GameIcon name="plus" size={28} variant="cream" /> Thêm bịch đầu tiên
               </button>
             )}
           </div>

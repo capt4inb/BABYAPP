@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Droplets, Zap, Edit2, Trash2, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import GameIcon from './GameIcon';
 
 function formatDateTime(iso) {
   return new Date(iso).toLocaleString('vi-VN', {
@@ -67,9 +67,8 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
 
         {/* Search */}
         <div style={{ position: 'relative', marginBottom: 12 }}>
-          <Search size={16} style={{
+          <GameIcon name="search" size={26} variant="cream" style={{
             position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-            color: 'var(--color-text-muted)',
           }} />
           <input
             type="text"
@@ -135,7 +134,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
                     </div>
                   </div>
                   <div style={{ color: 'var(--color-text-muted)' }}>
-                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    {isExpanded ? <GameIcon name="up" size={24} variant="cream" /> : <GameIcon name="down" size={24} variant="cream" />}
                   </div>
                 </button>
 
@@ -153,10 +152,10 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
                     {/* Icon */}
                     <div style={{
                       width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: r.type === 'feed' ? 'var(--color-primary-bg)' : 'linear-gradient(135deg,#4FACFE,#00F2FE)',
+                      background: r.type === 'feed' ? 'var(--color-primary-bg)' : 'linear-gradient(135deg,var(--color-baby),#91c8c5)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      {r.type === 'feed' ? <Droplets size={18} color="var(--color-primary)" /> : <span style={{fontSize: 16}}>⚖️</span>}
+                      {r.type === 'feed' ? <GameIcon name="drop" size={28} variant="pink" /> : <GameIcon name="weight" size={28} variant="blue" />}
                     </div>
 
                     {/* Details */}
@@ -189,7 +188,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
                               color: 'var(--color-text-muted)',
                             }}
                           >
-                            <Edit2 size={14} />
+                            <GameIcon name="edit" size={24} variant="cream" />
                           </button>
                           <button
                             onClick={() => handleDelete(r.id)}
@@ -202,7 +201,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
                               transition: 'all 0.2s ease',
                             }}
                           >
-                            <Trash2 size={14} />
+                            <GameIcon name="trash" size={24} variant={deleteConfirm === r.id ? 'orange' : 'cream'} />
                           </button>
                         </div>
                       </div>

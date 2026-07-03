@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Droplets, Zap } from 'lucide-react';
+import GameIcon from './GameIcon';
 
 function toLocalDatetimeInput(date) {
   const d = new Date(date);
@@ -59,11 +59,11 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
             <div style={{
               width: 40, height: 40, borderRadius: 12,
               background: isFeed 
-                ? 'linear-gradient(135deg,#FF6B9D,#FF8CB6)'
-                : 'linear-gradient(135deg,#4FACFE,#00F2FE)',
+                ? 'linear-gradient(135deg,var(--color-primary),#e99fbd)'
+                : 'linear-gradient(135deg,var(--color-baby),#91c8c5)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              {isFeed ? <Droplets size={20} color="white" /> : <span style={{ fontSize: 20 }}>⚖️</span>}
+              {isFeed ? <GameIcon name="drop" size={30} variant="pink" /> : <GameIcon name="weight" size={30} variant="blue" />}
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
@@ -83,7 +83,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
               color: 'var(--color-text-muted)',
             }}
           >
-            <X size={18} />
+            <GameIcon name="close" size={28} variant="cream" />
           </button>
         </div>
 
@@ -161,7 +161,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
             <button
               type="submit"
               className={`btn ${isFeed ? 'btn-primary' : ''}`}
-              style={{ flex: 2, background: isWeight ? 'linear-gradient(135deg,#4FACFE,#00F2FE)' : undefined, color: isWeight ? 'white' : undefined }}
+              style={{ flex: 2, background: isWeight ? 'linear-gradient(135deg,var(--color-baby),#91c8c5)' : undefined, color: isWeight ? 'white' : undefined }}
             >
               {editRecord ? 'Lưu thay đổi' : `Lưu ${isFeed ? 'cữ bú' : 'cân nặng'}`}
             </button>

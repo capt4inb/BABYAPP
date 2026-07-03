@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle } from 'lucide-react';
 import { transitionBag } from '../utils/milkUtils';
+import GameIcon from './GameIcon';
 
 const THAW_METHODS = [
   {
@@ -9,9 +9,9 @@ const THAW_METHODS = [
     label: 'Để ngăn mát qua đêm',
     desc: 'An toàn nhất · tan trong 8–12 giờ. App sẽ nhắc bạn đánh dấu khi sữa đã tan hoàn toàn.',
     emoji: '❄️',
-    color: '#4FACFE',
-    bg: '#F0F8FF',
-    border: '#A8D8FE',
+    color: '#7581D5',
+    bg: '#F4F5FF',
+    border: '#CFD5FF',
     estHours: 10,
   },
   {
@@ -19,9 +19,9 @@ const THAW_METHODS = [
     label: 'Ngâm nước ấm',
     desc: 'Nhanh hơn · tan trong khoảng 30 phút. Chú ý không dùng nước sôi.',
     emoji: '💧',
-    color: '#FF9A5C',
-    bg: '#FFF7F2',
-    border: '#FFCBA4',
+    color: '#DF9A63',
+    bg: '#FFF6EF',
+    border: '#F3D3B8',
     estHours: 0.5,
   },
   {
@@ -29,9 +29,9 @@ const THAW_METHODS = [
     label: 'Để ngoài nhiệt độ phòng',
     desc: 'Tan trong 1–2 giờ. Chú ý không để quá 2 giờ ở nhiệt độ phòng sau khi tan.',
     emoji: '🌡️',
-    color: '#00C9A7',
-    bg: '#F0FDFC',
-    border: '#A8E6E2',
+    color: '#39A98F',
+    bg: '#F1FBF7',
+    border: '#BFE7DB',
     estHours: 1.5,
   },
 ];
@@ -63,7 +63,7 @@ export default function ThawModal({ bag, onSave, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 14,
-              background: 'linear-gradient(135deg, #4FACFE, #00C9A7)',
+              background: 'linear-gradient(135deg, var(--color-baby), var(--color-success))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 22,
             }}>
@@ -90,7 +90,7 @@ export default function ThawModal({ bag, onSave, onClose }) {
               color: 'var(--color-text-muted)',
             }}
           >
-            <X size={18} />
+            <GameIcon name="close" size={28} variant="cream" />
           </button>
         </div>
 
@@ -98,8 +98,8 @@ export default function ThawModal({ bag, onSave, onClose }) {
 
           {/* CDC Note */}
           <div style={{
-            background: 'linear-gradient(135deg, #F0F8FF, #F0FDFC)',
-            border: '1px solid #A8D8FE',
+            background: 'linear-gradient(135deg, #F4F5FF, #F1FBF7)',
+            border: '1px solid #CFD5FF',
             borderRadius: 'var(--radius-sm)',
             padding: '12px 14px',
             marginBottom: 20,
@@ -146,7 +146,7 @@ export default function ThawModal({ bag, onSave, onClose }) {
                   </div>
                 </div>
                 {method === m.value && (
-                  <CheckCircle size={18} color={m.color} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <GameIcon name="check" size={28} variant="green" style={{ flexShrink: 0, marginTop: 2 }} />
                 )}
               </button>
             ))}
@@ -155,8 +155,8 @@ export default function ThawModal({ bag, onSave, onClose }) {
           {/* If thawing in fridge overnight, show "already thawed" option */}
           {bag.storage_status === 'thawing' && (
             <div style={{
-              background: 'linear-gradient(135deg, #F0FDFC, #F5FFF8)',
-              border: '2px solid #00C9A7',
+              background: 'linear-gradient(135deg, #F1FBF7, #F7FFFB)',
+              border: '2px solid var(--color-success)',
               borderRadius: 'var(--radius-md)',
               padding: '16px',
               marginBottom: 20,
@@ -176,7 +176,7 @@ export default function ThawModal({ bag, onSave, onClose }) {
                   padding: '12px',
                   borderRadius: 'var(--radius-sm)',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #00C9A7, #4ECDC4)',
+                  background: 'linear-gradient(135deg, var(--color-success), #91c8c5)',
                   color: 'white',
                   fontFamily: 'Outfit, sans-serif',
                   fontSize: 14,
@@ -202,9 +202,9 @@ export default function ThawModal({ bag, onSave, onClose }) {
                 className="btn"
                 style={{
                   flex: 2,
-                  background: `linear-gradient(135deg, ${selectedMethod?.color || '#4FACFE'}, #00C9A7)`,
+                  background: `linear-gradient(135deg, ${selectedMethod?.color || '#7581D5'}, #39A98F)`,
                   color: 'white',
-                  boxShadow: `0 4px 15px ${selectedMethod?.color || '#4FACFE'}40`,
+                  boxShadow: `0 4px 15px ${selectedMethod?.color || '#7581D5'}33`,
                 }}
               >
                 💧 Bắt đầu rã đông

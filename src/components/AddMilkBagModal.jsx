@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Droplets, Thermometer, Snowflake } from 'lucide-react';
 import { createMilkBag, calculateExpiry, STATUS_CONFIG } from '../utils/milkUtils';
+import GameIcon from './GameIcon';
 
 function toLocalDatetimeInput(date) {
   const d = new Date(date);
@@ -15,30 +15,27 @@ const STORAGE_OPTIONS = [
     label: 'Để ngoài',
     desc: 'Nhiệt độ phòng · hạn 4 giờ',
     emoji: '🌡️',
-    color: '#FF9A5C',
-    bg: '#FFF7F2',
-    border: '#FFCBA4',
-    Icon: Thermometer,
+    color: '#DF9A63',
+    bg: '#FFF6EF',
+    border: '#F3D3B8',
   },
   {
     value: 'fridge',
     label: 'Ngăn mát',
     desc: 'Tủ lạnh · hạn 4 ngày',
     emoji: '❄️',
-    color: '#4FACFE',
-    bg: '#F0F8FF',
-    border: '#A8D8FE',
-    Icon: Droplets,
+    color: '#7581D5',
+    bg: '#F4F5FF',
+    border: '#CFD5FF',
   },
   {
     value: 'freezer',
     label: 'Ngăn đông',
     desc: 'Tủ đông · tốt nhất 6 tháng',
     emoji: '🧊',
-    color: '#9B59B6',
-    bg: '#FBF5FF',
-    border: '#D7BDE2',
-    Icon: Snowflake,
+    color: '#837ACB',
+    bg: '#F5F3FF',
+    border: '#D7D2FB',
   },
 ];
 
@@ -127,7 +124,6 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
       color: statusCfg.color,
       bg: statusCfg.bg,
       border: statusCfg.border,
-      Icon: Droplets,
     });
   }
 
@@ -144,7 +140,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 14,
-              background: 'linear-gradient(135deg, #4FACFE, #9B59B6)',
+              background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 22,
             }}>
@@ -168,7 +164,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
               color: 'var(--color-text-muted)',
             }}
           >
-            <X size={18} />
+            <GameIcon name="close" size={28} variant="cream" />
           </button>
         </div>
 
@@ -273,9 +269,9 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
               className="btn"
               style={{
                 flex: 2,
-                background: 'linear-gradient(135deg, #4FACFE, #9B59B6)',
+                background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
                 color: 'white',
-                boxShadow: '0 4px 15px rgba(79, 172, 254, 0.35)',
+                boxShadow: '0 4px 15px rgba(117, 129, 213, 0.22)',
               }}
             >
               {editBag ? 'Lưu thay đổi' : '🍼 Lưu bịch sữa'}
