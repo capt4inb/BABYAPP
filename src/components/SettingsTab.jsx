@@ -87,7 +87,11 @@ export default function SettingsTab({
       const pin = await createRoom(records, settings, milkBags, memos);
       onJoinSync(pin);
     } catch (err) {
-      setSyncError(err.message);
+      if (err.message?.includes('PERMISSION_DENIED') || err.message?.toLowerCase().includes('permission denied')) {
+        setSyncError('Lỗi phân quyền Firebase. Bạn cần thiết lập Rules của Realtime Database trên Firebase Console để cho phép đọc/ghi.');
+      } else {
+        setSyncError(err.message);
+      }
     } finally {
       setSyncLoading(false);
     }
@@ -111,7 +115,11 @@ export default function SettingsTab({
       onImportMemos(initialData.memos || []);
       onJoinSync(joinPin);
     } catch (err) {
-      setSyncError(err.message);
+      if (err.message?.includes('PERMISSION_DENIED') || err.message?.toLowerCase().includes('permission denied')) {
+        setSyncError('Lỗi phân quyền Firebase. Bạn cần thiết lập Rules của Realtime Database trên Firebase Console để cho phép đọc/ghi.');
+      } else {
+        setSyncError(err.message);
+      }
     } finally {
       setSyncLoading(false);
     }
@@ -215,18 +223,34 @@ export default function SettingsTab({
           </h2>
 
           {syncPin ? (
-            <div style={{ background: 'var(--color-primary-bg)', padding: 16, borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-primary-light)' }}>
+            <div style={{
+              background: syncStatus === 'error' ? 'rgba(255,107,107,0.08)' : 'var(--color-primary-bg)',
+              padding: 16,
+              borderRadius: 'var(--radius-sm)',
+              border: syncStatus === 'error' ? '1px solid var(--color-danger)' : '1px solid var(--color-primary-light)'
+            }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: syncStatus === 'error' ? 'var(--color-danger)' : 'var(--color-primary)', textTransform: 'uppercase' }}>
                     Mã phòng của bạn
                   </div>
                   <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '0.1em' }}>
                     {syncPin}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                    <Cloud size={14} /> 
-                    {syncStatus === 'connecting' ? 'Đang kết nối...' : 'Đã kết nối'}
+                  <div style={{ 
+                    fontSize: 13, 
+                    color: syncStatus === 'error' ? 'var(--color-danger)' : 'var(--color-text-muted)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 4, 
+                    marginTop: 4 
+                  }}>
+                    {syncStatus === 'error' ? <AlertTriangle size={14} /> : <Cloud size={14} />} 
+                    {syncStatus === 'connecting' 
+                      ? 'Đang kết nối...' 
+                      : syncStatus === 'error'
+                        ? 'Lỗi đồng bộ (Kiểm tra Rules/Console)'
+                        : 'Đã kết nối'}
                   </div>
                 </div>
                 <button

@@ -1,53 +1,136 @@
 @import "tailwindcss";
 
 /* ============================================================
-   DESIGN TOKENS - Baby Milk Tracker
-   Warm pastels, soft rose/peach/lavender palette
+   ASTRYX DESIGN SYSTEM TOKENS
+   Baby Milk Tracker — Soft Rose theme, Astryx foundations
+   Based on: https://astryx.atmeta.com/docs/getting-started
    ============================================================ */
 
 @layer base {
   :root {
-    /* Brand Colors */
-    --color-primary: #FF6B9D;
-    --color-primary-light: #FFB3CC;
-    --color-primary-bg: #FFF0F6;
+    /* ── Color: Brand ─────────────────────────────────────── */
+    --color-brand: #E8457C;
+    --color-brand-hover: #D63A6E;
+    --color-brand-subtle: rgba(232, 69, 124, 0.08);
+    --color-brand-muted: rgba(232, 69, 124, 0.16);
 
+    /* ── Color: Accent (Teal) ─────────────────────────────── */
+    --color-accent: #2BB5A0;
+    --color-accent-hover: #249E8C;
+    --color-accent-subtle: rgba(43, 181, 160, 0.08);
+    --color-accent-muted: rgba(43, 181, 160, 0.16);
+
+    /* ── Color: Semantic Surfaces ─────────────────────────── */
+    --color-surface-0: #FAFAFE;
+    --color-surface-1: #FFFFFF;
+    --color-surface-2: #F5F3FA;
+    --color-surface-3: #EEEAF6;
+    --color-surface-overlay: rgba(30, 20, 60, 0.45);
+
+    /* ── Color: Semantic Text ─────────────────────────────── */
+    --color-text-primary: #1A1035;
+    --color-text-secondary: #6E6590;
+    --color-text-tertiary: #A49BBF;
+    --color-text-inverse: #FFFFFF;
+    --color-text-brand: var(--color-brand);
+
+    /* ── Color: Borders ──────────────────────────────────── */
+    --color-border-default: #E8E3F0;
+    --color-border-subtle: #F0ECF6;
+    --color-border-strong: #D5CDE4;
+    --color-border-focus: var(--color-brand);
+
+    /* ── Color: Status ───────────────────────────────────── */
+    --color-success: #00B894;
+    --color-success-subtle: rgba(0, 184, 148, 0.08);
+    --color-success-muted: rgba(0, 184, 148, 0.16);
+
+    --color-warning: #F59E42;
+    --color-warning-subtle: rgba(245, 158, 66, 0.08);
+    --color-warning-muted: rgba(245, 158, 66, 0.20);
+
+    --color-danger: #EF4444;
+    --color-danger-subtle: rgba(239, 68, 68, 0.08);
+    --color-danger-muted: rgba(239, 68, 68, 0.14);
+
+    --color-info: #5B8DEF;
+    --color-info-subtle: rgba(91, 141, 239, 0.08);
+    --color-info-muted: rgba(91, 141, 239, 0.14);
+
+    /* ── Color: Contextual (Baby/Pump/Wonder) ──────────── */
     --color-baby: #4ECDC4;
-    --color-baby-light: #A8E6E2;
-    --color-baby-bg: #F0FDFC;
+    --color-baby-subtle: rgba(78, 205, 196, 0.08);
+    --color-baby-muted: rgba(78, 205, 196, 0.16);
 
     --color-pump: #FF9A5C;
-    --color-pump-light: #FFCBA4;
-    --color-pump-bg: #FFF7F2;
+    --color-pump-subtle: rgba(255, 154, 92, 0.08);
+    --color-pump-muted: rgba(255, 154, 92, 0.16);
 
     --color-wonder: #9B59B6;
-    --color-wonder-light: #D7BDE2;
-    --color-wonder-bg: #FBF5FF;
+    --color-wonder-subtle: rgba(155, 89, 182, 0.08);
+    --color-wonder-muted: rgba(155, 89, 182, 0.16);
 
-    /* Neutral Palette */
-    --color-surface: #FFFBFE;
-    --color-surface-alt: #F8F4FF;
-    --color-card: #FFFFFF;
-    --color-border: #F0E6FF;
-    --color-text: #2D1B69;
-    --color-text-muted: #8E7DAE;
-    --color-text-light: #C4B5D9;
+    --color-milk: #5B8DEF;
+    --color-milk-subtle: rgba(91, 141, 239, 0.08);
+    --color-milk-muted: rgba(91, 141, 239, 0.14);
 
-    /* Status Colors */
-    --color-success: #00C9A7;
-    --color-warning: #FF9F43;
-    --color-danger: #FF6B6B;
+    /* ── Typography: Astryx Type Scale ────────────────── */
+    --font-family: 'DM Sans', 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
 
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(155, 89, 182, 0.08);
-    --shadow-md: 0 4px 20px rgba(155, 89, 182, 0.12);
-    --shadow-lg: 0 8px 40px rgba(155, 89, 182, 0.18);
+    --text-display-1: 700 30px/1.15 var(--font-family);
+    --text-display-2: 700 24px/1.2 var(--font-family);
+    --text-display-3: 700 20px/1.25 var(--font-family);
+    --text-display-4: 600 17px/1.3 var(--font-family);
+    --text-body: 400 15px/1.55 var(--font-family);
+    --text-body-emphasis: 600 15px/1.55 var(--font-family);
+    --text-supporting: 500 13px/1.45 var(--font-family);
+    --text-caption: 600 11px/1.3 var(--font-family);
+    --text-overline: 700 11px/1.2 var(--font-family);
 
-    /* Border Radius */
-    --radius-sm: 12px;
-    --radius-md: 20px;
-    --radius-lg: 28px;
-    --radius-full: 9999px;
+    /* ── Spacing: 4px Base Unit ──────────────────────── */
+    --space-0: 0px;
+    --space-0-5: 2px;
+    --space-1: 4px;
+    --space-1-5: 6px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+
+    /* ── Elevation: 5-Level Shadow Hierarchy ────────── */
+    --elevation-0: none;
+    --elevation-1: 0 1px 3px rgba(26, 16, 53, 0.04), 0 1px 2px rgba(26, 16, 53, 0.03);
+    --elevation-2: 0 2px 8px rgba(26, 16, 53, 0.06), 0 1px 3px rgba(26, 16, 53, 0.04);
+    --elevation-3: 0 4px 16px rgba(26, 16, 53, 0.08), 0 2px 6px rgba(26, 16, 53, 0.04);
+    --elevation-4: 0 8px 32px rgba(26, 16, 53, 0.10), 0 4px 12px rgba(26, 16, 53, 0.05);
+    --elevation-5: 0 16px 48px rgba(26, 16, 53, 0.14), 0 8px 24px rgba(26, 16, 53, 0.06);
+
+    /* ── Shape: Border Radius Tokens ────────────────── */
+    --shape-xs: 6px;
+    --shape-sm: 10px;
+    --shape-md: 14px;
+    --shape-lg: 20px;
+    --shape-xl: 28px;
+    --shape-full: 9999px;
+
+    /* ── Motion: Astryx Curves & Durations ──────────── */
+    --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --ease-in: cubic-bezier(0.42, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.58, 1);
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    --duration-fast: 120ms;
+    --duration-normal: 200ms;
+    --duration-slow: 350ms;
+    --duration-slower: 500ms;
   }
 
   * {
@@ -60,9 +143,10 @@
   }
 
   body {
-    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
-    background-color: var(--color-surface);
-    color: var(--color-text);
+    font: var(--text-body);
+    font-family: var(--font-family);
+    background-color: var(--color-surface-0);
+    color: var(--color-text-primary);
     margin: 0;
     padding: 0;
     min-height: 100dvh;
@@ -79,70 +163,100 @@
 }
 
 /* ============================================================
-   SCROLLBAR STYLING
+   GOOGLE FONTS — DM Sans
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+
+/* ============================================================
+   SCROLLBAR
    ============================================================ */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-primary-light);
-  border-radius: var(--radius-full);
+  background: var(--color-border-default);
+  border-radius: var(--shape-full);
 }
 
 /* ============================================================
-   GLOBAL ANIMATIONS
+   ANIMATIONS — Astryx Motion
    ============================================================ */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeInScale {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
 }
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  50% { opacity: 0.55; }
 }
 @keyframes spin {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 @keyframes shimmer {
-  0% { background-position: -200% center; }
+  0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
 @keyframes bounce-soft {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  50% { transform: translateY(-3px); }
 }
 @keyframes modal-appear {
   from { opacity: 0; transform: translateY(100%); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes backdrop-appear {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 @keyframes progress-bar {
   from { width: 0%; }
-  to { width: var(--target-width, 100%); }
+  to   { width: var(--target-width, 100%); }
+}
+@keyframes tab-indicator {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
 }
 
 /* ============================================================
-   RESPONSIVE LAYOUT
+   UTILITY CLASSES
+   ============================================================ */
+.animate-fade-in    { animation: fadeIn 0.3s var(--ease-spring) forwards; }
+.animate-scale-in   { animation: fadeInScale 0.25s var(--ease-spring) forwards; }
+.animate-slide-up   { animation: slideUp 0.35s var(--ease-spring) forwards; }
+.animate-slide-down { animation: slideDown 0.25s var(--ease-spring) forwards; }
+.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+.animate-bounce-soft { animation: bounce-soft 2s ease-in-out infinite; }
+.animate-modal      { animation: modal-appear var(--duration-slow) var(--ease-spring) forwards; }
+.animate-backdrop   { animation: backdrop-appear var(--duration-normal) var(--ease-out) forwards; }
+.animate-spin       { animation: spin 1s linear infinite; }
+
+/* Stagger delays */
+.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.animate-stagger > *:nth-child(6) { animation-delay: 250ms; }
+
+/* ============================================================
+   LAYOUT — App Container
    ============================================================ */
 .app-container {
   width: 100%;
@@ -152,22 +266,22 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background-color: var(--color-surface);
+  background-color: var(--color-surface-0);
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 0 16px 12px;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-3);
 }
 
 @media (min-width: 768px) {
   .app-container {
     max-width: 768px;
-    border-left: 1px solid var(--color-border);
-    border-right: 1px solid var(--color-border);
-    box-shadow: var(--shadow-lg);
+    border-left: 1px solid var(--color-border-subtle);
+    border-right: 1px solid var(--color-border-subtle);
+    box-shadow: var(--elevation-4);
   }
 
   .stats-grid {
@@ -176,196 +290,219 @@
 }
 
 /* ============================================================
-   UTILITY CLASSES
-   ============================================================ */
-.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-.animate-scale-in { animation: fadeInScale 0.25s ease-out forwards; }
-.animate-slide-up { animation: slideUp 0.35s ease-out forwards; }
-.animate-slide-down { animation: slideDown 0.25s ease-out forwards; }
-.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
-.animate-bounce-soft { animation: bounce-soft 2s ease-in-out infinite; }
-.animate-modal { animation: modal-appear 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.animate-backdrop { animation: backdrop-appear 0.2s ease-out forwards; }
-
-/* Stagger delays for list items */
-.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
-.animate-stagger > *:nth-child(2) { animation-delay: 60ms; }
-.animate-stagger > *:nth-child(3) { animation-delay: 120ms; }
-.animate-stagger > *:nth-child(4) { animation-delay: 180ms; }
-.animate-stagger > *:nth-child(5) { animation-delay: 240ms; }
-.animate-stagger > *:nth-child(6) { animation-delay: 300ms; }
-
-/* ============================================================
-   CARD STYLES
+   CARD — Astryx Card Component
    ============================================================ */
 .card {
-  background: var(--color-card);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface-1);
+  border-radius: var(--shape-lg);
+  box-shadow: var(--elevation-1);
+  border: 1px solid var(--color-border-subtle);
   overflow: hidden;
+  transition: box-shadow var(--duration-normal) var(--ease-default),
+              transform var(--duration-fast) var(--ease-default);
 }
 
 .card-glass {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: var(--shadow-md);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--shape-lg);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--elevation-2);
+}
+
+.card-interactive {
+  cursor: pointer;
+}
+.card-interactive:hover {
+  box-shadow: var(--elevation-2);
+  transform: translateY(-1px);
+}
+.card-interactive:active {
+  transform: translateY(0) scale(0.99);
 }
 
 /* ============================================================
-   BUTTON STYLES
+   BUTTON — Astryx Button Variants
    ============================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: var(--radius-full);
-  font-family: 'Outfit', sans-serif;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--shape-full);
+  font-family: var(--font-family);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 1.3;
   border: none;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--duration-normal) var(--ease-spring);
   text-decoration: none;
   white-space: nowrap;
   user-select: none;
+  position: relative;
+  overflow: hidden;
 }
-
 .btn:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary), #FF8CB6);
-  color: white;
-  box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(232, 69, 124, 0.25);
 }
 .btn-primary:hover {
-  box-shadow: 0 6px 20px rgba(255, 107, 157, 0.5);
+  background: var(--color-brand-hover);
+  box-shadow: 0 4px 16px rgba(232, 69, 124, 0.30);
   transform: translateY(-1px);
 }
 
 .btn-baby {
-  background: linear-gradient(135deg, var(--color-baby), #6FD8D3);
-  color: white;
-  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+  background: var(--color-baby);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(78, 205, 196, 0.25);
 }
 .btn-baby:hover {
-  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+  box-shadow: 0 4px 16px rgba(78, 205, 196, 0.30);
   transform: translateY(-1px);
 }
 
 .btn-pump {
-  background: linear-gradient(135deg, var(--color-pump), #FFB47A);
-  color: white;
-  box-shadow: 0 4px 15px rgba(255, 154, 92, 0.4);
+  background: var(--color-pump);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(255, 154, 92, 0.25);
 }
 .btn-pump:hover {
-  box-shadow: 0 6px 20px rgba(255, 154, 92, 0.5);
+  box-shadow: 0 4px 16px rgba(255, 154, 92, 0.30);
   transform: translateY(-1px);
 }
 
 .btn-ghost {
-  background: var(--color-surface-alt);
-  color: var(--color-text-muted);
+  background: var(--color-surface-2);
+  color: var(--color-text-secondary);
 }
 .btn-ghost:hover {
-  background: var(--color-border);
-  color: var(--color-text);
+  background: var(--color-surface-3);
+  color: var(--color-text-primary);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, var(--color-danger), #FF8E8E);
-  color: white;
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.35);
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+.btn-danger:hover {
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.30);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-brand);
+  border: 1.5px solid var(--color-brand-muted);
+}
+.btn-secondary:hover {
+  background: var(--color-brand-subtle);
+  border-color: var(--color-brand);
 }
 
 /* ============================================================
-   FORM STYLES
+   FORM — Astryx Input Styles
    ============================================================ */
 .form-input {
   width: 100%;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--color-border);
-  background: var(--color-surface-alt);
-  font-family: 'Outfit', sans-serif;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--shape-sm);
+  border: 1.5px solid var(--color-border-default);
+  background: var(--color-surface-1);
+  font-family: var(--font-family);
   font-size: 15px;
-  color: var(--color-text);
-  transition: all 0.2s ease;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  transition: border-color var(--duration-normal) var(--ease-default),
+              box-shadow var(--duration-normal) var(--ease-default);
   outline: none;
 }
-.form-input:focus {
-  border-color: var(--color-primary-light);
-  background: white;
-  box-shadow: 0 0 0 4px rgba(255, 107, 157, 0.1);
+.form-input::placeholder {
+  color: var(--color-text-tertiary);
 }
+.form-input:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-subtle);
+}
+
 .form-label {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-muted);
+  font: var(--text-overline);
+  color: var(--color-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-2);
 }
+
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 /* ============================================================
-   TAG/CHIP STYLES
+   TAG / CHIP — Astryx Chip Component
    ============================================================ */
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
+  gap: var(--space-1);
+  padding: var(--space-1-5) var(--space-3);
+  border-radius: var(--shape-full);
   font-size: 13px;
   font-weight: 600;
-  border: 2px solid transparent;
+  border: 1.5px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--duration-normal) var(--ease-spring);
   user-select: none;
 }
+
 .tag-baby {
-  background: var(--color-baby-bg);
+  background: var(--color-baby-subtle);
   color: var(--color-baby);
-  border-color: var(--color-baby-light);
+  border-color: var(--color-baby-muted);
 }
 .tag-baby.active {
   background: var(--color-baby);
-  color: white;
-  box-shadow: 0 2px 10px rgba(78, 205, 196, 0.3);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(78, 205, 196, 0.25);
 }
+
 .tag-pump {
-  background: var(--color-pump-bg);
+  background: var(--color-pump-subtle);
   color: var(--color-pump);
-  border-color: var(--color-pump-light);
+  border-color: var(--color-pump-muted);
 }
 .tag-pump.active {
   background: var(--color-pump);
-  color: white;
-  box-shadow: 0 2px 10px rgba(255, 154, 92, 0.3);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(255, 154, 92, 0.25);
 }
+
 .tag-primary {
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
-  border-color: var(--color-primary-light);
+  background: var(--color-brand-subtle);
+  color: var(--color-brand);
+  border-color: var(--color-brand-muted);
 }
 .tag-primary.active {
-  background: var(--color-primary);
-  color: white;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(232, 69, 124, 0.25);
 }
 
 /* ============================================================
-   TAB NAVIGATION
+   TAB NAVIGATION — Astryx Bottom Bar
    ============================================================ */
 .tab-bar {
   position: fixed;
@@ -374,25 +511,25 @@
   right: 0;
   margin: 0 auto;
   width: 100%;
-  height: 72px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--color-border);
+  height: 68px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--color-border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   padding-bottom: env(safe-area-inset-bottom, 0);
   z-index: 100;
-  box-shadow: 0 -4px 20px rgba(155, 89, 182, 0.08);
+  box-shadow: 0 -2px 12px rgba(26, 16, 53, 0.04);
 }
 
 @media (min-width: 768px) {
   .tab-bar {
     max-width: 768px;
-    border-left: 1px solid var(--color-border);
-    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border-subtle);
+    border-right: 1px solid var(--color-border-subtle);
   }
 }
 
@@ -400,11 +537,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--shape-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--duration-normal) var(--ease-spring);
   flex: 1;
   max-width: 72px;
   user-select: none;
@@ -412,31 +549,37 @@
   border: none;
   outline: none;
 }
-.tab-item:active { transform: scale(0.9); }
+.tab-item:active {
+  transform: scale(0.92);
+}
 
 .tab-item span {
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--color-text-light);
-  transition: color 0.2s ease;
+  letter-spacing: 0.02em;
+  color: var(--color-text-tertiary);
+  transition: color var(--duration-normal) var(--ease-default);
 }
-.tab-item.active span { color: var(--color-primary); }
+.tab-item.active span {
+  color: var(--color-brand);
+  font-weight: 700;
+}
 
 .tab-icon {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  color: var(--color-text-light);
+  border-radius: var(--shape-xs);
+  transition: all var(--duration-normal) var(--ease-spring);
+  color: var(--color-text-tertiary);
 }
 .tab-item.active .tab-icon {
-  color: var(--color-primary);
-  background: var(--color-primary-bg);
-  transform: scale(1.1);
+  color: var(--color-brand);
+  background: var(--color-brand-subtle);
+  border-radius: var(--shape-sm);
+  transform: scale(1.08);
 }
 
 /* ============================================================
@@ -445,23 +588,27 @@
 .page {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: calc(72px + 16px + env(safe-area-inset-bottom, 0));
+  padding-bottom: calc(68px + var(--space-4) + env(safe-area-inset-bottom, 0));
   padding-top: 0;
   min-height: 100dvh;
 }
 
 .page-header {
-  padding: 20px 20px 16px;
-  background: linear-gradient(180deg, var(--color-primary-bg) 0%, var(--color-surface) 100%);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  background: linear-gradient(
+    180deg,
+    var(--color-surface-2) 0%,
+    var(--color-surface-0) 100%
+  );
 }
 
 /* ============================================================
-   HERO / SUMMARY CARDS
+   HERO / STATUS PILL
    ============================================================ */
 .hero-card {
-  margin: 16px 16px 0;
-  padding: 20px;
-  border-radius: var(--radius-lg);
+  margin: var(--space-4) var(--space-4) 0;
+  padding: var(--space-5);
+  border-radius: var(--shape-xl);
   position: relative;
   overflow: hidden;
 }
@@ -473,31 +620,30 @@
   width: 180px;
   height: 180px;
   border-radius: 50%;
-  opacity: 0.12;
+  opacity: 0.10;
   background: white;
 }
 
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 700;
+  gap: var(--space-1-5);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--shape-full);
+  font: var(--text-caption);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 .status-pill.stormy {
-  background: rgba(255, 159, 67, 0.15);
+  background: var(--color-warning-muted);
   color: var(--color-warning);
 }
 .status-pill.sunny {
-  background: rgba(0, 201, 167, 0.15);
+  background: var(--color-success-muted);
   color: var(--color-success);
 }
 .status-pill.overdue {
-  background: rgba(255, 107, 107, 0.15);
+  background: var(--color-danger-muted);
   color: var(--color-danger);
 }
 
@@ -507,16 +653,16 @@
 .timeline-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   position: relative;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.3s var(--ease-spring);
 }
 .timeline-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  margin-top: 6px;
+  margin-top: var(--space-1-5);
   flex-shrink: 0;
   position: relative;
   z-index: 1;
@@ -527,19 +673,20 @@
   top: 28px;
   bottom: -4px;
   width: 2px;
-  background: var(--color-border);
+  background: var(--color-border-subtle);
 }
 
 /* ============================================================
-   MODAL
+   MODAL — Astryx Bottom Sheet
    ============================================================ */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(45, 27, 105, 0.4);
-  backdrop-filter: blur(6px);
+  background: var(--color-surface-overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 200;
-  animation: backdrop-appear 0.2s ease;
+  animation: backdrop-appear var(--duration-normal) var(--ease-out);
 }
 .modal-sheet {
   position: fixed;
@@ -548,13 +695,14 @@
   right: 0;
   margin: 0 auto;
   width: 100%;
-  background: var(--color-card);
-  border-radius: 32px 32px 0 0;
+  background: var(--color-surface-1);
+  border-radius: var(--shape-xl) var(--shape-xl) 0 0;
   max-height: 92dvh;
   overflow-y: auto;
   z-index: 201;
-  animation: modal-appear 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modal-appear var(--duration-slow) var(--ease-spring);
   padding-bottom: env(safe-area-inset-bottom, 16px);
+  box-shadow: var(--elevation-5);
 }
 
 @media (min-width: 768px) {
@@ -562,15 +710,17 @@
     max-width: 768px;
   }
 }
+
 .modal-handle {
   width: 36px;
   height: 4px;
-  background: var(--color-border);
-  border-radius: var(--radius-full);
-  margin: 12px auto 0;
+  background: var(--color-border-default);
+  border-radius: var(--shape-full);
+  margin: var(--space-3) auto 0;
 }
+
 .modal-header {
-  padding: 16px 20px 0;
+  padding: var(--space-4) var(--space-5) 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -580,36 +730,36 @@
    WONDER WEEKS
    ============================================================ */
 .leap-card {
-  padding: 16px;
-  border-radius: var(--radius-md);
-  border: 2px solid transparent;
-  transition: all 0.25s ease;
+  padding: var(--space-4);
+  border-radius: var(--shape-lg);
+  border: 1.5px solid transparent;
+  transition: all var(--duration-normal) var(--ease-spring);
   cursor: pointer;
 }
 .leap-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--elevation-2);
 }
 .leap-card.current {
   border-color: var(--color-warning);
-  box-shadow: 0 0 0 4px rgba(255, 159, 67, 0.1);
+  box-shadow: 0 0 0 3px var(--color-warning-subtle);
 }
 .leap-card.passed {
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .week-timeline {
   position: relative;
   height: 48px;
-  background: var(--color-surface-alt);
-  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  border-radius: var(--shape-full);
   overflow: visible;
-  margin: 8px 0;
+  margin: var(--space-2) 0;
 }
 .week-track {
   position: absolute;
   inset: 8px;
-  border-radius: var(--radius-full);
+  border-radius: var(--shape-full);
 }
 .week-leap-marker {
   position: absolute;
@@ -627,117 +777,109 @@
   width: 14px;
   height: 40px;
   border-radius: 6px;
-  background: var(--color-text);
-  box-shadow: 0 2px 8px rgba(45, 27, 105, 0.5);
+  background: var(--color-text-primary);
+  box-shadow: 0 2px 8px rgba(26, 16, 53, 0.4);
   z-index: 10;
 }
 
 /* ============================================================
-   STAT CHARTS
+   BAR CHARTS
    ============================================================ */
 .bar-chart-container {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
   height: 120px;
-  padding: 0 4px;
+  padding: 0 var(--space-1);
 }
 .bar-wrap {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   height: 100%;
   justify-content: flex-end;
 }
 .bar {
   width: 100%;
-  border-radius: 8px 8px 4px 4px;
-  transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: var(--shape-xs) var(--shape-xs) 3px 3px;
+  transition: height 0.6s var(--ease-spring);
   min-height: 4px;
 }
 .bar-label {
-  font-size: 10px;
-  color: var(--color-text-light);
-  font-weight: 600;
+  font: var(--text-caption);
+  color: var(--color-text-tertiary);
   text-align: center;
 }
 
 /* ============================================================
-   MILK STORAGE – Kho sữa mẹ
+   MILK STORAGE
    ============================================================ */
-
-/* Milk Bag Card */
 .milk-bag-card {
-  background: var(--color-card);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface-1);
+  border-radius: var(--shape-lg);
+  box-shadow: var(--elevation-1);
+  border: 1px solid var(--color-border-subtle);
   overflow: hidden;
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  transition: box-shadow var(--duration-normal) var(--ease-default),
+              transform var(--duration-fast) var(--ease-default);
 }
 .milk-bag-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--elevation-2);
   transform: translateY(-1px);
 }
 
-/* Milk Status Badge */
 .milk-status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 700;
+  gap: var(--space-1);
+  padding: 3px var(--space-2-5, 10px);
+  border-radius: var(--shape-full);
+  font: var(--text-caption);
   border: 1px solid transparent;
 }
 
-/* Milk Countdown – pulses when urgent */
 .milk-countdown-urgent {
   animation: pulse-soft 1.5s ease-in-out infinite;
   color: var(--color-danger);
   font-weight: 800;
 }
 
-/* Thaw Recommendation Banner */
 .milk-thaw-banner {
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  border: 1.5px solid rgba(102, 126, 234, 0.25);
-  padding: 14px 16px;
+  border-radius: var(--shape-md);
+  background: var(--color-milk-subtle);
+  border: 1.5px solid var(--color-milk-muted);
+  padding: var(--space-3-5, 14px) var(--space-4);
 }
 
-/* Thaw Method Button */
 .thaw-method-btn {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--color-border);
-  background: var(--color-surface-alt);
+  padding: var(--space-3-5, 14px) var(--space-4);
+  border-radius: var(--shape-sm);
+  border: 1.5px solid var(--color-border-default);
+  background: var(--color-surface-1);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--duration-normal) var(--ease-default);
   text-align: left;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-family);
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .thaw-method-btn:hover {
-  border-color: #4FACFE;
-  background: #F0F8FF;
+  border-color: var(--color-info);
+  background: var(--color-info-subtle);
 }
 .thaw-method-btn.active {
-  border-color: #4FACFE;
-  background: #F0F8FF;
-  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.2);
+  border-color: var(--color-info);
+  background: var(--color-info-subtle);
+  box-shadow: 0 2px 8px rgba(91, 141, 239, 0.15);
 }
 
-/* Milk filter tab scrollbar hide */
 .milk-filter-tabs {
   display: flex;
-  gap: 6px;
+  gap: var(--space-1-5);
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -746,7 +888,6 @@
   display: none;
 }
 
-/* Priority indicator dot */
 .milk-priority-dot {
   width: 8px;
   height: 8px;

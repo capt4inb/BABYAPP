@@ -55,32 +55,36 @@ export const joinRoom = async (pin) => {
 };
 
 // Subscribe to real-time changes
-export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange, onMilkBagsChange, onMemosChange) => {
+export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange, onMilkBagsChange, onMemosChange, onError) => {
   const recordsRef = ref(db, `rooms/${pin}/records`);
   const settingsRef = ref(db, `rooms/${pin}/settings`);
   const milkBagsRef = ref(db, `rooms/${pin}/milkBags`);
   const memosRef = ref(db, `rooms/${pin}/memos`);
 
+  const handleErr = (err) => {
+    if (onError) onError(err);
+  };
+
   const unsubscribeRecords = onValue(recordsRef, (snapshot) => {
     onRecordsChange(snapshot.exists() ? snapshot.val() : []);
-  });
+  }, handleErr);
 
   const unsubscribeSettings = onValue(settingsRef, (snapshot) => {
     if (snapshot.exists()) {
       onSettingsChange(snapshot.val());
     }
-  });
+  }, handleErr);
 
   const unsubscribeMilkBags = onMilkBagsChange
     ? onValue(milkBagsRef, (snapshot) => {
         onMilkBagsChange(snapshot.exists() ? snapshot.val() : []);
-      })
+      }, handleErr)
     : () => {};
 
   const unsubscribeMemos = onMemosChange
     ? onValue(memosRef, (snapshot) => {
         onMemosChange(snapshot.exists() ? snapshot.val() : []);
-      })
+      }, handleErr)
     : () => {};
 
   return () => {

@@ -98,6 +98,10 @@ export default function App() {
       },
       (remoteMemos) => {
         setMemos(remoteMemos);
+      },
+      (err) => {
+        console.error("Lỗi đồng bộ Firebase:", err);
+        setSyncStatus('error');
       }
     );
 
@@ -283,7 +287,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Bottom Tab Navigation */}
+      {/* Bottom Tab Navigation — Astryx style */}
       <nav className="tab-bar">
         {TABS.map(({ id, label, Icon }) => (
           <button
@@ -293,7 +297,7 @@ export default function App() {
             aria-label={label}
           >
             <div className="tab-icon">
-              <Icon size={22} strokeWidth={activeTab === id ? 2.5 : 1.8} />
+              <Icon size={20} strokeWidth={activeTab === id ? 2.2 : 1.6} />
             </div>
             <span>{label}</span>
           </button>
