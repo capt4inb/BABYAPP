@@ -2,8 +2,8 @@
   "rules": {
     "rooms": {
       "$pin": {
-        ".read": true,
-        ".write": true
+        ".read": "auth != null",
+        ".write": "auth != null"
       }
     }
   }
