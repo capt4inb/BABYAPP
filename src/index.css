@@ -477,10 +477,10 @@
 }
 
 .home-screen {
-  padding: 22px 16px 26px;
+  padding: 14px 14px 24px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .home-header {
@@ -524,6 +524,44 @@
   font-weight: 700;
 }
 
+.home-header-compact {
+  display: block;
+}
+
+.home-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.home-title-row h1 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 23px;
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.home-age-badge {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-primary) 10%, white);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.home-header-compact p {
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
 .home-icon-button {
   position: relative;
   width: 46px;
@@ -550,7 +588,7 @@
 }
 
 .home-card {
-  padding: 18px;
+  padding: 14px;
   background: var(--color-base-100);
   border: 1px solid color-mix(in oklab, var(--color-base-300) 72%, white);
   border-radius: 8px;
@@ -562,7 +600,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 11px;
 }
 
 .home-card-head h2,
@@ -592,16 +630,16 @@
 }
 
 .home-date-pill {
-  min-height: 34px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 7px 12px;
+  padding: 5px 10px;
   border-radius: 8px;
   background: color-mix(in oklab, var(--color-primary) 10%, white);
   color: var(--color-primary);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 850;
   white-space: nowrap;
 }
@@ -613,7 +651,7 @@
 
 .home-stat {
   min-width: 0;
-  padding: 8px 8px 2px;
+  padding: 5px 6px 0;
   text-align: center;
   border-right: 1px solid var(--color-base-300);
 }
@@ -629,22 +667,22 @@
 }
 
 .home-stat strong {
-  margin-top: 10px;
+  margin-top: 6px;
   color: var(--color-base-content);
-  font-size: clamp(22px, 6vw, 34px);
+  font-size: clamp(21px, 5.4vw, 28px);
   line-height: 1;
   font-weight: 900;
 }
 
 .home-stat span {
-  margin-top: 8px;
+  margin-top: 5px;
   color: var(--color-base-content);
   font-size: 13px;
   font-weight: 800;
 }
 
 .home-stat small {
-  margin-top: 7px;
+  margin-top: 4px;
   color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 700;
@@ -746,6 +784,14 @@
   border-color: color-mix(in oklab, var(--color-primary) 25%, white);
 }
 
+.home-feed-card.compact {
+  padding-block: 12px;
+}
+
+.home-feed-card.compact .home-card-head {
+  margin-bottom: 8px;
+}
+
 .home-reminder-status {
   display: inline-flex;
   align-items: center;
@@ -767,6 +813,11 @@
   align-items: center;
 }
 
+.home-feed-card.compact .home-feed-layout {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
 .home-feed-main {
   min-width: 0;
   display: flex;
@@ -782,6 +833,11 @@
   flex: 0 0 auto;
   border-radius: 999px;
   background: color-mix(in oklab, var(--color-primary) 12%, white);
+}
+
+.home-feed-card.compact .home-feed-icon {
+  width: 52px;
+  height: 52px;
 }
 
 .home-feed-main h3,
@@ -803,6 +859,11 @@
   font-weight: 900;
 }
 
+.home-feed-card.compact .home-feed-title-row h3,
+.home-feed-card.compact .home-feed-main h3 {
+  font-size: 16px;
+}
+
 .home-feed-title-row span {
   padding: 4px 10px;
   border-radius: 8px;
@@ -819,6 +880,11 @@
   font-weight: 700;
 }
 
+.home-feed-card.compact .home-feed-main p {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
 .home-feed-main strong {
   display: block;
   margin-top: 8px;
@@ -828,12 +894,22 @@
   font-weight: 900;
 }
 
+.home-feed-card.compact .home-feed-main strong {
+  margin-top: 5px;
+  font-size: 21px;
+}
+
 .home-feed-main small {
   display: block;
   margin-top: 12px;
   color: var(--color-text-muted);
   font-size: 14px;
   font-weight: 800;
+}
+
+.home-feed-card.compact .home-feed-main small {
+  margin-top: 6px;
+  font-size: 12px;
 }
 
 .home-reminder {
@@ -845,16 +921,36 @@
   text-align: center;
 }
 
+.home-feed-card.compact .home-reminder {
+  min-width: 112px;
+  width: auto;
+  grid-template-columns: 1fr;
+  gap: 5px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  justify-items: center;
+  text-align: center;
+}
+
 .home-reminder span {
   font-size: 38px;
   line-height: 1;
   font-weight: 900;
 }
 
+.home-feed-card.compact .home-reminder span {
+  font-size: 26px;
+}
+
 .home-reminder strong {
   color: var(--color-primary);
   font-size: 14px;
   font-weight: 850;
+}
+
+.home-feed-card.compact .home-reminder strong {
+  font-size: 12px;
 }
 
 .home-reminder button {
@@ -869,12 +965,23 @@
   cursor: pointer;
 }
 
+.home-feed-card.compact .home-reminder button {
+  min-height: 31px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 .home-feed-progress {
   height: 8px;
   margin-top: 18px;
   overflow: hidden;
   border-radius: 999px;
   background: var(--color-base-200);
+}
+
+.home-feed-card.compact .home-feed-progress {
+  height: 6px;
+  margin-top: 10px;
 }
 
 .home-feed-progress span {
@@ -885,7 +992,7 @@
 }
 
 .home-chart {
-  height: 178px;
+  height: 150px;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 10px;
@@ -928,8 +1035,8 @@
 }
 
 .home-chart-footer {
-  margin-top: 16px;
-  padding: 11px 14px;
+  margin-top: 10px;
+  padding: 9px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -965,6 +1072,11 @@
   gap: 12px;
 }
 
+.home-storage-card-compact .home-storage-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .home-storage-tile {
   min-width: 0;
   min-height: 104px;
@@ -975,6 +1087,19 @@
   border: 1px solid var(--tile-border);
   border-radius: 8px;
   background: var(--tile-bg);
+}
+
+.home-storage-card-compact .home-storage-tile {
+  min-height: 86px;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  flex-direction: column;
+}
+
+.home-storage-card-compact .home-storage-tile .game-icon {
+  width: 30px;
+  height: 30px;
 }
 
 .home-storage-tile.purple {
@@ -1004,12 +1129,22 @@
   font-weight: 800;
 }
 
+.home-storage-card-compact .home-storage-tile span {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
 .home-storage-tile strong {
   margin-top: 4px;
   color: var(--color-primary);
   font-size: 20px;
   line-height: 1.1;
   font-weight: 900;
+}
+
+.home-storage-card-compact .home-storage-tile strong {
+  font-size: clamp(13px, 3.4vw, 17px);
+  white-space: nowrap;
 }
 
 .home-storage-tile small {
@@ -1019,9 +1154,21 @@
   font-weight: 800;
 }
 
+.home-storage-card-compact .home-storage-tile small {
+  font-size: 11px;
+}
+
 .home-memo-form {
   display: grid;
   gap: 12px;
+}
+
+.home-memo-card.compact {
+  padding-block: 12px;
+}
+
+.home-memo-card.compact .home-card-head {
+  margin-bottom: 8px;
 }
 
 .home-memo-form textarea {
@@ -1050,10 +1197,22 @@
   cursor: pointer;
 }
 
+.home-memo-card.compact .home-memo-empty {
+  min-height: 44px;
+  padding: 8px 10px;
+  gap: 9px;
+  font-size: 13px;
+}
+
 .home-memo-list {
   display: grid;
   gap: 10px;
   margin-top: 12px;
+}
+
+.home-memo-card.compact .home-memo-list {
+  gap: 7px;
+  margin-top: 8px;
 }
 
 .home-memo-list article {
@@ -1062,6 +1221,10 @@
   border: 1px solid var(--color-base-300);
   border-radius: 8px;
   background: var(--color-base-200);
+}
+
+.home-memo-card.compact .home-memo-list article {
+  padding: 9px 38px 9px 10px;
 }
 
 .home-memo-list article div {
@@ -1088,6 +1251,11 @@
   color: var(--color-text-muted);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.home-memo-card.compact .home-memo-list p {
+  margin-top: 4px;
+  line-height: 1.35;
 }
 
 .home-memo-list button {
@@ -2450,12 +2618,12 @@
   }
 
   .home-screen {
-    padding: 18px 16px 24px;
-    gap: 16px;
+    padding: 12px 12px 22px;
+    gap: 10px;
   }
 
   .home-card {
-    padding: 16px;
+    padding: 13px;
   }
 
   .home-header {
@@ -2478,6 +2646,20 @@
   .home-profile p {
     font-size: 13px;
     line-height: 1.35;
+  }
+
+  .home-title-row h1 {
+    font-size: 22px;
+  }
+
+  .home-age-badge {
+    min-height: 26px;
+    padding: 4px 9px;
+    font-size: 11px;
+  }
+
+  .home-header-compact p {
+    font-size: 11px;
   }
 
   .home-stat {
@@ -2524,7 +2706,8 @@
   }
 
   .home-chart {
-    gap: 7px;
+    height: 136px;
+    gap: 6px;
   }
 
   .home-bar-column small {

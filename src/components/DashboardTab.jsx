@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { getMilkSummary, getAvgDailyMl } from '../utils/milkUtils';
-import AddMilkBagModal from './AddMilkBagModal';
 import GameIcon from './GameIcon';
 
 const NUMBER_FORMATTER = new Intl.NumberFormat('vi-VN');
@@ -77,9 +76,12 @@ function getBabyAge(babyBirthDate) {
   }
 
   const days = Math.max(0, Math.floor((today - anchor) / 86400000));
+  const weeks = Math.floor(totalDays / 7);
+  const weekDays = totalDays % 7;
   const compact = months > 0 ? `${months}m${days}d` : `${totalDays}d`;
   const readable = months > 0 ? `${months} tháng ${days} ngày` : `${totalDays} ngày`;
-  return { totalDays, months, days, compact, readable };
+  const weekLabel = weeks > 0 ? `${weeks} tuần ${weekDays} ngày` : `${totalDays} ngày`;
+  return { totalDays, months, days, weeks, weekDays, compact, readable, weekLabel };
 }
 
 function feedLabel(side) {
@@ -94,7 +96,6 @@ export default function DashboardTab({
   settings,
   onOpenFeedModal,
   milkBags = [],
-  onAddMilkBag,
   onNavigateToMilk,
   memos = [],
   onAddMemo,
@@ -102,7 +103,6 @@ export default function DashboardTab({
 }) {
   const { babyName, babyBirthDate, feedIntervalHours = 3 } = settings;
   const [nowMs] = useState(() => Date.now());
-  const [showAddMilkBag, setShowAddMilkBag] = useState(false);
   const [isWritingMemo, setIsWritingMemo] = useState(false);
   const [memoContent, setMemoContent] = useState('');
   const [memoAuthor, setMemoAuthor] = useState('Mẹ');
@@ -190,16 +190,12 @@ export default function DashboardTab({
 
   return (
     <div className="animate-fade-in home-screen">
-      <header className="home-header">
-        <div className="home-profile">
-          <div className="home-avatar" aria-hidden="true">
-            <GameIcon name="baby" size={42} variant="lavender" />
-          </div>
-          <div>
-            <h1>{babyName || 'Bé Yêu'}</h1>
-            <p>{ageInfo ? ageInfo.readable : 'Cập nhật ngày sinh'} · Hôm nay tốt nhé!</p>
-          </div>
+      <header className="home-header home-header-compact">
+        <div className="home-title-row">
+          <h1>{babyName || 'Bé Yêu'}</h1>
+          <span className="home-age-badge">{ageInfo ? ageInfo.weekLabel : 'Chưa có ngày sinh'}</span>
         </div>
+        <p>Hôm nay tốt nhé!</p>
       </header>
 
       <section className="home-card home-today-card">
@@ -233,35 +229,95 @@ export default function DashboardTab({
         </div>
       </section>
 
-      <section>
-        <h2 className="home-section-title">Thao tác nhanh</h2>
-        <div className="home-quick-grid">
-          <button className="home-action-card purple" type="button" onClick={onOpenFeedModal}>
-            <span className="home-action-icon"><GameIcon name="baby" size={40} variant="lavender" /></span>
-            <strong>Ghi cữ bú</strong>
-            <small>Bú bình / Mẹ</small>
-            <span className="home-action-plus"><GameIcon name="plus" size={20} variant="cream" bare /></span>
+      <section className="home-card home-storage-card home-storage-card-compact">
+        <div className="home-card-head">
+          <h2>Kho sữa</h2>
+          <button type="button" onClick={() => onNavigateToMilk?.()}>
+            Xem chi tiết <GameIcon name="right" size={18} variant="lavender" bare />
           </button>
-          <button className="home-action-card rose" type="button" onClick={() => setShowAddMilkBag(true)}>
-            <span className="home-action-icon"><GameIcon name="bottle" size={40} variant="pink" /></span>
-            <strong>Thêm sữa</strong>
-            <small>Thêm vào kho</small>
-            <span className="home-action-plus"><GameIcon name="plus" size={20} variant="cream" bare /></span>
-          </button>
-          <button className="home-action-card mint" type="button" onClick={() => onNavigateToMilk?.()}>
-            <span className="home-action-icon"><GameIcon name="milk" size={40} variant="green" /></span>
-            <strong>Kho sữa</strong>
-            <small>Quản lý kho</small>
-          </button>
-          <button className="home-action-card amber" type="button" onClick={handleOpenMemo}>
-            <span className="home-action-icon"><GameIcon name="note" size={40} variant="orange" /></span>
-            <strong>Ghi chú</strong>
-            <small>Sự kiện bé</small>
-          </button>
+        </div>
+
+        <div className="home-storage-grid">
+          <div className="home-storage-tile purple">
+            <GameIcon name="bottle" size={38} variant="lavender" />
+            <div>
+              <span>Tổng trong kho</span>
+              <strong>{formatNumber(milkSummary.totalMl)} ml</strong>
+              <small>{milkSummary.activeBagCount || 0} bịch</small>
+            </div>
+          </div>
+          <div className="home-storage-tile mint">
+            <GameIcon name="snow" size={38} variant="green" />
+            <div>
+              <span>Ngăn mát</span>
+              <strong>{formatNumber(fridgeMl)} ml</strong>
+              <small>{fridgeBags.length} bịch</small>
+            </div>
+          </div>
+          <div className="home-storage-tile blue">
+            <GameIcon name="snow" size={38} variant="blue" />
+            <div>
+              <span>Ngăn đông</span>
+              <strong>{formatNumber(freezerMl)} ml</strong>
+              <small>{freezerBags.length} bịch</small>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="home-card home-feed-card">
+      <section className="home-card home-memo-card compact" id="home-memo-form">
+        <div className="home-card-head">
+          <h2>Ghi chú gia đình</h2>
+          <span className="home-date-pill">{memos.length} ghi chú</span>
+        </div>
+
+        {isWritingMemo ? (
+          <form className="home-memo-form" onSubmit={handleSaveMemo}>
+            <textarea
+              className="form-input"
+              value={memoContent}
+              onChange={event => setMemoContent(event.target.value)}
+              placeholder="Nhập ghi chú cho cả nhà..."
+              rows={2}
+              required
+            />
+            <div className="home-memo-actions">
+              <select className="form-input" value={memoAuthor} onChange={event => setMemoAuthor(event.target.value)}>
+                <option>Mẹ</option>
+                <option>Bố</option>
+                <option>Bà</option>
+                <option>Ông</option>
+              </select>
+              <button className="btn btn-ghost" type="button" onClick={() => setIsWritingMemo(false)}>Huỷ</button>
+              <button className="btn btn-primary" type="submit">Lưu</button>
+            </div>
+          </form>
+        ) : (
+          <button className="home-memo-empty" type="button" onClick={handleOpenMemo}>
+            <GameIcon name="note" size={30} variant="orange" />
+            <span>{memos[0] ? memos[0].content : 'Thêm ghi chú nhanh cho hôm nay'}</span>
+          </button>
+        )}
+
+        {memos.length > 0 && (
+          <div className="home-memo-list">
+            {memos.slice(0, 2).map(memo => (
+              <article key={memo.id}>
+                <div>
+                  <strong>{memo.author}</strong>
+                  <span>{timeSince(memo.createdAt, nowMs)}</span>
+                </div>
+                <p>{memo.content}</p>
+                <button type="button" onClick={() => onDeleteMemo(memo.id)} aria-label="Xoá ghi chú">
+                  <GameIcon name="trash" size={18} variant="cream" bare />
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="home-card home-feed-card compact">
         <div className="home-card-head">
           <h2>Cữ bú gần nhất</h2>
           {nextFeed && (
@@ -334,104 +390,6 @@ export default function DashboardTab({
           </strong>
         </div>
       </section>
-
-      <section className="home-card home-storage-card">
-        <div className="home-card-head">
-          <h2>Kho sữa</h2>
-          <button type="button" onClick={() => onNavigateToMilk?.()}>
-            Xem chi tiết <GameIcon name="right" size={18} variant="lavender" bare />
-          </button>
-        </div>
-
-        <div className="home-storage-grid">
-          <div className="home-storage-tile purple">
-            <GameIcon name="bottle" size={38} variant="lavender" />
-            <div>
-              <span>Tổng trong kho</span>
-              <strong>{formatNumber(milkSummary.totalMl)} ml</strong>
-              <small>{milkSummary.activeBagCount || 0} bịch</small>
-            </div>
-          </div>
-          <div className="home-storage-tile mint">
-            <GameIcon name="snow" size={38} variant="green" />
-            <div>
-              <span>Ngăn mát</span>
-              <strong>{formatNumber(fridgeMl)} ml</strong>
-              <small>{fridgeBags.length} bịch</small>
-            </div>
-          </div>
-          <div className="home-storage-tile blue">
-            <GameIcon name="snow" size={38} variant="blue" />
-            <div>
-              <span>Ngăn đông</span>
-              <strong>{formatNumber(freezerMl)} ml</strong>
-              <small>{freezerBags.length} bịch</small>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-card home-memo-card" id="home-memo-form">
-        <div className="home-card-head">
-          <h2>Ghi chú gia đình</h2>
-          <span className="home-date-pill">{memos.length} ghi chú</span>
-        </div>
-
-        {isWritingMemo ? (
-          <form className="home-memo-form" onSubmit={handleSaveMemo}>
-            <textarea
-              className="form-input"
-              value={memoContent}
-              onChange={event => setMemoContent(event.target.value)}
-              placeholder="Nhập ghi chú cho cả nhà..."
-              rows={3}
-              required
-            />
-            <div className="home-memo-actions">
-              <select className="form-input" value={memoAuthor} onChange={event => setMemoAuthor(event.target.value)}>
-                <option>Mẹ</option>
-                <option>Bố</option>
-                <option>Bà</option>
-                <option>Ông</option>
-              </select>
-              <button className="btn btn-ghost" type="button" onClick={() => setIsWritingMemo(false)}>Huỷ</button>
-              <button className="btn btn-primary" type="submit">Lưu</button>
-            </div>
-          </form>
-        ) : (
-          <button className="home-memo-empty" type="button" onClick={handleOpenMemo}>
-            <GameIcon name="note" size={30} variant="orange" />
-            <span>{memos[0] ? memos[0].content : 'Thêm ghi chú nhanh cho hôm nay'}</span>
-          </button>
-        )}
-
-        {memos.length > 0 && (
-          <div className="home-memo-list">
-            {memos.slice(0, 3).map(memo => (
-              <article key={memo.id}>
-                <div>
-                  <strong>{memo.author}</strong>
-                  <span>{timeSince(memo.createdAt, nowMs)}</span>
-                </div>
-                <p>{memo.content}</p>
-                <button type="button" onClick={() => onDeleteMemo(memo.id)} aria-label="Xoá ghi chú">
-                  <GameIcon name="trash" size={18} variant="cream" bare />
-                </button>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {showAddMilkBag && (
-        <AddMilkBagModal
-          onSave={(bag) => {
-            onAddMilkBag(bag);
-            setShowAddMilkBag(false);
-          }}
-          onClose={() => setShowAddMilkBag(false)}
-        />
-      )}
     </div>
   );
 }
