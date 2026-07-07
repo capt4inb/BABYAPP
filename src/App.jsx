@@ -4,6 +4,7 @@ import HistoryTab from './components/HistoryTab';
 import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
 import RecordModal from './components/RecordModal';
+import QuickAddModal from './components/QuickAddModal';
 import GameIcon from './components/GameIcon';
 import { getFirebaseErrorMessage, subscribeToRoom, updateRoomRecords, updateRoomSettings, updateRoomMilkBags, updateRoomMemos } from './services/firebase';
 
@@ -65,6 +66,7 @@ export default function App() {
     loadFromStorage(STORAGE_KEYS.MEMOS, [])
   );
   const [modal, setModal] = useState(null); // null | { type: 'feed' | 'weight', editRecord: null | object }
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   
   // Sync state
   const [syncPin, setSyncPin] = useState(() => loadFromStorage('bmt_sync_pin', null));
@@ -311,9 +313,9 @@ export default function App() {
         <button
           className="tab-fab"
           type="button"
-          onClick={() => openFeedModal()}
-          aria-label="Ghi cữ bú nhanh"
-          title="Ghi cữ bú nhanh"
+          onClick={() => setShowQuickAdd(true)}
+          aria-label="Thêm nhanh"
+          title="Thêm nhanh"
         >
           <GameIcon name="plus" size={40} variant="cream" />
         </button>
@@ -342,6 +344,14 @@ export default function App() {
           editRecord={modal.editRecord}
           onSave={handleModalSave}
           onClose={closeModal}
+        />
+      )}
+
+      {showQuickAdd && (
+        <QuickAddModal
+          onClose={() => setShowQuickAdd(false)}
+          onSaveFeed={addRecord}
+          onSaveMilkBag={addMilkBag}
         />
       )}
     </div>

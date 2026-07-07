@@ -117,6 +117,11 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes quickAddAppear {
+  from { opacity: 0; transform: translate(-50%, 28px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
 @keyframes backdropAppear {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -434,6 +439,13 @@
 .game-icon.game-icon-cream,
 .game-icon-bare.game-icon-cream { color: var(--color-base-content); }
 
+.tab-item.active .game-icon,
+.tab-item.active .game-icon-bare,
+.tab-fab .game-icon,
+.tab-fab .game-icon-bare {
+  color: currentColor;
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -596,7 +608,7 @@
 
 .home-stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .home-stat {
@@ -1093,6 +1105,839 @@
   cursor: pointer;
 }
 
+.quick-add-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  z-index: 220;
+  width: min(calc(100% - 24px), 430px);
+  max-height: min(92dvh, 760px);
+  overflow-y: auto;
+  padding: 14px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+  transform: translateX(-50%);
+}
+
+.quick-add-sheet.animate-modal {
+  animation: quickAddAppear 0.2s ease-out both;
+}
+
+.quick-add-header {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.quick-add-header strong {
+  color: var(--color-base-content);
+  font-size: 15px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.quick-add-close {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-base-content);
+  cursor: pointer;
+}
+
+.quick-add-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 8px;
+  background: var(--color-base-200);
+}
+
+.quick-add-tabs button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.quick-add-tabs button.active {
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+}
+
+.quick-add-form {
+  display: grid;
+  gap: 14px;
+  padding-top: 18px;
+}
+
+.quick-add-hero {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.quick-add-hero .game-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-primary) 12%, white);
+}
+
+.quick-add-hero.pink .game-icon {
+  background: color-mix(in oklab, var(--color-error) 12%, white);
+}
+
+.quick-add-hero h2 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.quick-add-hero p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quick-add-range {
+  display: grid;
+  gap: 10px;
+}
+
+.quick-add-range > span,
+.quick-add-field label {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.quick-add-range strong {
+  color: var(--color-primary);
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 900;
+  text-align: center;
+}
+
+.quick-add-range.pink strong {
+  color: var(--color-error);
+}
+
+.quick-add-range input[type="range"] {
+  width: 100%;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--range-color, var(--color-primary)) 0%,
+    var(--range-color, var(--color-primary)) var(--range-progress, 50%),
+    #c8ced8 var(--range-progress, 50%),
+    #c8ced8 100%
+  );
+  background-size: 100% 4px;
+  background-position: center;
+  background-repeat: no-repeat;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  accent-color: var(--range-color, var(--color-primary));
+}
+
+.quick-add-range.pink input[type="range"] {
+  --range-color: var(--color-error);
+  accent-color: var(--color-error);
+}
+
+.quick-add-range input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.quick-add-range input[type="range"]::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+  border: 4px solid var(--color-base-100);
+  border-radius: 999px;
+  background: var(--range-color, var(--color-primary));
+  box-shadow: 0 6px 14px color-mix(in oklab, var(--range-color, var(--color-primary)) 34%, transparent);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.quick-add-range input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.quick-add-range input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 4px solid var(--color-base-100);
+  border-radius: 999px;
+  background: var(--range-color, var(--color-primary));
+  box-shadow: 0 6px 14px color-mix(in oklab, var(--range-color, var(--color-primary)) 34%, transparent);
+}
+
+.quick-range-control {
+  display: grid;
+  gap: 2px;
+}
+
+.quick-range-ticks {
+  display: grid;
+  grid-template-columns: repeat(var(--tick-count), minmax(0, 1fr));
+  align-items: start;
+  padding-inline: 1px;
+  color: var(--color-text-light);
+}
+
+.quick-range-ticks span {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 800;
+  text-align: center;
+}
+
+.quick-range-ticks span::before {
+  content: "";
+  width: 1px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--color-base-300);
+}
+
+.quick-add-field {
+  display: grid;
+  gap: 7px;
+}
+
+.quick-add-field textarea {
+  resize: vertical;
+}
+
+.quick-storage-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.quick-storage-choices button {
+  min-width: 0;
+  min-height: 92px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  padding: 10px 6px;
+  border: 1.5px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.quick-storage-choices button.active {
+  border-color: var(--color-primary);
+  background: color-mix(in oklab, var(--color-primary) 9%, white);
+  color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-primary) 20%, white);
+}
+
+.quick-storage-choices button:active {
+  transform: scale(0.98);
+}
+
+.quick-storage-choices strong,
+.quick-storage-choices small {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-storage-choices strong {
+  color: var(--color-base-content);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.quick-storage-choices small {
+  color: currentColor;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.quick-add-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.quick-add-submit {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.quick-add-submit.purple {
+  background: var(--color-primary);
+}
+
+.quick-add-submit.pink {
+  background: var(--color-error);
+}
+
+.milk-screen {
+  padding: 18px 16px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.milk-header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.milk-menu-button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  box-shadow: var(--shadow-sm);
+}
+
+.milk-header h1 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: clamp(28px, 7vw, 34px);
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.milk-header p {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.milk-header p strong {
+  color: var(--color-primary);
+}
+
+.milk-add-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px color-mix(in oklab, var(--color-primary) 26%, transparent);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.milk-total-card {
+  min-height: 154px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #7c5ce6, #8f68ff);
+  color: white;
+  box-shadow: 0 18px 34px color-mix(in oklab, var(--color-primary) 28%, transparent);
+}
+
+.milk-total-card span,
+.milk-total-card p {
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.milk-total-card span {
+  display: block;
+  font-size: 12px;
+}
+
+.milk-total-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.milk-total-card small {
+  font-size: 20px;
+}
+
+.milk-total-card p {
+  margin: 10px 0 0;
+  font-size: 12px;
+  text-transform: none;
+}
+
+.milk-total-card .game-icon {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.milk-kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.milk-kpi-card,
+.milk-chart-panel,
+.milk-detail-panel {
+  border: 1px solid color-mix(in oklab, var(--color-base-300) 74%, white);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+}
+
+.milk-kpi-card {
+  min-height: 132px;
+  padding: 16px;
+}
+
+.milk-kpi-card.green {
+  background: color-mix(in oklab, var(--color-success) 8%, white);
+}
+
+.milk-kpi-card.pink {
+  background: color-mix(in oklab, var(--color-error) 8%, white);
+}
+
+.milk-kpi-card > span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.milk-kpi-card strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--kpi-color, var(--color-primary));
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.milk-kpi-card.green {
+  --kpi-color: var(--color-success);
+}
+
+.milk-kpi-card.pink {
+  --kpi-color: var(--color-error);
+}
+
+.milk-kpi-card small {
+  font-size: 15px;
+}
+
+.milk-kpi-card p {
+  margin: 10px 0 8px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.milk-kpi-card div {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--kpi-color) 12%, white);
+}
+
+.milk-kpi-card div span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--kpi-color);
+}
+
+.milk-chart-panel,
+.milk-detail-panel {
+  padding: 16px;
+}
+
+.milk-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.milk-panel-head h2 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.milk-panel-head span {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-primary) 9%, white);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.milk-chart-bars {
+  height: 180px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+}
+
+.milk-chart-col {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 24px 1fr 28px;
+  justify-items: center;
+  align-items: end;
+  gap: 7px;
+}
+
+.milk-chart-col span,
+.milk-chart-col small {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.milk-chart-col div {
+  width: min(38px, 76%);
+  min-height: 14px;
+  border-radius: 999px 999px 3px 3px;
+  background: color-mix(in oklab, var(--color-primary) 32%, white);
+}
+
+.milk-chart-col div.active {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary) 5px,
+    color-mix(in oklab, var(--color-primary) 75%, white) 5px,
+    color-mix(in oklab, var(--color-primary) 75%, white) 10px
+  );
+}
+
+.milk-detail-link {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-top: 1px solid var(--color-base-300);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 900;
+  text-align: left;
+  cursor: pointer;
+}
+
+.milk-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  overflow-x: visible;
+  scrollbar-width: none;
+}
+
+.milk-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.milk-filter-tabs button {
+  min-height: 36px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 999px;
+  background: var(--color-base-100);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.milk-filter-tabs button.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+}
+
+.milk-filter-tabs button span {
+  min-width: 22px;
+  min-height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  color: currentColor;
+  font-size: 11px;
+}
+
+.milk-detail-list {
+  display: grid;
+  gap: 10px;
+}
+
+.milk-detail-item {
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  overflow: hidden;
+}
+
+.milk-detail-item.done {
+  opacity: 0.72;
+}
+
+.milk-detail-main {
+  width: 100%;
+  min-height: 74px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.milk-detail-volume {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-primary) 10%, white);
+  color: var(--color-primary);
+}
+
+.milk-detail-volume strong,
+.milk-detail-volume small,
+.milk-detail-copy span,
+.milk-detail-copy strong,
+.milk-detail-copy em {
+  display: block;
+}
+
+.milk-detail-volume strong {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.milk-detail-volume small {
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.milk-detail-copy {
+  min-width: 0;
+}
+
+.milk-detail-row {
+  display: flex !important;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.milk-detail-row strong {
+  color: var(--color-base-content);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.milk-detail-row em {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.milk-detail-copy > span:last-child {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.milk-detail-expanded {
+  padding: 0 12px 12px;
+}
+
+.milk-detail-expanded dl {
+  display: grid;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--color-base-200);
+}
+
+.milk-detail-expanded dl div {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.milk-detail-expanded dt,
+.milk-detail-expanded dd {
+  margin: 0;
+  font-size: 12px;
+}
+
+.milk-detail-expanded dt {
+  color: var(--color-text-muted);
+  font-weight: 900;
+}
+
+.milk-detail-expanded dd {
+  color: var(--color-base-content);
+  font-weight: 750;
+  word-break: break-word;
+}
+
+.milk-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.milk-detail-actions button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.milk-detail-actions button.success {
+  border-color: color-mix(in oklab, var(--color-success) 26%, white);
+  background: color-mix(in oklab, var(--color-success) 10%, white);
+  color: var(--color-success);
+}
+
+.milk-detail-actions button.danger {
+  border-color: color-mix(in oklab, var(--color-error) 28%, white);
+  background: color-mix(in oklab, var(--color-error) 10%, white);
+  color: var(--color-error);
+}
+
+.milk-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.milk-empty-state strong {
+  color: var(--color-base-content);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.milk-empty-state p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .game-hero-card {
   padding: 16px;
 }
@@ -1508,8 +2353,9 @@
 
 .milk-filter-tabs {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  overflow-x: visible;
   scrollbar-width: none;
 }
 
@@ -1571,6 +2417,30 @@
 
   .home-storage-tile {
     min-height: 86px;
+  }
+
+  .quick-add-sheet {
+    width: min(calc(100% - 18px), 430px);
+    padding: 12px;
+  }
+
+  .milk-header {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .milk-add-button {
+    grid-column: 2;
+    justify-self: start;
+    min-height: 40px;
+    padding-inline: 14px;
+  }
+
+  .milk-kpi-grid {
+    gap: 10px;
+  }
+
+  .milk-chart-bars {
+    gap: 8px;
   }
 }
 
@@ -1668,6 +2538,68 @@
 
   .home-memo-actions {
     grid-template-columns: 1fr;
+  }
+
+  .quick-add-two {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-storage-choices {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-storage-choices button {
+    min-height: 64px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    justify-items: start;
+    align-content: center;
+    text-align: left;
+    padding-inline: 12px;
+  }
+
+  .quick-storage-choices strong,
+  .quick-storage-choices small {
+    text-align: left;
+  }
+
+  .milk-screen {
+    padding: 16px 14px 24px;
+  }
+
+  .milk-total-card {
+    min-height: 142px;
+    padding: 18px;
+  }
+
+  .milk-total-card strong {
+    font-size: 34px;
+  }
+
+  .milk-total-card .game-icon {
+    width: 78px;
+    height: 78px;
+  }
+
+  .milk-kpi-card {
+    padding: 14px;
+  }
+
+  .milk-kpi-card strong {
+    font-size: 24px;
+  }
+
+  .milk-chart-panel,
+  .milk-detail-panel {
+    padding: 14px;
+  }
+
+  .milk-chart-col small {
+    font-size: 9px;
+  }
+
+  .milk-detail-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .game-action-grid {

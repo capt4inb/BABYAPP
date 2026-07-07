@@ -200,10 +200,6 @@ export default function DashboardTab({
             <p>{ageInfo ? ageInfo.readable : 'Cập nhật ngày sinh'} · Hôm nay tốt nhé!</p>
           </div>
         </div>
-        <button className="home-icon-button" type="button" aria-label="Thông báo">
-          <GameIcon name="bell" size={30} variant="cream" />
-          <span />
-        </button>
       </header>
 
       <section className="home-card home-today-card">
@@ -233,12 +229,6 @@ export default function DashboardTab({
             <strong>{formatNumber(milkSummary.totalMl)}</strong>
             <span>ml</span>
             <small>trong kho</small>
-          </div>
-          <div className="home-stat">
-            <GameIcon name="baby" size={36} variant="orange" />
-            <strong>{ageInfo ? ageInfo.compact : '--'}</strong>
-            <span>tuổi bé</span>
-            <small>{ageInfo ? `${ageInfo.totalDays} ngày` : 'chưa có'}</small>
           </div>
         </div>
       </section>
@@ -276,7 +266,7 @@ export default function DashboardTab({
           <h2>Cữ bú gần nhất</h2>
           {nextFeed && (
             <span className={`home-reminder-status ${nextFeed.overdue ? 'overdue' : ''}`}>
-              <GameIcon name="bell" size={20} variant="lavender" bare />
+              <GameIcon name="clock" size={20} variant="lavender" bare />
               Nhắc cữ tiếp theo
             </span>
           )}
