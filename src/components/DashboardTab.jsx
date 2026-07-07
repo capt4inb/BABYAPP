@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import { getBabyWeekAge, getWonderWeekStatus } from '../data/wonderWeeks';
-import { getWHOMedianWeight, evaluateWeight, getMonthsBetween } from '../data/whoWeight';
 import { getMilkSummary, getThawRecommendation, getAvgDailyMl, transitionBag } from '../utils/milkUtils';
 import AddMilkBagModal from './AddMilkBagModal';
 import GameIcon from './GameIcon';
@@ -63,7 +61,7 @@ export default function DashboardTab({
   onAddMemo,
   onDeleteMemo
 }) {
-  const { babyName, babyBirthDate, babyDueDate, feedIntervalHours, babyGender } = settings;
+  const { babyName, babyBirthDate, feedIntervalHours } = settings;
   const [showAddMilkBag, setShowAddMilkBag] = useState(false);
 
   // Notes state
@@ -90,21 +88,19 @@ export default function DashboardTab({
   };
 
   const AUTHOR_MAP = {
-    'Mẹ': { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: 'var(--color-primary)' },
-    'Bố': { emoji: '👨', color: 'var(--color-baby)', bg: 'var(--color-baby-bg)', text: 'var(--color-baby)' },
-    'Bà': { emoji: '👵', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' },
-    'Ông': { emoji: '👴', color: 'var(--color-wonder)', bg: 'var(--color-wonder-bg)', text: 'var(--color-wonder)' },
+    'Mẹ': { icon: 'users', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: 'var(--color-primary)' },
+    'Bố': { icon: 'users', color: 'var(--color-baby)', bg: 'var(--color-baby-bg)', text: 'var(--color-baby)' },
+    'Bà': { icon: 'users', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' },
+    'Ông': { icon: 'users', color: 'var(--color-secondary)', bg: 'var(--color-secondary-bg)', text: 'var(--color-secondary)' },
   };
 
-  // Convert text initials or emojis for display
+  // Convert author names into a compact avatar.
   const getAuthorMeta = (author) => {
-    return AUTHOR_MAP[author] || { emoji: author.slice(0, 2), color: 'var(--color-text-muted)', bg: 'var(--color-surface-alt)', text: 'var(--color-text)' };
+    return AUTHOR_MAP[author] || { initials: author.slice(0, 2), color: 'var(--color-text-muted)', bg: 'var(--color-surface-alt)', text: 'var(--color-text)' };
   };
 
   // Last records
   const lastFeed = useMemo(() => records.find(r => r.type === 'feed'), [records]);
-  const lastWeight = useMemo(() => records.find(r => r.type === 'weight'), [records]);
-
   // Today counts
   const todayStart = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d;
@@ -115,12 +111,6 @@ export default function DashboardTab({
     [records, todayStart]
   );
   const todayFeedVol = todayFeeds.reduce((s, r) => s + (r.volume || 0), 0);
-
-  // Wonder weeks
-  const weekAge = babyBirthDate
-    ? getBabyWeekAge(babyBirthDate, babyDueDate || null)
-    : null;
-  const wwStatus = weekAge !== null ? getWonderWeekStatus(weekAge) : null;
 
   const ageInfo = useMemo(() => {
     if (!babyBirthDate) return null;
@@ -144,16 +134,6 @@ export default function DashboardTab({
 
   // Recent 5 records for timeline
   const recent = records.slice(0, 5);
-
-  // Weight evaluation
-  let weightEval = null;
-  if (lastWeight && babyBirthDate) {
-    const months = getMonthsBetween(babyBirthDate, lastWeight.timestamp);
-    if (months !== null) {
-      const median = getWHOMedianWeight(babyGender || 'boy', months);
-      weightEval = { months, median, ...evaluateWeight(lastWeight.weight, median) };
-    }
-  }
 
   // Milk storage summary
   const milkSummary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
@@ -210,12 +190,13 @@ export default function DashboardTab({
         <div className="game-hero-copy">
           <p>Baby's daily quest</p>
           <h1>{babyName || 'Bé Yêu'}</h1>
-          <span>Milk • growth • wonder weeks</span>
+          <span>Milk • growth • daily care</span>
         </div>
 
         <div className="game-mascot-stage" aria-hidden="true">
-          <div className="game-mascot-ring" />
-          <img src="/mascot-baby-girl.png" alt="" className="game-mascot-img" />
+          <div className="game-item-chip blue"><GameIcon name="baby" size={42} variant="blue" /></div>
+          <div className="game-item-chip pink"><GameIcon name="bottle" size={42} variant="pink" /></div>
+          <div className="game-item-chip green"><GameIcon name="sparkles" size={42} variant="green" /></div>
         </div>
 
         <div className="game-item-row">
@@ -248,11 +229,6 @@ export default function DashboardTab({
       <section className="game-clock-section">
         <div className="game-section-title">
           <h2>Clock in</h2>
-          {wwStatus && wwStatus.status !== 'no_data' && (
-            <span className={`status-pill ${wwStatus.status === 'stormy' ? 'stormy' : 'sunny'}`}>
-              {wwStatus.status === 'stormy' ? 'Tuần storm' : 'Ổn định'}
-            </span>
-          )}
         </div>
 
         <div className="game-action-grid">
@@ -289,120 +265,6 @@ export default function DashboardTab({
           </button>
         </div>
       </section>
-      {/* Header */}
-      <div className="legacy-dashboard-header" style={{ display: 'none' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Nhật ký của bé 🍼
-            </p>
-            <h1 style={{ margin: '4px 0 0', fontSize: 28, fontWeight: 800, color: 'var(--color-text)' }}>
-              {babyName || 'Bé Yêu'}
-            </h1>
-            {ageInfo && (
-              <div style={{ margin: '8px 0 0', display: 'flex', flexWrap: 'wrap', gap: '8px 12px', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, background: 'var(--color-primary-bg)', color: 'var(--color-primary)', padding: '4px 10px', borderRadius: 99, fontWeight: 700 }}>
-                  👶 {ageInfo.totalDays} ngày tuổi
-                </span>
-                <span style={{ fontSize: 13, background: 'var(--color-surface-alt)', color: 'var(--color-text)', padding: '4px 10px', borderRadius: 99, fontWeight: 600 }}>
-                  🗓️ {ageInfo.weeks} tuần {ageInfo.days} ngày
-                </span>
-                {lastWeight && weightEval && (
-                  <span style={{ fontSize: 13, background: 'linear-gradient(135deg, rgba(117, 129, 213, 0.1), rgba(145, 200, 197, 0.1))', color: 'var(--color-baby)', padding: '4px 10px', borderRadius: 99, fontWeight: 600 }}>
-                    ⚖️ {lastWeight.weight} kg ({weightEval.status === 'normal' ? 'Chuẩn' : weightEval.label})
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          {/* Wonder week badge */}
-          {wwStatus && wwStatus.status !== 'no_data' && (
-            <div
-              className={`status-pill ${wwStatus.status === 'stormy' ? 'stormy' : 'sunny'}`}
-              style={{ marginTop: 4, padding: '6px 12px', borderRadius: 'var(--radius-full)', fontWeight: 800 }}
-            >
-              <span>{wwStatus.status === 'stormy' ? '⛈️' : '☀️'}</span>
-              {wwStatus.status === 'stormy' ? 'Tuần Storm' : 'Ổn định'}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Quick Action Buttons */}
-      <div className="legacy-dashboard-actions" style={{ display: 'none' }}>
-        <button
-          id="btn-log-feed"
-          className="btn"
-          onClick={() => onOpenFeedModal()}
-          style={{
-            flex: 1,
-            padding: '20px 16px',
-            borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, var(--color-primary), #e99fbd)',
-            color: 'white',
-            boxShadow: '0 6px 20px rgba(255, 107, 157, 0.25)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            height: 'auto',
-            border: 'none',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ background: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <GameIcon name="drop" size={30} variant="pink" />
-          </div>
-          <span style={{ fontSize: 16, fontWeight: 800 }}>Ghi cữ bú</span>
-          {nextFeed && (
-            <span style={{
-              fontSize: 11, fontWeight: 700,
-              background: nextFeed.overdue ? 'rgba(255, 107, 107, 0.4)' : 'rgba(255,255,255,0.25)',
-              color: 'white',
-              padding: '3px 10px', borderRadius: 99,
-            }}>
-              {nextFeed.overdue ? '⚠️ Đến giờ!' : `⏰ ${nextFeed.label}`}
-            </span>
-          )}
-        </button>
-
-        <button
-          id="btn-quick-add-milk"
-          className="btn"
-          onClick={() => setShowAddMilkBag(true)}
-          style={{
-            flex: 1,
-            padding: '20px 16px',
-            borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
-            color: 'white',
-            boxShadow: '0 6px 20px rgba(79, 172, 254, 0.25)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            height: 'auto',
-            border: 'none',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ background: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <GameIcon name="plus" size={30} variant="lavender" />
-          </div>
-          <span style={{ fontSize: 16, fontWeight: 800 }}>Thêm bịch sữa</span>
-          <span style={{
-            fontSize: 11, fontWeight: 700,
-            background: 'rgba(255,255,255,0.25)',
-            color: 'white',
-            padding: '3px 10px', borderRadius: 99,
-          }}>
-            🍼 Kho: {milkSummary.totalMl}ml
-          </span>
-        </button>
-      </div>
-
       {/* Main Info Cards */}
       <div className="game-content-stack">
 
@@ -442,7 +304,7 @@ export default function DashboardTab({
               <div style={{ background: 'var(--color-surface-alt)', borderRadius: 12, padding: '10px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>
-                    {lastFeed.side === 'left' ? '◀️ Bú ngực Trái' : lastFeed.side === 'right' ? '▶️ Bú ngực Phải' : lastFeed.side === 'bottle' ? '🍼 Bú Bình' : '↔️ Bú Hai Bên'}
+                    {lastFeed.side === 'left' ? 'Bú ngực trái' : lastFeed.side === 'right' ? 'Bú ngực phải' : lastFeed.side === 'bottle' ? 'Bú bình' : 'Bú hai bên'}
                   </span>
                   <span style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 600 }}>
                     {timeSince(lastFeed.timestamp)}
@@ -576,7 +438,7 @@ export default function DashboardTab({
               </div>
               <div style={{ flex: 1, minWidth: 90, background: '#FBF5FF', border: '1px solid #D7BDE2', borderRadius: 12, padding: '8px 10px', textAlign: 'center' }}>
                 <GameIcon name="snow" size={28} variant="lavender" />
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-wonder)', display: 'block' }}>Ngăn đông</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-secondary)', display: 'block' }}>Ngăn đông</span>
                 <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text)' }}>{freezerMl} ml ({freezerBags.length} b)</span>
               </div>
               <div style={{ flex: 1, minWidth: 90, background: '#F0FDFC', border: '1px solid #A8E6E2', borderRadius: 12, padding: '8px 10px', textAlign: 'center' }}>
@@ -609,7 +471,7 @@ export default function DashboardTab({
               marginTop: 14,
               padding: '12px 14px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08))',
+              background: 'var(--color-base-100)',
               border: '1.5px solid rgba(102, 126, 234, 0.2)',
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -625,7 +487,7 @@ export default function DashboardTab({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
                     {thawRec.toThaw.map((bag) => (
                       <div key={bag.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: '1px solid rgba(102, 126, 234, 0.1)', borderRadius: 8, padding: '6px 10px', fontSize: 11 }}>
-                        <span style={{ fontWeight: 700, color: 'var(--color-wonder)', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                        <span style={{ fontWeight: 700, color: 'var(--color-secondary)', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                           <GameIcon name="snow" size={20} variant="lavender" /> {bag.volume_ml}ml
                         </span>
                         <span style={{ color: 'var(--color-text-muted)' }}>Hút: {new Date(bag.expressed_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
@@ -641,7 +503,7 @@ export default function DashboardTab({
                       padding: '8px 12px',
                       borderRadius: 8,
                       border: 'none',
-                      background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
+                      background: 'var(--color-primary)',
                       color: 'white',
                       fontSize: 12,
                       fontWeight: 700,
@@ -662,7 +524,7 @@ export default function DashboardTab({
         <div className="card" style={{ padding: 20, borderLeft: '5px solid var(--color-pump)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>📌</span>
+              <GameIcon name="edit" size={22} variant="orange" />
               <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-pump)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Ghi chú gia đình
               </span>
@@ -684,7 +546,7 @@ export default function DashboardTab({
           }}>
             {memos.length === 0 ? (
               <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: 13 }}>
-                Chưa có ghi chú nào. Hãy để lại lời nhắn cho cả nhà! 📝
+                Chưa có ghi chú nào. Hãy để lại lời nhắn cho cả nhà!
               </div>
             ) : (
               memos.map(memo => {
@@ -699,7 +561,7 @@ export default function DashboardTab({
                       width: 32, height: 32, borderRadius: '50%', background: meta.bg,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0
                     }}>
-                      {meta.emoji}
+                      {meta.icon ? <GameIcon name={meta.icon} size={18} variant="cream" bare /> : meta.initials}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
@@ -781,7 +643,7 @@ export default function DashboardTab({
                             transition: 'all 0.2s', fontFamily: 'inherit'
                           }}
                         >
-                          <span>{meta.emoji}</span> {author}
+                          {meta.icon ? <GameIcon name={meta.icon} size={16} variant="cream" bare /> : <span>{meta.initials}</span>} {author}
                         </button>
                       );
                     })}
@@ -797,7 +659,7 @@ export default function DashboardTab({
                         transition: 'all 0.2s', fontFamily: 'inherit'
                       }}
                     >
-                      <span>👤</span> {showCustomAuthor ? 'Khác:' : 'Khác...'}
+                      <GameIcon name="users" size={16} variant="cream" bare /> {showCustomAuthor ? 'Khác:' : 'Khác...'}
                     </button>
                   </div>
 
@@ -831,7 +693,7 @@ export default function DashboardTab({
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    style={{ padding: '8px 16px', fontSize: 12, height: 'auto', borderRadius: 10, background: 'linear-gradient(135deg, var(--color-primary), #e99fbd)', border: 'none' }}
+                    style={{ padding: '8px 16px', fontSize: 12, height: 'auto', borderRadius: 10, background: 'var(--color-primary)', border: 'none' }}
                   >
                     Lưu ghi chú
                   </button>
@@ -842,32 +704,6 @@ export default function DashboardTab({
         </div>
 
       </div>
-
-      {/* Wonder Week Banner */}
-      {wwStatus?.currentLeap && (
-        <div
-          className="hero-card"
-          style={{
-            background: `linear-gradient(135deg, ${wwStatus.currentLeap.color}CC, ${wwStatus.currentLeap.color}88)`,
-            marginTop: 16,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <span style={{ fontSize: 28 }}>{wwStatus.currentLeap.emoji}</span>
-            <div>
-              <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                ⛈️ Tuần nhảy vọt #{wwStatus.currentLeap.leap}
-              </p>
-              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'white' }}>
-                {wwStatus.currentLeap.nameVi}
-              </h3>
-            </div>
-          </div>
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
-            {wwStatus.currentLeap.description.slice(0, 120)}...
-          </p>
-        </div>
-      )}
 
       {/* Recent Timeline */}
       {recent.length > 0 && (
@@ -885,7 +721,7 @@ export default function DashboardTab({
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-                      {r.type === 'feed' ? `🍼 Bú ${r.side === 'left' ? 'bên trái' : r.side === 'right' ? 'bên phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}` : `⚖️ Cân nặng`}
+                      {r.type === 'feed' ? `Bú ${r.side === 'left' ? 'bên trái' : r.side === 'right' ? 'bên phải' : r.side === 'bottle' ? 'bình' : 'hai bên'}` : 'Cân nặng'}
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--color-text-light)', whiteSpace: 'nowrap', marginLeft: 8 }}>
                       {timeSince(r.timestamp)}
@@ -916,7 +752,7 @@ export default function DashboardTab({
       {/* Empty state */}
       {records.length === 0 && (
         <div style={{ textAlign: 'center', padding: '48px 32px' }}>
-          <div style={{ fontSize: 56, marginBottom: 12 }}>🍼</div>
+          <GameIcon name="bottle" size={56} variant="pink" />
           <h3 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 700, color: 'var(--color-text)' }}>
             Bắt đầu ghi chép!
           </h3>

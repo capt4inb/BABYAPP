@@ -59,7 +59,7 @@ export default function SettingsTab({
         if (Array.isArray(data.memos)) {
           onImportMemos(data.memos);
         }
-        alert(`✅ Đã nhập dữ liệu thành công!`);
+        alert('Đã nhập dữ liệu thành công!');
       } catch {
         setImportError('Tệp không hợp lệ. Vui lòng chọn tệp xuất từ ứng dụng này.');
       }
@@ -130,7 +130,7 @@ export default function SettingsTab({
         {/* Baby Info */}
         <div className="card" style={{ padding: 20, marginBottom: 16 }}>
           <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            👶 Thông tin bé
+            <GameIcon name="baby" size={22} variant="blue" /> Thông tin bé
           </h2>
 
           <div className="form-group">
@@ -166,21 +166,12 @@ export default function SettingsTab({
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Ngày dự sinh — tùy chọn (để tính Wonder Weeks chính xác hơn)</label>
-            <input
-              type="date"
-              className="form-input"
-              value={form.babyDueDate}
-              onChange={e => handleChange('babyDueDate', e.target.value)}
-            />
-          </div>
         </div>
 
         {/* Reminders */}
         <div className="card" style={{ padding: 20, marginBottom: 16 }}>
           <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-            ⏰ Nhắc nhở
+            <GameIcon name="clock" size={22} variant="orange" /> Nhắc nhở
           </h2>
 
           <div className="form-group">
@@ -205,7 +196,7 @@ export default function SettingsTab({
           style={{ width: '100%', marginBottom: 20 }}
         >
           <GameIcon name="save" size={28} variant="cream" />
-          {saved ? '✅ Đã lưu!' : 'Lưu cài đặt'}
+          {saved ? 'Đã lưu!' : 'Lưu cài đặt'}
         </button>
 
         {/* Family Sync */}
@@ -277,7 +268,7 @@ export default function SettingsTab({
               </div>
 
               <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--color-text-light)', marginBottom: 16 }}>
-                — hoặc —
+                hoặc
               </div>
 
               <button
@@ -295,7 +286,7 @@ export default function SettingsTab({
         {/* Data Management */}
         <div className="card" style={{ padding: 20, marginBottom: 16 }}>
           <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-            💾 Quản lý dữ liệu
+            <GameIcon name="save" size={22} variant="blue" /> Quản lý dữ liệu
           </h2>
           <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--color-text-muted)' }}>
             {records.length} bản ghi đang lưu trữ
@@ -340,7 +331,7 @@ export default function SettingsTab({
         {/* Danger zone */}
         <div className="card" style={{ padding: 20, border: '1px solid rgba(255, 107, 107, 0.2)' }}>
           <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            ⚠️ Vùng nguy hiểm
+            <GameIcon name="warning" size={22} variant="orange" /> Vùng nguy hiểm
           </h2>
           <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--color-text-muted)' }}>
             Thao tác này không thể hoàn tác. Hãy xuất dữ liệu trước khi xoá.
@@ -351,7 +342,7 @@ export default function SettingsTab({
             style={{ width: '100%' }}
           >
             <GameIcon name="trash" size={28} variant="cream" />
-            {showClearConfirm ? '⚠️ Nhấn lần nữa để xác nhận xoá tất cả!' : 'Xoá tất cả dữ liệu'}
+            {showClearConfirm ? 'Nhấn lần nữa để xác nhận xoá tất cả!' : 'Xoá tất cả dữ liệu'}
           </button>
         </div>
 

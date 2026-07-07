@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import GameIcon from './GameIcon';
 
 function toLocalDatetimeInput(date) {
@@ -11,21 +11,11 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
   const isFeed = type === 'feed';
   const isWeight = type === 'weight';
 
-  const [timestamp, setTimestamp] = useState(toLocalDatetimeInput(new Date()));
-  const [volume, setVolume] = useState('');
-  const [weight, setWeight] = useState('');
-  const [side, setSide] = useState('bottle');     // default to bottle
-  const [note, setNote] = useState('');
-
-  useEffect(() => {
-    if (editRecord) {
-      setTimestamp(toLocalDatetimeInput(editRecord.timestamp));
-      setVolume(editRecord.volume ?? '');
-      setWeight(editRecord.weight ?? '');
-      setSide(editRecord.side ?? 'bottle');
-      setNote(editRecord.note ?? '');
-    }
-  }, [editRecord]);
+  const [timestamp, setTimestamp] = useState(() => toLocalDatetimeInput(editRecord?.timestamp || new Date()));
+  const [volume, setVolume] = useState(() => editRecord?.volume ?? '');
+  const [weight, setWeight] = useState(() => editRecord?.weight ?? '');
+  const [side] = useState(() => editRecord?.side ?? 'bottle');
+  const [note, setNote] = useState(() => editRecord?.note ?? '');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -58,9 +48,8 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 40, height: 40, borderRadius: 12,
-              background: isFeed 
-                ? 'linear-gradient(135deg,var(--color-primary),#e99fbd)'
-                : 'linear-gradient(135deg,var(--color-baby),#91c8c5)',
+              background: 'var(--color-base-200)',
+              border: '1px solid var(--color-base-300)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               {isFeed ? <GameIcon name="drop" size={30} variant="pink" /> : <GameIcon name="weight" size={30} variant="blue" />}
@@ -161,7 +150,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
             <button
               type="submit"
               className={`btn ${isFeed ? 'btn-primary' : ''}`}
-              style={{ flex: 2, background: isWeight ? 'linear-gradient(135deg,var(--color-baby),#91c8c5)' : undefined, color: isWeight ? 'white' : undefined }}
+              style={{ flex: 2, background: isWeight ? 'var(--color-info)' : undefined, color: isWeight ? 'var(--color-info-content)' : undefined }}
             >
               {editRecord ? 'Lưu thay đổi' : `Lưu ${isFeed ? 'cữ bú' : 'cân nặng'}`}
             </button>

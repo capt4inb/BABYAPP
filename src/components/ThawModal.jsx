@@ -8,7 +8,7 @@ const THAW_METHODS = [
     value: 'fridge_overnight',
     label: 'Để ngăn mát qua đêm',
     desc: 'An toàn nhất · tan trong 8–12 giờ. App sẽ nhắc bạn đánh dấu khi sữa đã tan hoàn toàn.',
-    emoji: '❄️',
+    icon: 'snow',
     color: '#7581D5',
     bg: '#F4F5FF',
     border: '#CFD5FF',
@@ -18,7 +18,7 @@ const THAW_METHODS = [
     value: 'warm_water',
     label: 'Ngâm nước ấm',
     desc: 'Nhanh hơn · tan trong khoảng 30 phút. Chú ý không dùng nước sôi.',
-    emoji: '💧',
+    icon: 'drop',
     color: '#DF9A63',
     bg: '#FFF6EF',
     border: '#F3D3B8',
@@ -28,7 +28,7 @@ const THAW_METHODS = [
     value: 'room_temp',
     label: 'Để ngoài nhiệt độ phòng',
     desc: 'Tan trong 1–2 giờ. Chú ý không để quá 2 giờ ở nhiệt độ phòng sau khi tan.',
-    emoji: '🌡️',
+    icon: 'thermo',
     color: '#39A98F',
     bg: '#F1FBF7',
     border: '#BFE7DB',
@@ -38,8 +38,6 @@ const THAW_METHODS = [
 
 export default function ThawModal({ bag, onSave, onClose }) {
   const [method, setMethod] = useState('fridge_overnight');
-
-  const selectedMethod = THAW_METHODS.find(m => m.value === method);
 
   const handleStartThaw = () => {
     const updated = transitionBag(bag, 'thawing', { thaw_method: method });
@@ -62,11 +60,11 @@ export default function ThawModal({ bag, onSave, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 14,
-              background: 'linear-gradient(135deg, var(--color-baby), var(--color-success))',
+              background: 'var(--color-base-200)',
+              border: '1px solid var(--color-base-300)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22,
             }}>
-              💧
+              <GameIcon name="drop" size={30} variant="blue" />
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
@@ -97,14 +95,14 @@ export default function ThawModal({ bag, onSave, onClose }) {
 
           {/* CDC Note */}
           <div style={{
-            background: 'linear-gradient(135deg, #F4F5FF, #F1FBF7)',
+            background: 'var(--color-base-100)',
             border: '1px solid #CFD5FF',
             borderRadius: 'var(--radius-sm)',
             padding: '12px 14px',
             marginBottom: 20,
           }}>
             <p style={{ margin: 0, fontSize: 13, color: '#2D6A8F', lineHeight: 1.5, fontWeight: 500 }}>
-              💡 <strong>Theo CDC:</strong> Hạn 24 giờ tính từ lúc sữa <em>tan hoàn toàn</em>, 
+              <GameIcon name="light" size={16} variant="orange" bare /> <strong>Theo CDC:</strong> Hạn 24 giờ tính từ lúc sữa <em>tan hoàn toàn</em>, 
               không tính từ lúc vừa lấy ra khỏi ngăn đông.
             </p>
           </div>
@@ -135,7 +133,7 @@ export default function ThawModal({ bag, onSave, onClose }) {
                   gap: 12,
                 }}
               >
-                <span style={{ fontSize: 24, lineHeight: 1 }}>{m.emoji}</span>
+                <GameIcon name={m.icon} size={28} variant="blue" />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: method === m.value ? m.color : 'var(--color-text)', marginBottom: 3 }}>
                     {m.label}
@@ -154,14 +152,14 @@ export default function ThawModal({ bag, onSave, onClose }) {
           {/* If thawing in fridge overnight, show "already thawed" option */}
           {bag.storage_status === 'thawing' && (
             <div style={{
-              background: 'linear-gradient(135deg, #F1FBF7, #F7FFFB)',
+              background: 'var(--color-base-100)',
               border: '2px solid var(--color-success)',
               borderRadius: 'var(--radius-md)',
               padding: '16px',
               marginBottom: 20,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <span style={{ fontSize: 22 }}>✅</span>
+                <GameIcon name="check" size={28} variant="green" />
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#00A88B' }}>Sữa đã tan hoàn toàn?</div>
                   <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>Bấm để bắt đầu đếm hạn 24 giờ</div>
@@ -175,8 +173,8 @@ export default function ThawModal({ bag, onSave, onClose }) {
                   padding: '12px',
                   borderRadius: 'var(--radius-sm)',
                   border: 'none',
-                  background: 'linear-gradient(135deg, var(--color-success), #91c8c5)',
-                  color: 'white',
+                  background: 'var(--color-success)',
+                  color: 'var(--color-success-content)',
                   fontFamily: 'Outfit, sans-serif',
                   fontSize: 14,
                   fontWeight: 700,
@@ -184,7 +182,7 @@ export default function ThawModal({ bag, onSave, onClose }) {
                   boxShadow: '0 4px 12px rgba(0, 201, 167, 0.35)',
                 }}
               >
-                ✅ Đánh dấu đã tan hoàn toàn (bắt đầu 24h)
+                <GameIcon name="check" size={22} variant="cream" bare /> Đánh dấu đã tan hoàn toàn (bắt đầu 24h)
               </button>
             </div>
           )}
@@ -201,12 +199,12 @@ export default function ThawModal({ bag, onSave, onClose }) {
                 className="btn"
                 style={{
                   flex: 2,
-                  background: `linear-gradient(135deg, ${selectedMethod?.color || '#7581D5'}, #39A98F)`,
-                  color: 'white',
-                  boxShadow: `0 4px 15px ${selectedMethod?.color || '#7581D5'}33`,
+                  background: 'var(--color-primary)',
+                  color: 'var(--color-primary-content)',
+                  boxShadow: 'none',
                 }}
               >
-                💧 Bắt đầu rã đông
+                <GameIcon name="drop" size={22} variant="cream" bare /> Bắt đầu rã đông
               </button>
             )}
           </div>

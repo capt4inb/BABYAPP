@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import GameIcon from './GameIcon';
 
 export default function SwipeToComplete({ onComplete, label = 'Trượt để hoàn thành' }) {
@@ -25,34 +25,17 @@ export default function SwipeToComplete({ onComplete, label = 'Trượt để ho
     startXRef.current = clientX - dragX;
   };
 
-  const handleMove = (clientX) => {
+  const handleMove = useCallback((clientX) => {
     if (!isDragging || completed) return;
     const maxDrag = getMaxDrag();
     let x = clientX - startXRef.current;
     if (x < 0) x = 0;
     if (x > maxDrag) x = maxDrag;
     setDragX(x);
-  };
+  }, [completed, isDragging]);
 
   const triggerBurst = () => {
-    const newParticles = [];
-    const colors = ['#D875A2', '#91C8C5', '#DF9A63', '#39A98F', '#837ACB'];
-    for (let i = 0; i < 16; i++) {
-      const angle = (i * 360) / 16 + (Math.random() * 15 - 7.5);
-      const angleRad = (angle * Math.PI) / 180;
-      const speed = 2 + Math.random() * 4;
-      newParticles.push({
-        id: i,
-        x: 0,
-        y: 0,
-        vx: Math.cos(angleRad) * speed,
-        vy: Math.sin(angleRad) * speed,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        size: 4 + Math.random() * 6,
-        opacity: 1,
-      });
-    }
-    setParticles(newParticles);
+    setParticles([]);
   };
 
   // Particle animation loop
@@ -83,7 +66,7 @@ export default function SwipeToComplete({ onComplete, label = 'Trượt để ho
     return () => cancelAnimationFrame(frameId);
   }, [particles.length]);
 
-  const handleEnd = () => {
+  const handleEnd = useCallback(() => {
     if (!isDragging || completed) return;
     setIsDragging(false);
     
@@ -107,7 +90,7 @@ export default function SwipeToComplete({ onComplete, label = 'Trượt để ho
       // Reset
       setDragX(0);
     }
-  };
+  }, [completed, dragX, isDragging, onComplete]);
 
   // Touch handlers
   const onTouchStart = (e) => handleStart(e.touches[0].clientX);
@@ -137,9 +120,9 @@ export default function SwipeToComplete({ onComplete, label = 'Trượt để ho
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [isDragging, dragX]);
+  }, [isDragging, dragX, handleEnd, handleMove]);
 
-  const percent = getMaxDrag() > 0 ? (dragX / getMaxDrag()) * 100 : 0;
+  const guideOpacity = completed ? 1 : Math.max(0, 1 - (dragX / 180));
 
   return (
     <div
@@ -149,9 +132,7 @@ export default function SwipeToComplete({ onComplete, label = 'Trượt để ho
         width: '100%',
         height: 48,
         borderRadius: 24,
-        background: completed
-          ? 'linear-gradient(135deg, var(--color-success), #91c8c5)'
-          : 'var(--color-surface-alt)',
+        background: completed ? 'var(--color-success)' : 'var(--color-surface-alt)',
         border: completed 
           ? '1.5px solid rgba(57, 169, 143, 0.28)'
           : '1.5px solid var(--color-border)',
@@ -176,7 +157,7 @@ export default function SwipeToComplete({ onComplete, label = 'Trượt để ho
             top: PADDING,
             height: THUMB_SIZE,
             width: dragX + (THUMB_SIZE / 2),
-            background: 'linear-gradient(135deg, rgba(57, 169, 143, 0.18), rgba(145, 200, 197, 0.14))',
+            background: 'color-mix(in oklab, var(--color-success) 18%, transparent)',
             borderRadius: 20,
             pointerEvents: 'none',
           }}
@@ -196,13 +177,13 @@ export default function SwipeToComplete({ onComplete, label = 'Trượt để ho
           fontWeight: 700,
           color: completed ? 'white' : 'var(--color-text-muted)',
           pointerEvents: 'none',
-          opacity: completed ? 1 : Math.max(0, 1 - (percent / 70)),
+          opacity: guideOpacity,
           transition: completed ? 'color 0.3s' : 'none',
           letterSpacing: '0.02em',
           fontFamily: 'Outfit, sans-serif',
         }}
       >
-        {completed ? '🎉 Đã hoàn thành!' : label}
+        {completed ? 'Đã hoàn thành!' : label}
       </span>
 
       {/* Thumb handle */}
@@ -218,7 +199,7 @@ export default function SwipeToComplete({ onComplete, label = 'Trượt để ho
           width: THUMB_SIZE,
           height: THUMB_SIZE,
           borderRadius: '50%',
-          background: completed ? 'white' : 'linear-gradient(135deg, var(--color-success), #91c8c5)',
+          background: completed ? 'white' : 'var(--color-success)',
           boxShadow: completed 
             ? '0 2px 6px rgba(0,0,0,0.1)' 
             : '0 3px 10px rgba(0, 201, 167, 0.35)',

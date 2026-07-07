@@ -4,7 +4,6 @@ import {
   getTimeRemaining,
   getFreezerAge,
   getAvgDailyMl,
-  getThawRecommendation,
   getMilkSummary,
   transitionBag,
   formatDateTime,
@@ -22,12 +21,12 @@ import GameIcon from './GameIcon';
 // ── Filter Tabs ───────────────────────────────────────────────
 const FILTERS = [
   { id: 'all',      label: 'Tất cả' },
-  { id: 'fridge',   label: '❄️ Ngăn mát' },
-  { id: 'freezer',  label: '🧊 Ngăn đông' },
-  { id: 'thawing',  label: '💧 Đang rã' },
-  { id: 'thawed',   label: '✅ Đã rã' },
-  { id: 'expiring', label: '⚠️ Sắp HH' },
-  { id: 'done',     label: '✔️ Đã dùng' },
+  { id: 'fridge',   label: 'Ngăn mát' },
+  { id: 'freezer',  label: 'Ngăn đông' },
+  { id: 'thawing',  label: 'Đang rã' },
+  { id: 'thawed',   label: 'Đã rã' },
+  { id: 'expiring', label: 'Sắp HH' },
+  { id: 'done',     label: 'Đã dùng' },
 ];
 
 // ── MilkBagCard ───────────────────────────────────────────────
@@ -120,7 +119,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         width: '100%',
       }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
-          🍼 Nhập lượng sữa bé đã bú
+          <GameIcon name="bottle" size={18} variant="pink" bare /> Nhập lượng sữa bé đã bú
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1 }}>
@@ -188,7 +187,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
         </div>
         {feedError && (
           <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--color-danger)', fontWeight: 600 }}>
-            ⚠️ {feedError}
+            {feedError}
           </p>
         )}
       </div>
@@ -348,7 +347,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
           {/* Volume circle */}
           <div style={{
             width: 52, height: 52, borderRadius: '50%',
-            background: `linear-gradient(135deg, ${cfg.color}20, ${cfg.color}10)`,
+            background: cfg.bg,
             border: `2px solid ${cfg.color}40`,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
@@ -372,7 +371,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                   fontSize: 11, fontWeight: 700,
                   border: `1px solid ${cfg.border}`,
                 }}>
-                  {cfg.emoji} {cfg.label}
+                  <GameIcon name={cfg.icon || 'tag'} size={14} variant="cream" bare /> {cfg.label}
                 </span>
 
                 {bag.storage_status === 'using' && (
@@ -383,7 +382,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                     fontSize: 11, fontWeight: 700,
                     border: '1px solid #FFB3CC',
                   }}>
-                    🍼 Đang dùng
+                    <GameIcon name="bottle" size={14} variant="cream" bare /> Đang dùng
                   </span>
                 )}
 
@@ -394,7 +393,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                     background: '#FFF3F4', color: 'var(--color-danger)', border: '1px solid #F2C1C5',
                     animation: 'pulse-soft 1.5s ease-in-out infinite',
                   }}>
-                    🔴 Dùng ngay!
+                    Dùng ngay!
                   </span>
                 )}
                 {remaining && !remaining.expired && remaining.warning && !remaining.urgent && (
@@ -402,7 +401,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                     padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
                     background: '#FFF6EF', color: 'var(--color-pump)', border: '1px solid #F3D3B8',
                   }}>
-                    🟠 Sắp hết hạn
+                    Sắp hết hạn
                   </span>
                 )}
                 {freezerAge?.warnExpired && (
@@ -410,7 +409,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                     padding: '3px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
                     background: '#FFF6EF', color: 'var(--color-pump)', border: '1px solid #F3D3B8',
                   }}>
-                    ⚠️ Quá 6 tháng
+                    Quá 6 tháng
                   </span>
                 )}
               </div>
@@ -420,7 +419,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
 
             {/* Expressed time */}
             <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 2 }}>
-              🕐 Hút {formatDateShort(bag.expressed_at)} lúc {formatTime(bag.expressed_at)}
+              Hút {formatDateShort(bag.expressed_at)} lúc {formatTime(bag.expressed_at)}
             </div>
 
             {/* Expiry countdown / freezer age */}
@@ -430,8 +429,8 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                 color: remaining.urgent ? 'var(--color-danger)' : remaining.warning ? 'var(--color-pump)' : remaining.expired ? 'var(--color-danger)' : 'var(--color-success)',
               }}>
                 {remaining.expired
-                  ? '❌ Đã hết hạn'
-                  : `⏱️ Còn ${remaining.label}`}
+                  ? 'Đã hết hạn'
+                  : `Còn ${remaining.label}`}
               </div>
             )}
             {freezerAge && (
@@ -439,13 +438,13 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                 fontSize: 12, fontWeight: 600,
                 color: freezerAge.warnExpired ? 'var(--color-pump)' : 'var(--color-text-muted)',
               }}>
-                🧊 Đã trữ {freezerAge.label}
+                Đã trữ {freezerAge.label}
                 {freezerAge.warnExpired ? ' · nên dùng sớm' : ''}
               </div>
             )}
             {bag.storage_status === 'thawing' && (
               <div style={{ fontSize: 12, color: 'var(--color-baby)', fontWeight: 600 }}>
-                💧 Đang rã đông · cần đánh dấu khi tan xong
+                Đang rã đông · cần đánh dấu khi tan xong
               </div>
             )}
           </div>
@@ -468,16 +467,16 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
               padding: '10px 12px', marginBottom: 12,
             }}>
               <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
-                <span style={{ color: 'var(--color-text-muted)', width: 80 }}>🏷️ ID Bịch:</span>
+                <span style={{ color: 'var(--color-text-muted)', width: 80 }}>ID Bịch:</span>
                 <span style={{ fontWeight: 600, color: 'var(--color-text)', letterSpacing: '0.05em' }}>{bag.id.substring(0, 6).toUpperCase()}</span>
               </div>
               <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
-                <span style={{ color: 'var(--color-text-muted)', width: 80 }}>🕐 Hút lúc:</span>
+                <span style={{ color: 'var(--color-text-muted)', width: 80 }}>Hút lúc:</span>
                 <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{formatDateTime(bag.expressed_at)}</span>
               </div>
               {bag.thaw_started_at && (
                 <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
-                  <span style={{ color: 'var(--color-text-muted)', width: 80 }}>💧 Bắt đầu rã:</span>
+                  <span style={{ color: 'var(--color-text-muted)', width: 80 }}>Bắt đầu rã:</span>
                   <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{formatDateTime(bag.thaw_started_at)}</span>
                 </div>
               )}
@@ -489,7 +488,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
               )}
               {bag.warmed_at && (
                 <div style={{ display: 'flex', gap: 8, fontSize: 12, marginBottom: 4 }}>
-                  <span style={{ color: 'var(--color-text-muted)', width: 80 }}>🔥 Hâm lúc:</span>
+                  <span style={{ color: 'var(--color-text-muted)', width: 80 }}>Hâm lúc:</span>
                   <span style={{ fontWeight: 600, color: 'var(--color-pump)' }}>{formatDateTime(bag.warmed_at)}</span>
                 </div>
               )}
@@ -506,7 +505,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
               )}
               {bag.note && (
                 <div style={{ display: 'flex', gap: 8, fontSize: 12 }}>
-                  <span style={{ color: 'var(--color-text-muted)', width: 80 }}>📝 Ghi chú:</span>
+                  <span style={{ color: 'var(--color-text-muted)', width: 80 }}>Ghi chú:</span>
                   <span style={{ fontWeight: 600, color: 'var(--color-text)', fontStyle: 'italic' }}>{bag.note}</span>
                 </div>
               )}
@@ -535,7 +534,7 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
                   onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-primary-bg)'; }}
                   onMouseOut={(e) => { e.currentTarget.style.background = 'white'; }}
                 >
-                  ✏️ Sửa bịch sữa
+                  <GameIcon name="edit" size={16} variant="cream" bare /> Sửa bịch sữa
                 </button>
               </div>
             </div>
@@ -711,12 +710,12 @@ export default function MilkStorageTab({
       {/* Header */}
       <div style={{
         padding: '20px 16px 16px',
-        background: 'linear-gradient(160deg, #F4F5FF 0%, rgba(170, 164, 223, 0.72) 100%)',
+        background: 'var(--color-base-200)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 600 }}>
-              🍼 Smart Inventory
+              <GameIcon name="bottle" size={18} variant="blue" bare /> Smart Inventory
             </p>
             <h1 style={{ margin: '2px 0 0', fontSize: 26, fontWeight: 800, color: 'var(--color-text)' }}>
               Kho sữa mẹ
@@ -734,7 +733,7 @@ export default function MilkStorageTab({
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '10px 16px', borderRadius: 'var(--radius-full)',
               border: 'none', cursor: 'pointer',
-              background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
+              background: 'var(--color-primary)',
               color: 'white', fontFamily: 'Outfit, sans-serif',
               fontSize: 14, fontWeight: 700,
               boxShadow: '0 4px 15px rgba(79, 172, 254, 0.35)',
@@ -748,19 +747,19 @@ export default function MilkStorageTab({
       {/* Dashboard Stats */}
       <div className="stats-grid">
         {[
-          { label: 'Tổng kho', value: `${summary.totalMl}ml`, emoji: '◉', color: 'var(--color-baby)', bg: '#F4F5FF' },
-          { label: 'Dùng hôm nay', value: `${summary.usableTodayMl}ml`, emoji: '✓', color: 'var(--color-success)', bg: '#F1FBF7' },
+          { label: 'Tổng kho', value: `${summary.totalMl}ml`, icon: 'bottle', color: 'var(--color-baby)', bg: '#F4F5FF' },
+          { label: 'Dùng hôm nay', value: `${summary.usableTodayMl}ml`, icon: 'check', color: 'var(--color-success)', bg: '#F1FBF7' },
           {
             label: 'Sắp hết hạn',
             value: summary.expiringSoonCount,
-            emoji: '⚠️',
-            color: summary.expiringSoonCount > 0 ? 'var(--color-pump)' : 'var(--color-wonder)',
+            icon: 'warning',
+            color: summary.expiringSoonCount > 0 ? 'var(--color-pump)' : 'var(--color-secondary)',
             bg: summary.expiringSoonCount > 0 ? '#FFF6EF' : '#F5F3FF',
           },
         ].map((stat, i) => (
           <div key={i} className="card" style={{ padding: '12px 14px', background: stat.bg, border: `1px solid ${stat.color}20` }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>
-              {stat.emoji} {stat.label}
+              <GameIcon name={stat.icon} size={14} variant="cream" bare /> {stat.label}
             </div>
             <div style={{ fontSize: 22, fontWeight: 800, color: stat.color, lineHeight: 1 }}>
               {stat.value}
@@ -775,7 +774,7 @@ export default function MilkStorageTab({
           margin: '0 16px 12px',
           padding: '12px 14px',
           borderRadius: 'var(--radius-md)',
-          background: 'linear-gradient(135deg, rgba(227, 107, 116, 0.1), rgba(223, 154, 99, 0.1))',
+          background: 'var(--color-primary-bg)',
           border: '2px solid rgba(227, 107, 116, 0.24)',
           animation: 'pulse-soft 2s ease-in-out infinite',
         }}>
@@ -789,7 +788,7 @@ export default function MilkStorageTab({
             const r = getTimeRemaining(b.expiry_at);
             return (
               <div key={b.id} style={{ fontSize: 12, color: 'var(--color-text-muted)', marginLeft: 24 }}>
-                • {b.volume_ml}ml ({STATUS_CONFIG[b.storage_status]?.label}) — còn {r?.label}
+                {b.volume_ml}ml ({STATUS_CONFIG[b.storage_status]?.label}) - còn {r?.label}
               </div>
             );
           })}
@@ -864,11 +863,11 @@ export default function MilkStorageTab({
               boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <option value="priority">💡 Gợi ý dùng trước</option>
-            <option value="date-desc">🕐 Hút mới nhất</option>
-            <option value="date-asc">🕐 Hút cũ nhất</option>
-            <option value="volume-desc">🥛 Nhiều ml nhất</option>
-            <option value="volume-asc">🥛 Ít ml nhất</option>
+            <option value="priority">Gợi ý dùng trước</option>
+            <option value="date-desc">Hút mới nhất</option>
+            <option value="date-asc">Hút cũ nhất</option>
+            <option value="volume-desc">Nhiều ml nhất</option>
+            <option value="volume-asc">Ít ml nhất</option>
           </select>
         </div>
 
@@ -934,7 +933,7 @@ export default function MilkStorageTab({
         {filteredBags.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 32px' }}>
             <div style={{ fontSize: 56, marginBottom: 12 }}>
-              {activeFilter === 'done' ? '✔️' : '🍼'}
+              <GameIcon name={activeFilter === 'done' ? 'check' : 'bottle'} size={48} variant="blue" />
             </div>
             <h3 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
               {activeFilter === 'done' ? 'Chưa có bịch nào đã dùng' : 'Kho đang trống'}
@@ -949,7 +948,7 @@ export default function MilkStorageTab({
                 className="btn"
                 onClick={() => setShowAddModal(true)}
                 style={{
-                  background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
+                  background: 'var(--color-primary)',
                   color: 'white', boxShadow: '0 4px 15px rgba(117,129,213,0.22)',
                 }}
               >
@@ -973,6 +972,7 @@ export default function MilkStorageTab({
       {/* Modals */}
       {(showAddModal || editingBag) && (
         <AddMilkBagModal
+          key={editingBag?.id || 'add'}
           editBag={editingBag}
           onSave={editingBag ? handleEditSave : handleAddSave}
           onClose={() => {

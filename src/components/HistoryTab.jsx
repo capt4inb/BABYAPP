@@ -76,9 +76,9 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
         {/* Filter chips */}
         <div style={{ display: 'flex', gap: 8 }}>
           {[
-            { value: 'all', label: 'Tất cả', emoji: '📋' },
-            { value: 'feed', label: 'Cữ bú', emoji: '🍼' },
-            { value: 'weight', label: 'Cân nặng', emoji: '⚖️' },
+            { value: 'all', label: 'Tất cả', icon: 'calendar' },
+            { value: 'feed', label: 'Cữ bú', icon: 'bottle' },
+            { value: 'weight', label: 'Cân nặng', icon: 'weight' },
           ].map(f => (
             <button
               key={f.value}
@@ -87,7 +87,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
               } ${filter === f.value ? 'active' : ''}`}
               onClick={() => setFilter(f.value)}
             >
-              {f.emoji} {f.label}
+              <GameIcon name={f.icon} size={18} variant="cream" bare /> {f.label}
             </button>
           ))}
         </div>
@@ -97,7 +97,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
       <div style={{ padding: '8px 16px 16px' }}>
         {groups.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '64px 32px' }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
+            <GameIcon name="search" size={48} variant="cream" />
             <p style={{ color: 'var(--color-text-muted)', fontSize: 15 }}>
               {search ? 'Không tìm thấy kết quả' : 'Chưa có dữ liệu'}
             </p>
@@ -145,7 +145,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
                     {/* Icon */}
                     <div style={{
                       width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: r.type === 'feed' ? 'var(--color-primary-bg)' : 'linear-gradient(135deg,var(--color-baby),#91c8c5)',
+                      background: r.type === 'feed' ? 'var(--color-primary-bg)' : 'var(--color-baby-bg)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       {r.type === 'feed' ? <GameIcon name="drop" size={28} variant="pink" /> : <GameIcon name="weight" size={28} variant="blue" />}

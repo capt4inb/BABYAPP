@@ -64,7 +64,7 @@ export default function StatsTab({ records }) {
   }, [feedRecords]);
 
   const sideLabels = { left: 'Bên trái', right: 'Bên phải', both: 'Hai bên', bottle: 'Bình sữa' };
-  const sideEmoji = { left: '◀️', right: '▶️', both: '↔️', bottle: '🍼' };
+  const sideIcon = { left: 'left', right: 'right', both: 'sliders', bottle: 'bottle' };
 
   return (
     <div className="animate-fade-in">
@@ -116,13 +116,13 @@ export default function StatsTab({ records }) {
         {/* Bar Chart - Last 7 days */}
         <div className="card" style={{ padding: 16, marginBottom: 16 }}>
           <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>
-            📊 7 ngày gần nhất
+            <GameIcon name="stats" size={18} variant="blue" bare /> 7 ngày gần nhất
           </h3>
 
           {/* Feed bars */}
           <div style={{ marginBottom: 8 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-primary)', marginBottom: 8 }}>
-              🍼 Cữ bú
+              <GameIcon name="bottle" size={16} variant="pink" bare /> Cữ bú
             </div>
             <div className="bar-chart-container">
               {dailyStats.map((d, i) => (
@@ -137,7 +137,7 @@ export default function StatsTab({ records }) {
                     style={{
                       height: `${(d.feedCount / maxFeed) * 80}%`,
                       background: d.feedCount > 0
-                        ? 'linear-gradient(180deg, var(--color-primary), var(--color-primary-light))'
+                        ? 'var(--color-primary)'
                         : 'var(--color-border)',
                       minHeight: 4,
                     }}
@@ -153,20 +153,20 @@ export default function StatsTab({ records }) {
         {feedRecords.length > 0 && (
           <div className="card" style={{ padding: 16, marginBottom: 16 }}>
             <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>
-              🍼 Phân bổ cách bú
+              <GameIcon name="bottle" size={18} variant="pink" bare /> Phân bổ cách bú
             </h3>
             {Object.entries(sideStats).filter(([, count]) => count > 0).map(([side, count]) => {
               const pct = Math.round((count / feedRecords.length) * 100);
               return (
                 <div key={side} style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13, fontWeight: 600 }}>
-                    <span>{sideEmoji[side]} {sideLabels[side]}</span>
+                    <span><GameIcon name={sideIcon[side]} size={16} variant="cream" bare /> {sideLabels[side]}</span>
                     <span style={{ color: 'var(--color-text-muted)' }}>{count} ({pct}%)</span>
                   </div>
                   <div style={{ height: 8, background: 'var(--color-border)', borderRadius: 99, overflow: 'hidden' }}>
                     <div style={{
                       height: '100%', width: `${pct}%`,
-                      background: 'linear-gradient(90deg, var(--color-primary), var(--color-primary-light))',
+                      background: 'var(--color-primary)',
                       borderRadius: 99,
                       transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
                     }} />
@@ -180,7 +180,7 @@ export default function StatsTab({ records }) {
         {/* Empty state */}
         {periodRecords.length === 0 && (
           <div style={{ textAlign: 'center', padding: '48px 32px' }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>📊</div>
+            <GameIcon name="stats" size={48} variant="blue" />
             <p style={{ color: 'var(--color-text-muted)', fontSize: 15 }}>
               Chưa có dữ liệu trong {period === '7d' ? '7 ngày' : '30 ngày'} qua
             </p>

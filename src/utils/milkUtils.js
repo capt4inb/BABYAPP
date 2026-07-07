@@ -19,7 +19,7 @@ const THAW_HOUR = 21;
 export const STATUS_CONFIG = {
   room_temp: {
     label: 'Để ngoài',
-    emoji: '🌡️',
+    icon: 'thermo',
     color: '#DF9A63',
     bg: '#FFF6EF',
     border: '#F3D3B8',
@@ -27,7 +27,7 @@ export const STATUS_CONFIG = {
   },
   fridge: {
     label: 'Ngăn mát',
-    emoji: '❄️',
+    icon: 'snow',
     color: '#7581D5',
     bg: '#F4F5FF',
     border: '#CFD5FF',
@@ -35,7 +35,7 @@ export const STATUS_CONFIG = {
   },
   freezer: {
     label: 'Ngăn đông',
-    emoji: '🧊',
+    icon: 'snow',
     color: '#837ACB',
     bg: '#F5F3FF',
     border: '#D7D2FB',
@@ -43,7 +43,7 @@ export const STATUS_CONFIG = {
   },
   thawing: {
     label: 'Đang rã đông',
-    emoji: '💧',
+    icon: 'drop',
     color: '#39A98F',
     bg: '#F1FBF7',
     border: '#BFE7DB',
@@ -51,7 +51,7 @@ export const STATUS_CONFIG = {
   },
   thawed: {
     label: 'Đã rã đông',
-    emoji: '✅',
+    icon: 'check',
     color: '#39A98F',
     bg: '#F1FBF7',
     border: '#BFE7DB',
@@ -59,7 +59,7 @@ export const STATUS_CONFIG = {
   },
   warmed: {
     label: 'Đã hâm',
-    emoji: '🔥',
+    icon: 'flame',
     color: '#E36B74',
     bg: '#FFF3F4',
     border: '#F2C1C5',
@@ -67,7 +67,7 @@ export const STATUS_CONFIG = {
   },
   using: {
     label: 'Đang dùng',
-    emoji: '🍼',
+    icon: 'bottle',
     color: '#D875A2',
     bg: '#FFF3F8',
     border: '#F4BED4',
@@ -75,7 +75,7 @@ export const STATUS_CONFIG = {
   },
   used: {
     label: 'Đã dùng',
-    emoji: '✔️',
+    icon: 'check',
     color: '#837ACB',
     bg: '#F5F3FF',
     border: '#D7D2FB',
@@ -83,7 +83,7 @@ export const STATUS_CONFIG = {
   },
   expired: {
     label: 'Hết hạn',
-    emoji: '⚠️',
+    icon: 'warning',
     color: '#E36B74',
     bg: '#FFF3F4',
     border: '#F2C1C5',

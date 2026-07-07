@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createMilkBag, calculateExpiry, STATUS_CONFIG } from '../utils/milkUtils';
 import GameIcon from './GameIcon';
@@ -14,7 +14,7 @@ const STORAGE_OPTIONS = [
     value: 'room_temp',
     label: 'Để ngoài',
     desc: 'Nhiệt độ phòng · hạn 4 giờ',
-    emoji: '🌡️',
+    icon: 'thermo',
     color: '#DF9A63',
     bg: '#FFF6EF',
     border: '#F3D3B8',
@@ -23,7 +23,7 @@ const STORAGE_OPTIONS = [
     value: 'fridge',
     label: 'Ngăn mát',
     desc: 'Tủ lạnh · hạn 4 ngày',
-    emoji: '❄️',
+    icon: 'snow',
     color: '#7581D5',
     bg: '#F4F5FF',
     border: '#CFD5FF',
@@ -32,7 +32,7 @@ const STORAGE_OPTIONS = [
     value: 'freezer',
     label: 'Ngăn đông',
     desc: 'Tủ đông · tốt nhất 6 tháng',
-    emoji: '🧊',
+    icon: 'snow',
     color: '#837ACB',
     bg: '#F5F3FF',
     border: '#D7D2FB',
@@ -40,27 +40,11 @@ const STORAGE_OPTIONS = [
 ];
 
 export default function AddMilkBagModal({ onSave, onClose, editBag }) {
-  const [volumeStr, setVolumeStr] = useState('');
-  const [expressedAt, setExpressedAt] = useState('');
-  const [storageStatus, setStorageStatus] = useState('fridge');
-  const [note, setNote] = useState('');
+  const [volumeStr, setVolumeStr] = useState(() => editBag ? editBag.volume_ml.toString() : '');
+  const [expressedAt, setExpressedAt] = useState(() => toLocalDatetimeInput(editBag?.expressed_at || new Date()));
+  const [storageStatus, setStorageStatus] = useState(() => editBag?.storage_status || 'fridge');
+  const [note, setNote] = useState(() => editBag?.note || '');
   const [error, setError] = useState('');
-
-  // Pre-populate if editing
-  useEffect(() => {
-    if (editBag) {
-      setVolumeStr(editBag.volume_ml.toString());
-      setExpressedAt(toLocalDatetimeInput(editBag.expressed_at));
-      setStorageStatus(editBag.storage_status);
-      setNote(editBag.note || '');
-    } else {
-      setVolumeStr('');
-      setExpressedAt(toLocalDatetimeInput(new Date()));
-      setStorageStatus('fridge');
-      setNote('');
-    }
-    setError('');
-  }, [editBag]);
 
   const combinedNote = note.trim();
 
@@ -111,7 +95,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
   if (editBag && !['room_temp', 'fridge', 'freezer'].includes(editBag.storage_status)) {
     const statusCfg = STATUS_CONFIG[editBag.storage_status] || {
       label: editBag.storage_status,
-      emoji: '🏷️',
+      icon: 'tag',
       color: '#8E7DAE',
       bg: '#F8F4FF',
       border: '#D7BDE2',
@@ -120,7 +104,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
       value: editBag.storage_status,
       label: statusCfg.label,
       desc: `Trạng thái hiện tại`,
-      emoji: statusCfg.emoji,
+      icon: statusCfg.icon || 'tag',
       color: statusCfg.color,
       bg: statusCfg.bg,
       border: statusCfg.border,
@@ -140,11 +124,11 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 14,
-              background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
+              background: 'var(--color-base-200)',
+              border: '1px solid var(--color-base-300)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22,
             }}>
-              🍼
+              <GameIcon name="bottle" size={30} variant="blue" />
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
@@ -173,7 +157,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
 
           {/* Volume */}
           <div className="form-group">
-            <label className="form-label">🥛 Số ml sữa</label>
+            <label className="form-label">Số ml sữa</label>
             <div style={{ position: 'relative' }}>
               <input
                 type="number"
@@ -197,7 +181,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
 
           {/* Timestamp */}
           <div className="form-group">
-            <label className="form-label">📅 Thời gian hút</label>
+            <label className="form-label">Thời gian hút</label>
             <input
               type="datetime-local"
               className="form-input"
@@ -209,7 +193,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
 
           {/* Storage */}
           <div className="form-group">
-            <label className="form-label">🗂️ Nơi lưu trữ / Trạng thái</label>
+            <label className="form-label">Nơi lưu trữ / Trạng thái</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: 8 }}>
               {options.map(opt => (
                 <button
@@ -235,21 +219,21 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
                     boxShadow: storageStatus === opt.value ? `0 4px 12px ${opt.color}30` : 'none',
                   }}
                 >
-                  <span style={{ fontSize: 22 }}>{opt.emoji}</span>
+                  <GameIcon name={opt.icon || 'tag'} size={28} variant="blue" />
                   <span>{opt.label}</span>
                 </button>
               ))}
             </div>
             {selectedStorage && (
               <p style={{ margin: '8px 0 0', fontSize: 12, color: selectedStorage.color, fontWeight: 600 }}>
-                ⏱️ {selectedStorage.desc}
+                {selectedStorage.desc}
               </p>
             )}
           </div>
 
           {/* Ghi chú */}
           <div className="form-group">
-            <label className="form-label">📝 Ghi chú</label>
+            <label className="form-label">Ghi chú</label>
             <input
               type="text"
               className="form-input"
@@ -269,12 +253,13 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
               className="btn"
               style={{
                 flex: 2,
-                background: 'linear-gradient(135deg, var(--color-baby), var(--color-wonder))',
-                color: 'white',
-                boxShadow: '0 4px 15px rgba(117, 129, 213, 0.22)',
+                background: 'var(--color-primary)',
+                color: 'var(--color-primary-content)',
+                boxShadow: 'none',
               }}
             >
-              {editBag ? 'Lưu thay đổi' : '🍼 Lưu bịch sữa'}
+              <GameIcon name="save" size={24} variant="cream" />
+              {editBag ? 'Lưu thay đổi' : 'Lưu bịch sữa'}
             </button>
           </div>
         </form>

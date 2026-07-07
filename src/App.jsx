@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import DashboardTab from './components/DashboardTab';
 import HistoryTab from './components/HistoryTab';
-import WonderWeeksTab from './components/WonderWeeksTab';
 import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
 import RecordModal from './components/RecordModal';
@@ -20,7 +19,6 @@ const DEFAULT_SETTINGS = {
   babyName: 'Bé Yêu',
   babyGender: 'boy', // 'boy' | 'girl'
   babyBirthDate: '', // YYYY-MM-DD
-  babyDueDate: '',   // YYYY-MM-DD (optional, for Wonder Weeks)
   feedIntervalHours: 3,
   volumeUnit: 'ml',
 };
@@ -30,7 +28,6 @@ const TABS = [
   { id: 'dashboard', label: 'Trang chủ', icon: 'home', tone: 'pink' },
   { id: 'history',   label: 'Lịch sử',   icon: 'history', tone: 'green' },
   { id: 'milk',      label: 'Kho sữa',   icon: 'milk', tone: 'blue' },
-  { id: 'wonder',    label: 'Tuần vàng', icon: 'wonder', tone: 'orange' },
   { id: 'settings',  label: 'Cài đặt',   icon: 'settings', tone: 'blue' },
 ];
 
@@ -232,7 +229,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
+    <div className="app-container" data-theme="pastel">
       {/* Page Content */}
       <div className="page">
         {activeTab === 'dashboard' && (
@@ -258,7 +255,6 @@ export default function App() {
             onNavigateToDashboard={() => setActiveTab('dashboard')}
           />
         )}
-        {activeTab === 'wonder'    && <WonderWeeksTab {...sharedProps} />}
         {activeTab === 'settings'  && (
           <SettingsTab
             settings={settings}
@@ -317,6 +313,7 @@ export default function App() {
       {/* Record Modal */}
       {modal && (
         <RecordModal
+          key={`${modal.type}-${modal.editRecord?.id || 'new'}`}
           type={modal.type}
           editRecord={modal.editRecord}
           onSave={handleModalSave}

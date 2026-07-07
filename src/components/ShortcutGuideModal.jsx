@@ -11,7 +11,8 @@ export default function ShortcutGuideModal({ onClose, onConfirm }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 40, height: 40, borderRadius: 12,
-              background: 'linear-gradient(135deg, var(--color-pump), #edbd91)',
+              background: 'var(--color-base-200)',
+              border: '1px solid var(--color-base-300)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <GameIcon name="clock" size={30} variant="orange" />
