@@ -38,7 +38,6 @@ const THAW_METHODS = [
 
 export default function ThawModal({ bag, onSave, onClose }) {
   const [method, setMethod] = useState('fridge_overnight');
-  const [markThawed, setMarkThawed] = useState(false);
 
   const selectedMethod = THAW_METHODS.find(m => m.value === method);
 

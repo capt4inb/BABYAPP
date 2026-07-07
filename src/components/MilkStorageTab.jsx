@@ -558,73 +558,6 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
   );
 }
 
-// ── Thaw Recommendation Banner ────────────────────────────────
-function ThawRecommendationBanner({ recommendation, onThawBag }) {
-  if (!recommendation) return null;
-  const { neededMl, toThaw, thawTimeLabel, thawDateLabel, avgDailyMl, availableMl } = recommendation;
-
-  return (
-    <div style={{
-      margin: '0 16px 12px',
-      borderRadius: 'var(--radius-md)',
-      background: 'linear-gradient(135deg, rgba(117, 129, 213, 0.12), rgba(131, 122, 203, 0.12))',
-      border: '1.5px solid rgba(117, 129, 213, 0.22)',
-      padding: '14px 16px',
-      animation: 'fadeIn 0.3s ease-out',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-        <span style={{ fontSize: 22, flexShrink: 0 }}>💡</span>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#5B4FCF', marginBottom: 4 }}>
-            Gợi ý rã đông {thawTimeLabel}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 10, lineHeight: 1.5 }}>
-            Bé cần ~{avgDailyMl}ml/ngày. Sẵn dùng ngày mai: ~{availableMl}ml.
-            Nên rã đông thêm <strong style={{ color: 'var(--color-pump)' }}>~{neededMl}ml</strong>:
-          </div>
-
-          {/* Bags to thaw */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-            {toThaw.map((bag, i) => (
-              <div key={bag.id} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: 'rgba(255,255,255,0.7)', borderRadius: 10,
-                padding: '8px 12px',
-                border: '1px solid rgba(117, 129, 213, 0.14)',
-              }}>
-                <div>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#5B4FCF' }}>
-                    🧊 {bag.volume_ml}ml
-                  </span>
-                  <span style={{ fontSize: 11, color: 'var(--color-text-muted)', marginLeft: 6 }}>
-                    Hút {formatDateShort(bag.expressed_at)}
-                    {` · ID: ${bag.id.substring(0, 6).toUpperCase()}`}
-                  </span>
-                </div>
-                <button
-                  onClick={() => onThawBag(bag)}
-                  style={{
-                    padding: '4px 12px', borderRadius: 99,
-                    border: 'none', background: 'var(--color-baby)',
-                    color: 'white', fontSize: 11, fontWeight: 700,
-                    cursor: 'pointer', fontFamily: 'Outfit, sans-serif',
-                  }}
-                >
-                  Rã đông
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ fontSize: 11, color: '#5B4FCF', fontWeight: 600, opacity: 0.8 }}>
-            🕘 Nên bắt đầu {thawTimeLabel} để bé có sữa dùng vào ngày mai.
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Main Tab ──────────────────────────────────────────────────
 export default function MilkStorageTab({
   milkBags,
@@ -632,7 +565,6 @@ export default function MilkStorageTab({
   onAddMilkBag,
   onUpdateMilkBag,
   onDeleteMilkBag,
-  onNavigateToDashboard,
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -646,7 +578,6 @@ export default function MilkStorageTab({
 
   const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
   const summary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
-  const thawRec = useMemo(() => getThawRecommendation(milkBags, avgDailyMl), [milkBags, avgDailyMl]);
   // Daily total milk per expressed date
   const dailyTotals = useMemo(() => getDailyTotals(milkBags), [milkBags]);
 
@@ -765,9 +696,7 @@ export default function MilkStorageTab({
     setEditingBag(null);
   }, [onUpdateMilkBag]);
 
-  const handleThawFromRec = useCallback((bag) => {
-    setThawingBag(bag);
-  }, []);
+
 
   const handleThawSave = useCallback((updatedBag) => {
     onUpdateMilkBag(updatedBag.id, updatedBag);

@@ -92,18 +92,13 @@ export default function DashboardTab({
   const AUTHOR_MAP = {
     'Mẹ': { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: 'var(--color-primary)' },
     'Bố': { emoji: '👨', color: 'var(--color-baby)', bg: 'var(--color-baby-bg)', text: 'var(--color-baby)' },
-    'Bà': { emoji: 'Bà', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' },
-    'Ông': { emoji: 'Ông', color: 'var(--color-wonder)', bg: 'var(--color-wonder-bg)', text: 'var(--color-wonder)' },
+    'Bà': { emoji: '👵', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' },
+    'Ông': { emoji: '👴', color: 'var(--color-wonder)', bg: 'var(--color-wonder-bg)', text: 'var(--color-wonder)' },
   };
 
   // Convert text initials or emojis for display
   const getAuthorMeta = (author) => {
-    const defaultMeta = { emoji: author.slice(0, 2), color: 'var(--color-text-muted)', bg: 'var(--color-surface-alt)', text: 'var(--color-text)' };
-    if (author === 'Mẹ') return { emoji: '👩', color: 'var(--color-primary)', bg: 'var(--color-primary-bg)', text: 'var(--color-primary)' };
-    if (author === 'Bố') return { emoji: '👨', color: 'var(--color-baby)', bg: 'var(--color-baby-bg)', text: 'var(--color-baby)' };
-    if (author === 'Bà') return { emoji: '👵', color: 'var(--color-pump)', bg: 'var(--color-pump-bg)', text: 'var(--color-pump)' };
-    if (author === 'Ông') return { emoji: '👴', color: 'var(--color-wonder)', bg: 'var(--color-wonder-bg)', text: 'var(--color-wonder)' };
-    return defaultMeta;
+    return AUTHOR_MAP[author] || { emoji: author.slice(0, 2), color: 'var(--color-text-muted)', bg: 'var(--color-surface-alt)', text: 'var(--color-text)' };
   };
 
   // Last records
