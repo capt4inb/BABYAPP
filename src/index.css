@@ -145,6 +145,46 @@
   background: var(--color-base-200);
 }
 
+.app-container[data-theme="pastel"] {
+  --color-base-100: #ffffff;
+  --color-base-200: #f4f7fb;
+  --color-base-300: #dce3ee;
+  --color-base-content: #1f2937;
+  --color-primary: #7c5ce6;
+  --color-primary-content: #ffffff;
+  --color-secondary: #a66cff;
+  --color-secondary-content: #ffffff;
+  --color-accent: #22c7a9;
+  --color-accent-content: #ffffff;
+  --color-info: #69bdf4;
+  --color-info-content: #ffffff;
+  --color-success: #45d48d;
+  --color-success-content: #ffffff;
+  --color-warning: #f7aa37;
+  --color-warning-content: #ffffff;
+  --color-error: #fb7185;
+  --color-error-content: #ffffff;
+
+  --color-primary-light: color-mix(in oklab, var(--color-primary) 24%, white);
+  --color-primary-bg: color-mix(in oklab, var(--color-primary) 10%, white);
+  --color-baby: var(--color-info);
+  --color-baby-light: color-mix(in oklab, var(--color-info) 24%, white);
+  --color-baby-bg: color-mix(in oklab, var(--color-info) 10%, white);
+  --color-pump: var(--color-accent);
+  --color-pump-light: color-mix(in oklab, var(--color-accent) 24%, white);
+  --color-pump-bg: color-mix(in oklab, var(--color-accent) 10%, white);
+  --color-secondary-light: color-mix(in oklab, var(--color-secondary) 24%, white);
+  --color-secondary-bg: color-mix(in oklab, var(--color-secondary) 10%, white);
+  --color-surface: var(--color-base-200);
+  --color-surface-alt: var(--color-base-200);
+  --color-card: var(--color-base-100);
+  --color-border: var(--color-base-300);
+  --color-text: var(--color-base-content);
+  --color-text-muted: color-mix(in oklab, var(--color-base-content) 62%, white);
+  --color-text-light: color-mix(in oklab, var(--color-base-content) 42%, white);
+  --color-danger: var(--color-error);
+}
+
 .page {
   flex: 1;
   min-height: 100dvh;
@@ -335,6 +375,31 @@
   white-space: nowrap;
 }
 
+.tab-fab {
+  width: 62px;
+  height: 62px;
+  margin: -22px 2px 0;
+  display: grid;
+  place-items: center;
+  flex: 0 0 62px;
+  border: 6px solid color-mix(in oklab, var(--color-primary) 15%, white);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+  box-shadow: 0 12px 24px color-mix(in oklab, var(--color-primary) 32%, transparent);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.tab-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px color-mix(in oklab, var(--color-primary) 36%, transparent);
+}
+
+.tab-fab:active {
+  transform: translateY(0);
+}
+
 .tab-icon {
   width: 28px;
   height: 28px;
@@ -356,12 +421,18 @@
   line-height: 1;
 }
 
-.game-icon-pink { color: var(--color-primary); }
-.game-icon-lavender { color: var(--color-secondary); }
-.game-icon-blue { color: var(--color-info); }
-.game-icon-green { color: var(--color-success); }
-.game-icon-orange { color: var(--color-warning); }
-.game-icon-cream { color: var(--color-base-content); }
+.game-icon.game-icon-pink,
+.game-icon-bare.game-icon-pink { color: var(--color-primary); }
+.game-icon.game-icon-lavender,
+.game-icon-bare.game-icon-lavender { color: var(--color-secondary); }
+.game-icon.game-icon-blue,
+.game-icon-bare.game-icon-blue { color: var(--color-info); }
+.game-icon.game-icon-green,
+.game-icon-bare.game-icon-green { color: var(--color-success); }
+.game-icon.game-icon-orange,
+.game-icon-bare.game-icon-orange { color: var(--color-warning); }
+.game-icon.game-icon-cream,
+.game-icon-bare.game-icon-cream { color: var(--color-base-content); }
 
 .status-pill {
   display: inline-flex;
@@ -391,6 +462,635 @@
 
 .dashboard-game {
   padding: 16px;
+}
+
+.home-screen {
+  padding: 22px 16px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.home-profile {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.home-avatar {
+  width: 74px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 3px solid color-mix(in oklab, var(--color-secondary) 20%, white);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-secondary) 12%, white);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
+}
+
+.home-profile h1 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: clamp(26px, 7vw, 34px);
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.home-profile p {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.home-icon-button {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.home-icon-button span {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-secondary);
+}
+
+.home-card {
+  padding: 18px;
+  background: var(--color-base-100);
+  border: 1px solid color-mix(in oklab, var(--color-base-300) 72%, white);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+}
+
+.home-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.home-card-head h2,
+.home-section-title {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.home-card-head button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.home-section-title {
+  margin: 0 0 12px;
+}
+
+.home-date-pill {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-primary) 10%, white);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.home-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.home-stat {
+  min-width: 0;
+  padding: 8px 8px 2px;
+  text-align: center;
+  border-right: 1px solid var(--color-base-300);
+}
+
+.home-stat:last-child {
+  border-right: 0;
+}
+
+.home-stat strong,
+.home-stat span,
+.home-stat small {
+  display: block;
+}
+
+.home-stat strong {
+  margin-top: 10px;
+  color: var(--color-base-content);
+  font-size: clamp(22px, 6vw, 34px);
+  line-height: 1;
+  font-weight: 900;
+}
+
+.home-stat span {
+  margin-top: 8px;
+  color: var(--color-base-content);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.home-stat small {
+  margin-top: 7px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.home-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.home-action-card {
+  position: relative;
+  min-height: 158px;
+  padding: 18px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--card-border, var(--color-base-300));
+  border-radius: 8px;
+  background: var(--card-bg, var(--color-base-100));
+  color: var(--color-base-content);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.home-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.home-action-card.purple {
+  --card-bg: color-mix(in oklab, var(--color-secondary) 7%, white);
+  --card-border: color-mix(in oklab, var(--color-secondary) 26%, white);
+  --icon-bg: color-mix(in oklab, var(--color-secondary) 14%, white);
+}
+
+.home-action-card.rose {
+  --card-bg: color-mix(in oklab, var(--color-error) 6%, white);
+  --card-border: color-mix(in oklab, var(--color-error) 18%, white);
+  --icon-bg: color-mix(in oklab, var(--color-error) 10%, white);
+}
+
+.home-action-card.mint {
+  --card-bg: color-mix(in oklab, var(--color-success) 6%, white);
+  --card-border: color-mix(in oklab, var(--color-success) 18%, white);
+  --icon-bg: color-mix(in oklab, var(--color-success) 10%, white);
+}
+
+.home-action-card.amber {
+  --card-bg: color-mix(in oklab, var(--color-warning) 7%, white);
+  --card-border: color-mix(in oklab, var(--color-warning) 22%, white);
+  --icon-bg: color-mix(in oklab, var(--color-warning) 12%, white);
+}
+
+.home-action-icon {
+  width: 74px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--icon-bg);
+}
+
+.home-action-card strong {
+  color: var(--color-base-content);
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 900;
+  text-align: center;
+}
+
+.home-action-card small {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.home-action-plus {
+  position: absolute;
+  right: 18px;
+  top: 67px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-base-300);
+  border-radius: 999px;
+  background: var(--color-base-100);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.home-feed-card {
+  border-color: color-mix(in oklab, var(--color-primary) 25%, white);
+}
+
+.home-reminder-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.home-reminder-status.overdue {
+  color: var(--color-error);
+}
+
+.home-feed-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+}
+
+.home-feed-main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.home-feed-icon {
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-primary) 12%, white);
+}
+
+.home-feed-main h3,
+.home-feed-main p {
+  margin: 0;
+}
+
+.home-feed-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.home-feed-title-row h3,
+.home-feed-main h3 {
+  color: var(--color-base-content);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.home-feed-title-row span {
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-primary) 11%, white);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.home-feed-main p {
+  margin-top: 7px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.home-feed-main strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-base-content);
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.home-feed-main small {
+  display: block;
+  margin-top: 12px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.home-reminder {
+  min-width: 150px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--color-primary);
+  text-align: center;
+}
+
+.home-reminder span {
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.home-reminder strong {
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.home-reminder button {
+  min-height: 38px;
+  padding: 8px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-primary) 15%, white);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.home-feed-progress {
+  height: 8px;
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-base-200);
+}
+
+.home-feed-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+}
+
+.home-chart {
+  height: 178px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+  padding-top: 4px;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-info) 22%, white);
+}
+
+.home-bar-column {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 22px 1fr 34px;
+  justify-items: center;
+  align-items: end;
+  gap: 6px;
+}
+
+.home-bar-column span,
+.home-bar-column small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.home-bar-column small {
+  align-self: start;
+}
+
+.home-bar {
+  width: min(34px, 72%);
+  min-height: 12px;
+  border-radius: 999px 999px 4px 4px;
+  background: color-mix(in oklab, var(--color-info) 38%, white);
+}
+
+.home-bar.active {
+  background: color-mix(in oklab, var(--color-primary) 78%, white);
+}
+
+.home-chart-footer {
+  margin-top: 16px;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 8px;
+  background: var(--color-base-200);
+}
+
+.home-chart-footer span,
+.home-chart-footer strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.home-chart-footer span {
+  color: var(--color-text-muted);
+}
+
+.home-chart-footer strong.positive {
+  color: var(--color-success);
+}
+
+.home-chart-footer strong.negative {
+  color: var(--color-error);
+}
+
+.home-storage-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 12px;
+}
+
+.home-storage-tile {
+  min-width: 0;
+  min-height: 104px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--tile-border);
+  border-radius: 8px;
+  background: var(--tile-bg);
+}
+
+.home-storage-tile.purple {
+  --tile-bg: color-mix(in oklab, var(--color-secondary) 7%, white);
+  --tile-border: color-mix(in oklab, var(--color-secondary) 20%, white);
+}
+
+.home-storage-tile.mint {
+  --tile-bg: color-mix(in oklab, var(--color-success) 6%, white);
+  --tile-border: color-mix(in oklab, var(--color-success) 18%, white);
+}
+
+.home-storage-tile.blue {
+  --tile-bg: color-mix(in oklab, var(--color-info) 7%, white);
+  --tile-border: color-mix(in oklab, var(--color-info) 20%, white);
+}
+
+.home-storage-tile span,
+.home-storage-tile strong,
+.home-storage-tile small {
+  display: block;
+}
+
+.home-storage-tile span {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.home-storage-tile strong {
+  margin-top: 4px;
+  color: var(--color-primary);
+  font-size: 20px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.home-storage-tile small {
+  margin-top: 4px;
+  color: var(--color-base-content);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.home-memo-form {
+  display: grid;
+  gap: 12px;
+}
+
+.home-memo-form textarea {
+  resize: vertical;
+}
+
+.home-memo-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+}
+
+.home-memo-empty {
+  width: 100%;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px dashed color-mix(in oklab, var(--color-warning) 28%, white);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-warning) 7%, white);
+  color: var(--color-base-content);
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-memo-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.home-memo-list article {
+  position: relative;
+  padding: 12px 42px 12px 12px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-200);
+}
+
+.home-memo-list article div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.home-memo-list strong {
+  color: var(--color-base-content);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.home-memo-list span {
+  color: var(--color-text-light);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.home-memo-list p {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.home-memo-list button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
 }
 
 .game-hero-card {
@@ -835,9 +1535,139 @@
   }
 }
 
+@media (max-width: 560px) {
+  .home-feed-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .home-feed-main {
+    align-items: flex-start;
+  }
+
+  .home-reminder {
+    min-width: 0;
+    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    justify-items: start;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--color-primary) 8%, white);
+    text-align: left;
+  }
+
+  .home-reminder span {
+    font-size: 30px;
+  }
+
+  .home-reminder button {
+    padding-inline: 14px;
+    white-space: nowrap;
+  }
+
+  .home-storage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-storage-tile {
+    min-height: 86px;
+  }
+}
+
 @media (max-width: 420px) {
   .dashboard-game {
     padding: 14px;
+  }
+
+  .home-screen {
+    padding: 18px 16px 24px;
+    gap: 16px;
+  }
+
+  .home-card {
+    padding: 16px;
+  }
+
+  .home-header {
+    align-items: flex-start;
+  }
+
+  .home-avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .home-profile {
+    gap: 12px;
+  }
+
+  .home-profile h1 {
+    font-size: 26px;
+  }
+
+  .home-profile p {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .home-stat {
+    padding-inline: 5px;
+  }
+
+  .home-stat strong {
+    font-size: 24px;
+  }
+
+  .home-stat span,
+  .home-stat small {
+    font-size: 11px;
+  }
+
+  .home-quick-grid {
+    gap: 8px;
+  }
+
+  .home-action-card {
+    min-height: 156px;
+    padding: 12px 7px;
+  }
+
+  .home-action-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .home-action-plus {
+    top: 50px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .home-action-card strong {
+    font-size: 14px;
+  }
+
+  .home-action-card small {
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .home-chart {
+    gap: 7px;
+  }
+
+  .home-bar-column small {
+    font-size: 9px;
+  }
+
+  .home-chart-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .home-memo-actions {
+    grid-template-columns: 1fr;
   }
 
   .game-action-grid {

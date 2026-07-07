@@ -1,5 +1,6 @@
 import {
   Baby,
+  Bell,
   Calendar,
   ChartNoAxesColumn,
   Check,
@@ -21,6 +22,7 @@ import {
   LogOut,
   Map,
   Milk,
+  NotebookPen,
   Pencil,
   Plus,
   Save,
@@ -86,6 +88,8 @@ const ICONS = {
   bottle: Milk,
   light: Lightbulb,
   baby: Baby,
+  bell: Bell,
+  note: NotebookPen,
   tag: Tag,
 };
 

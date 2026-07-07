@@ -293,7 +293,31 @@ export default function App() {
 
       {/* Bottom Tab Navigation */}
       <nav className="tab-bar">
-        {TABS.map(({ id, label, icon, tone }) => (
+        {TABS.slice(0, 2).map(({ id, label, icon, tone }) => (
+          <button
+            key={id}
+            className={`tab-item ${activeTab === id ? 'active' : ''}`}
+            onClick={() => setActiveTab(id)}
+            aria-label={label}
+            aria-current={activeTab === id ? 'page' : undefined}
+            title={label}
+          >
+            <div className="tab-icon">
+              <GameIcon name={icon} size={activeTab === id ? 32 : 30} variant={tone} />
+            </div>
+            <span>{label}</span>
+          </button>
+        ))}
+        <button
+          className="tab-fab"
+          type="button"
+          onClick={() => openFeedModal()}
+          aria-label="Ghi cữ bú nhanh"
+          title="Ghi cữ bú nhanh"
+        >
+          <GameIcon name="plus" size={40} variant="cream" />
+        </button>
+        {TABS.slice(2).map(({ id, label, icon, tone }) => (
           <button
             key={id}
             className={`tab-item ${activeTab === id ? 'active' : ''}`}
