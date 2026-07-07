@@ -6,7 +6,7 @@ import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
 import RecordModal from './components/RecordModal';
 import GameIcon from './components/GameIcon';
-import { subscribeToRoom, updateRoomRecords, updateRoomSettings, updateRoomMilkBags, updateRoomMemos } from './services/firebase';
+import { getFirebaseErrorMessage, subscribeToRoom, updateRoomRecords, updateRoomSettings, updateRoomMilkBags, updateRoomMemos } from './services/firebase';
 
 // ── localStorage keys ─────────────────────────────────────────
 const STORAGE_KEYS = {
@@ -71,22 +71,24 @@ export default function App() {
   
   // Sync state
   const [syncPin, setSyncPin] = useState(() => loadFromStorage('bmt_sync_pin', null));
-  const [syncStatus, setSyncStatus] = useState('disconnected'); // disconnected | connecting | connected
+  const [syncStatus, setSyncStatus] = useState(() =>
+    loadFromStorage('bmt_sync_pin', null) ? 'connecting' : 'disconnected'
+  ); // disconnected | connecting | connected | error
+  const [syncError, setSyncError] = useState('');
 
   // Firebase Realtime Subscription
   useEffect(() => {
     saveToStorage('bmt_sync_pin', syncPin);
     if (!syncPin) {
-      setSyncStatus('disconnected');
       return;
     }
 
-    setSyncStatus('connecting');
     const unsubscribe = subscribeToRoom(
       syncPin,
       (remoteRecords) => {
         setRecords(remoteRecords);
         setSyncStatus('connected');
+        setSyncError('');
       },
       (remoteSettings) => {
         setSettings(remoteSettings);
@@ -96,6 +98,10 @@ export default function App() {
       },
       (remoteMemos) => {
         setMemos(remoteMemos);
+      },
+      (error) => {
+        setSyncStatus('error');
+        setSyncError(getFirebaseErrorMessage(error));
       }
     );
 
@@ -274,8 +280,17 @@ export default function App() {
             }}
             syncPin={syncPin}
             syncStatus={syncStatus}
-            onJoinSync={(pin) => setSyncPin(pin)}
-            onLeaveSync={() => setSyncPin(null)}
+            syncErrorMessage={syncError}
+            onJoinSync={(pin) => {
+              setSyncError('');
+              setSyncStatus('connecting');
+              setSyncPin(pin);
+            }}
+            onLeaveSync={() => {
+              setSyncError('');
+              setSyncStatus('disconnected');
+              setSyncPin(null);
+            }}
           />
         )}
       </div>

@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { createRoom, joinRoom } from '../services/firebase';
+import { createRoom, getFirebaseErrorMessage, joinRoom } from '../services/firebase';
 import GameIcon from './GameIcon';
 
 export default function SettingsTab({ 
   settings, onSaveSettings, records, onImportRecords,
   milkBags = [], onImportMilkBags, memos = [], onImportMemos,
-  syncPin, syncStatus, onJoinSync, onLeaveSync 
+  syncPin, syncStatus, syncErrorMessage = '', onJoinSync, onLeaveSync 
 }) {
   const [form, setForm] = useState({ ...settings });
   const [saved, setSaved] = useState(false);
@@ -60,7 +60,7 @@ export default function SettingsTab({
           onImportMemos(data.memos);
         }
         alert(`✅ Đã nhập dữ liệu thành công!`);
-      } catch (err) {
+      } catch {
         setImportError('Tệp không hợp lệ. Vui lòng chọn tệp xuất từ ứng dụng này.');
       }
     };
@@ -87,21 +87,22 @@ export default function SettingsTab({
       const pin = await createRoom(records, settings, milkBags, memos);
       onJoinSync(pin);
     } catch (err) {
-      setSyncError(err.message);
+      setSyncError(getFirebaseErrorMessage(err));
     } finally {
       setSyncLoading(false);
     }
   };
 
   const handleJoinRoom = async () => {
-    if (!joinPin.trim() || joinPin.length !== 4) {
+    const normalizedPin = joinPin.replace(/\D/g, '');
+    if (normalizedPin.length !== 4) {
       setSyncError('Mã PIN phải gồm 4 chữ số');
       return;
     }
     try {
       setSyncLoading(true);
       setSyncError('');
-      const initialData = await joinRoom(joinPin);
+      const initialData = await joinRoom(normalizedPin);
       onImportRecords(initialData.records || []);
       if (initialData.settings) {
         onSaveSettings(initialData.settings);
@@ -109,9 +110,9 @@ export default function SettingsTab({
       }
       onImportMilkBags(initialData.milkBags || []);
       onImportMemos(initialData.memos || []);
-      onJoinSync(joinPin);
+      onJoinSync(normalizedPin);
     } catch (err) {
-      setSyncError(err.message);
+      setSyncError(getFirebaseErrorMessage(err));
     } finally {
       setSyncLoading(false);
     }
@@ -224,9 +225,14 @@ export default function SettingsTab({
                   <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '0.1em' }}>
                     {syncPin}
                   </div>
+                  {syncErrorMessage && (
+                    <div style={{ marginTop: 8, color: 'var(--color-danger)', fontSize: 13, lineHeight: 1.4 }}>
+                      {syncErrorMessage}
+                    </div>
+                  )}
                   <div style={{ fontSize: 13, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
                     <GameIcon name="cloud" size={24} variant="cream" /> 
-                    {syncStatus === 'connecting' ? 'Đang kết nối...' : 'Đã kết nối'}
+                    {syncStatus === 'connecting' ? 'Đang kết nối...' : syncStatus === 'error' ? 'Lỗi đồng bộ' : 'Đã kết nối'}
                   </div>
                 </div>
                 <button
@@ -256,7 +262,7 @@ export default function SettingsTab({
                   className="form-input"
                   placeholder="Nhập mã 4 số..."
                   value={joinPin}
-                  onChange={e => setJoinPin(e.target.value)}
+                  onChange={e => setJoinPin(e.target.value.replace(/\D/g, ''))}
                   style={{ flex: 1, letterSpacing: '0.1em', fontWeight: 600 }}
                   maxLength={4}
                 />
