@@ -2548,6 +2548,132 @@
   font-weight: 900;
 }
 
+.milk-total-card {
+  min-height: 104px;
+  gap: 12px;
+  padding: 16px;
+  box-shadow: 0 12px 24px color-mix(in oklab, var(--color-primary) 22%, transparent);
+}
+
+.milk-total-card > div:first-child {
+  min-width: 0;
+}
+
+.milk-total-card > div:first-child strong {
+  margin-top: 7px;
+  font-size: 30px;
+}
+
+.milk-total-card > div:first-child p {
+  margin-top: 7px;
+}
+
+.milk-total-side {
+  min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex: 1 1 190px;
+  gap: 7px;
+}
+
+.milk-total-side div {
+  padding: 8px 9px;
+}
+
+.milk-total-side strong {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.milk-sort-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.milk-sort-tools .milk-sort-box {
+  width: min(100%, 220px);
+}
+
+.milk-bag-tags {
+  display: flex !important;
+  gap: 5px;
+  margin: 0 0 5px;
+  flex-wrap: wrap;
+}
+
+.milk-bag-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.milk-bag-tag.primary {
+  background: color-mix(in oklab, var(--color-primary) 13%, white);
+  color: var(--color-primary);
+}
+
+.milk-bag-tag.success {
+  background: color-mix(in oklab, var(--color-success) 14%, white);
+  color: var(--color-success);
+}
+
+.milk-bag-tag.info {
+  background: color-mix(in oklab, var(--color-info) 16%, white);
+  color: color-mix(in oklab, var(--color-info) 72%, #1f2937);
+}
+
+.milk-total-card {
+  min-height: 0 !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px 14px !important;
+}
+
+.milk-total-card span {
+  font-size: 10px;
+}
+
+.milk-total-card > div:first-child strong {
+  margin-top: 4px;
+  font-size: 26px !important;
+}
+
+.milk-total-card > div:first-child small {
+  font-size: 15px;
+}
+
+.milk-total-card > div:first-child p {
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+.milk-total-side {
+  min-width: 0 !important;
+  flex: 1 1 168px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.milk-total-side div {
+  padding: 7px 8px;
+}
+
+.milk-total-side span {
+  font-size: 9px;
+  line-height: 1.15;
+}
+
+.milk-total-side strong {
+  margin-top: 3px;
+  font-size: 13px;
+}
+
 .quick-add-range,
 .quick-add-legacy {
   display: none !important;
@@ -3368,7 +3494,7 @@
 }
 
 @media (max-width: 560px) {
-  .milk-search-tools {
+  .milk-sort-tools {
     grid-template-columns: 1fr;
   }
 
@@ -3636,12 +3762,12 @@
   }
 
   .milk-total-card {
-    min-height: 142px;
-    padding: 18px;
+    min-height: 0;
+    padding: 14px;
   }
 
-  .milk-total-card strong {
-    font-size: 34px;
+  .milk-total-card > div:first-child strong {
+    font-size: 28px;
   }
 
   .milk-total-card .game-icon {
@@ -3708,4 +3834,16 @@
   .home-feed-spotlight-layout {
     grid-template-columns: 1fr;
   }
+}
+
+.milk-total-card {
+  display: flex !important;
+}
+
+.milk-total-card > div:first-child {
+  flex: 0 1 126px;
+}
+
+.milk-total-side {
+  flex: 1 1 0;
 }

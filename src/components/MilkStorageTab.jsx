@@ -66,13 +66,26 @@ function buildMilkChartData(milkBags) {
   });
 }
 
-function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
+function getBagTags(bag, newestBagId) {
+  const tags = [];
+  const expressedAt = new Date(bag.expressed_at);
+  const ageHours = Math.max(0, (Date.now() - expressedAt.getTime()) / 3600000);
+
+  if (bag.id === newestBagId) tags.push({ label: 'Mới nhất', tone: 'primary' });
+  if (ageHours <= 24) tags.push({ label: 'Mới thêm', tone: 'success' });
+  if (ageHours <= 72) tags.push({ label: 'Gần hôm nay', tone: 'info' });
+
+  return tags.slice(0, 2);
+}
+
+function MilkBagCard({ bag, newestBagId, onUpdate, onDelete, onEdit }) {
   const [expanded, setExpanded] = useState(false);
   const [showThawModal, setShowThawModal] = useState(false);
   const displayStatus = bag.storage_status === 'using' ? (bag.previous_status || 'fridge') : bag.storage_status;
   const cfg = STATUS_CONFIG[displayStatus] || STATUS_CONFIG.fridge;
   const remaining = bag.expiry_at ? getTimeRemaining(bag.expiry_at) : null;
   const isDone = bag.storage_status === 'used' || bag.storage_status === 'expired';
+  const bagTags = getBagTags(bag, newestBagId);
 
   const handleTransition = useCallback((newStatus, extra = {}) => {
     onUpdate(bag.id, transitionBag(bag, newStatus, extra));
@@ -100,6 +113,13 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
               <strong>{cfg.label}</strong>
               <em style={{ color: cfg.color }}>{statusText}</em>
             </span>
+            {bagTags.length > 0 && (
+              <span className="milk-bag-tags">
+                {bagTags.map(tag => (
+                  <b key={tag.label} className={`milk-bag-tag ${tag.tone}`}>{tag.label}</b>
+                ))}
+              </span>
+            )}
             <span>Hút {formatDateShort(bag.expressed_at)} lúc {formatTime(bag.expressed_at)}</span>
           </span>
           <GameIcon name="right" size={22} variant="cream" bare />
@@ -197,7 +217,6 @@ export default function MilkStorageTab({
   onDeleteMilkBag,
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
-  const [search, setSearch] = useState('');
   const [sortMode, setSortMode] = useState('priority');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -206,6 +225,9 @@ export default function MilkStorageTab({
   const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
   const summary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
   const activeBags = useMemo(() => milkBags.filter(isActiveBag), [milkBags]);
+  const newestBagId = useMemo(() => {
+    return [...activeBags].sort((a, b) => new Date(b.expressed_at) - new Date(a.expressed_at))[0]?.id || null;
+  }, [activeBags]);
   const chartData = useMemo(() => buildMilkChartData(milkBags), [milkBags]);
   const maxChartValue = Math.max(...chartData.map(item => item.total), 1);
 
@@ -255,22 +277,6 @@ export default function MilkStorageTab({
       list = done;
     }
 
-    if (search.trim()) {
-      const query = search.trim().toLowerCase();
-      list = list.filter(bag => {
-        const displayStatus = bag.storage_status === 'using' ? (bag.previous_status || 'fridge') : bag.storage_status;
-        const statusLabel = (STATUS_CONFIG[displayStatus]?.label || displayStatus).toLowerCase();
-        const expressedDate = `${formatDateShort(bag.expressed_at)} ${formatTime(bag.expressed_at)}`.toLowerCase();
-        return (
-          bag.id.toLowerCase().includes(query) ||
-          String(bag.volume_ml || '').includes(query) ||
-          bag.note?.toLowerCase().includes(query) ||
-          statusLabel.includes(query) ||
-          expressedDate.includes(query)
-        );
-      });
-    }
-
     return [...list].sort((a, b) => {
       if (sortMode === 'newest') return new Date(b.expressed_at) - new Date(a.expressed_at);
       if (sortMode === 'oldest') return new Date(a.expressed_at) - new Date(b.expressed_at);
@@ -279,7 +285,7 @@ export default function MilkStorageTab({
       if (activeFilter === 'done') return new Date(b.fed_at || b.expressed_at) - new Date(a.fed_at || a.expressed_at);
       return getPriorityScore(a) - getPriorityScore(b);
     });
-  }, [activeBags, activeFilter, milkBags, search, sortMode]);
+  }, [activeBags, activeFilter, milkBags, sortMode]);
 
   const milkHistoryRows = useMemo(() => {
     return [...milkBags].sort((a, b) =>
@@ -358,17 +364,7 @@ export default function MilkStorageTab({
           <span>{filteredBags.length} bịch</span>
         </div>
 
-        <div className="milk-search-tools">
-          <label className="milk-search-box">
-            <GameIcon name="search" size={22} variant="cream" bare />
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Tìm ID, số ml, ghi chú, ngày hút..."
-              value={search}
-              onChange={event => setSearch(event.target.value)}
-            />
-          </label>
+        <div className="milk-sort-tools">
           <label className="milk-sort-box">
             <GameIcon name="sliders" size={20} variant="cream" bare />
             <select className="form-input" value={sortMode} onChange={event => setSortMode(event.target.value)}>
@@ -410,6 +406,7 @@ export default function MilkStorageTab({
               <MilkBagCard
                 key={bag.id}
                 bag={bag}
+                newestBagId={newestBagId}
                 onUpdate={(id, updated) => onUpdateMilkBag(id, updated)}
                 onDelete={onDeleteMilkBag}
                 onEdit={setEditingBag}

@@ -15,9 +15,24 @@ function formatDate(iso) {
   });
 }
 
+function relativeDayLabel(day) {
+  const date = new Date(day);
+  const today = new Date();
+  date.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((today - date) / 86400000);
+
+  if (diffDays === 0) return 'Hôm nay';
+  if (diffDays === 1) return 'Hôm qua';
+  if (diffDays === 2) return 'Hôm kia';
+  return formatDate(date);
+}
+
 function formatCalendarDay(day) {
   const date = new Date(day);
+  const relative = relativeDayLabel(day);
   return {
+    relative: ['Hôm nay', 'Hôm qua', 'Hôm kia'].includes(relative) ? relative : null,
     weekday: date.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', ''),
     date: date.toLocaleDateString('vi-VN', { day: '2-digit' }),
     month: date.toLocaleDateString('vi-VN', { month: '2-digit' }),
@@ -212,7 +227,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
               const total = getDayTotal(group.recs);
               return (
                 <button key={group.day} type="button" onClick={() => setSelectedDay(group.day)}>
-                  <span>{day.weekday}</span>
+                  <span>{day.relative || day.weekday}</span>
                   <strong>{day.date}</strong>
                   <small>Th {day.month}</small>
                   <em>{group.recs.length} lần • {formatNumber(total)} ml</em>
@@ -230,7 +245,7 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
             <div className="modal-handle" />
             <div className="history-modal-head">
               <div>
-                <h2>{formatDate(selectedGroup.recs[0].timestamp)}</h2>
+                <h2>{relativeDayLabel(selectedGroup.day)}</h2>
                 <span>{selectedGroup.recs.length} lần • {formatNumber(getDayTotal(selectedGroup.recs))} ml</span>
               </div>
               <button type="button" onClick={() => setSelectedDay(null)} aria-label="Đóng">
