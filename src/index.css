@@ -122,6 +122,11 @@
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
+@keyframes centerModalAppear {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 18px)); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
 @keyframes backdropAppear {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -1285,6 +1290,7 @@
   width: min(calc(100% - 24px), 430px);
   max-height: min(92dvh, 760px);
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 14px;
   border: 1px solid var(--color-base-300);
   border-radius: 8px;
@@ -2374,16 +2380,23 @@
 .milk-history-modal {
   position: fixed;
   left: 50%;
-  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  top: 50%;
   z-index: 221;
   width: min(calc(100% - 20px), 720px);
   max-height: min(82dvh, 680px);
+  max-width: calc(100vw - 20px);
   overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid var(--color-base-300);
   border-radius: 8px;
   background: var(--color-base-100);
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
+}
+
+.history-day-modal.animate-modal,
+.milk-history-modal.animate-modal {
+  animation: centerModalAppear 0.2s ease-out both;
 }
 
 .history-modal-head,
@@ -2465,24 +2478,26 @@
 }
 
 .milk-history-table-wrap {
-  overflow-x: auto;
+  overflow-x: hidden;
   padding: 0 12px 14px;
 }
 
 .milk-history-table {
   width: 100%;
-  min-width: 560px;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
 .milk-history-table th,
 .milk-history-table td {
-  padding: 10px 8px;
+  padding: 9px 6px;
   border-bottom: 1px solid var(--color-base-300);
   color: var(--color-base-content);
-  font-size: 12px;
+  font-size: 11px;
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .milk-history-table th {
@@ -2493,6 +2508,26 @@
   color: var(--color-text-muted);
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.milk-history-table th:nth-child(1),
+.milk-history-table td:nth-child(1) {
+  width: 24%;
+}
+
+.milk-history-table th:nth-child(2),
+.milk-history-table td:nth-child(2) {
+  width: 14%;
+}
+
+.milk-history-table th:nth-child(3),
+.milk-history-table td:nth-child(3) {
+  width: 26%;
+}
+
+.milk-history-table th:nth-child(4),
+.milk-history-table td:nth-child(4) {
+  width: 36%;
 }
 
 .milk-history-table td strong,
@@ -3244,6 +3279,7 @@
   max-height: 92dvh;
   margin: 0 auto;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-bottom: env(safe-area-inset-bottom, 16px);
   background: var(--color-base-100);
   border: 1px solid var(--color-base-300);
