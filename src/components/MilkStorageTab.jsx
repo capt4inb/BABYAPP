@@ -197,6 +197,8 @@ export default function MilkStorageTab({
   onDeleteMilkBag,
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [sortMode, setSortMode] = useState('priority');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingBag, setEditingBag] = useState(null);
 
@@ -252,11 +254,31 @@ export default function MilkStorageTab({
       list = done;
     }
 
+    if (search.trim()) {
+      const query = search.trim().toLowerCase();
+      list = list.filter(bag => {
+        const displayStatus = bag.storage_status === 'using' ? (bag.previous_status || 'fridge') : bag.storage_status;
+        const statusLabel = (STATUS_CONFIG[displayStatus]?.label || displayStatus).toLowerCase();
+        const expressedDate = `${formatDateShort(bag.expressed_at)} ${formatTime(bag.expressed_at)}`.toLowerCase();
+        return (
+          bag.id.toLowerCase().includes(query) ||
+          String(bag.volume_ml || '').includes(query) ||
+          bag.note?.toLowerCase().includes(query) ||
+          statusLabel.includes(query) ||
+          expressedDate.includes(query)
+        );
+      });
+    }
+
     return [...list].sort((a, b) => {
+      if (sortMode === 'newest') return new Date(b.expressed_at) - new Date(a.expressed_at);
+      if (sortMode === 'oldest') return new Date(a.expressed_at) - new Date(b.expressed_at);
+      if (sortMode === 'volume_desc') return (b.volume_ml || 0) - (a.volume_ml || 0);
+      if (sortMode === 'volume_asc') return (a.volume_ml || 0) - (b.volume_ml || 0);
       if (activeFilter === 'done') return new Date(b.fed_at || b.expressed_at) - new Date(a.fed_at || a.expressed_at);
       return getPriorityScore(a) - getPriorityScore(b);
     });
-  }, [activeBags, activeFilter, milkBags]);
+  }, [activeBags, activeFilter, milkBags, search, sortMode]);
 
   const handleAddSave = useCallback((bag) => {
     onAddMilkBag(bag);
@@ -337,6 +359,29 @@ export default function MilkStorageTab({
         <div className="milk-panel-head">
           <h2>Chi tiết kho sữa</h2>
           <span>{filteredBags.length} bịch</span>
+        </div>
+
+        <div className="milk-search-tools">
+          <label className="milk-search-box">
+            <GameIcon name="search" size={22} variant="cream" bare />
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Tìm ID, số ml, ghi chú, ngày hút..."
+              value={search}
+              onChange={event => setSearch(event.target.value)}
+            />
+          </label>
+          <label className="milk-sort-box">
+            <GameIcon name="sliders" size={20} variant="cream" bare />
+            <select className="form-input" value={sortMode} onChange={event => setSortMode(event.target.value)}>
+              <option value="priority">Ưu tiên dùng</option>
+              <option value="newest">Mới hút trước</option>
+              <option value="oldest">Cũ trước</option>
+              <option value="volume_desc">Nhiều ml trước</option>
+              <option value="volume_asc">Ít ml trước</option>
+            </select>
+          </label>
         </div>
 
         <div className="milk-filter-tabs">

@@ -84,13 +84,6 @@ function getBabyAge(babyBirthDate) {
   return { totalDays, months, days, weeks, weekDays, compact, readable, weekLabel };
 }
 
-function feedLabel(side) {
-  if (side === 'left') return 'Bú ngực trái';
-  if (side === 'right') return 'Bú ngực phải';
-  if (side === 'both') return 'Bú hai bên';
-  return 'Bú bình';
-}
-
 export default function DashboardTab({
   records,
   settings,
@@ -165,6 +158,9 @@ export default function DashboardTab({
   const feedProgressPercent = lastFeed
     ? Math.min(100, Math.max(10, ((nowMs - new Date(lastFeed.timestamp).getTime()) / (feedIntervalHours * 3600000)) * 100))
     : 0;
+  const lastFeedTime = lastFeed
+    ? new Date(lastFeed.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+    : null;
 
   const handleOpenMemo = () => {
     setIsWritingMemo(true);
@@ -198,6 +194,42 @@ export default function DashboardTab({
         <p>Hôm nay tốt nhé!</p>
       </header>
 
+      <section className="home-card home-feed-card home-feed-spotlight">
+        <div className="home-card-head">
+          <h2>Cữ bú gần nhất</h2>
+          {nextFeed && (
+            <span className={`home-reminder-status ${nextFeed.overdue ? 'overdue' : ''}`}>
+              <GameIcon name={nextFeed.overdue ? 'bell' : 'clock'} size={20} variant="lavender" bare />
+              {nextFeed.overdue ? 'Đến giờ bú' : nextFeed.countdownLabel}
+            </span>
+          )}
+        </div>
+
+        <div className="home-feed-spotlight-layout">
+          <div className="home-feed-last">
+            <span className="home-feed-last-label">Đã bú</span>
+            <strong>{lastFeed?.volume ? formatNumber(lastFeed.volume) : '--'} <small>ml</small></strong>
+            <p>{lastFeed ? `lúc ${lastFeedTime}` : 'Chưa có cữ bú nào'}</p>
+          </div>
+
+          <div className={`home-feed-next ${nextFeed?.overdue ? 'overdue' : ''}`}>
+            <span>Cữ tiếp theo</span>
+            <strong>{nextFeed ? nextFeed.label : '--:--'}</strong>
+            <p>{nextFeed ? nextFeed.countdownLabel : 'Chưa có lịch nhắc'}</p>
+            <button type="button" onClick={onOpenFeedModal}>
+              <GameIcon name="plus" size={18} variant="cream" bare />
+              Ghi
+            </button>
+          </div>
+        </div>
+
+        {lastFeed && (
+          <div className="home-feed-progress" aria-hidden="true">
+            <span style={{ width: `${feedProgressPercent}%` }} />
+          </div>
+        )}
+      </section>
+
       <section className="home-card home-today-card">
         <div className="home-card-head">
           <h2>Hôm nay</h2>
@@ -207,7 +239,7 @@ export default function DashboardTab({
           </span>
         </div>
 
-        <div className="home-stat-grid">
+        <div className="home-stat-grid home-stat-grid-compact">
           <div className="home-stat">
             <GameIcon name="bottle" size={36} variant="lavender" />
             <strong>{todayFeeds.length}</strong>
@@ -219,12 +251,6 @@ export default function DashboardTab({
             <strong>{formatNumber(todayFeedVol)}</strong>
             <span>ml</span>
             <small>tổng hôm nay</small>
-          </div>
-          <div className="home-stat">
-            <GameIcon name="milk" size={36} variant="green" />
-            <strong>{formatNumber(milkSummary.totalMl)}</strong>
-            <span>ml</span>
-            <small>trong kho</small>
           </div>
         </div>
       </section>
@@ -315,56 +341,6 @@ export default function DashboardTab({
             ))}
           </div>
         )}
-      </section>
-
-      <section className="home-card home-feed-card compact">
-        <div className="home-card-head">
-          <h2>Cữ bú gần nhất</h2>
-          {nextFeed && (
-            <span className={`home-reminder-status ${nextFeed.overdue ? 'overdue' : ''}`}>
-              <GameIcon name="clock" size={20} variant="lavender" bare />
-              Nhắc cữ tiếp theo
-            </span>
-          )}
-        </div>
-
-        <div className="home-feed-layout">
-          <div className="home-feed-main">
-            <div className="home-feed-icon">
-              <GameIcon name="bottle" size={42} variant="lavender" />
-            </div>
-            <div>
-              {lastFeed ? (
-                <>
-                  <div className="home-feed-title-row">
-                    <h3>{feedLabel(lastFeed.side)}</h3>
-                    <span>Ngăn mát</span>
-                  </div>
-                  <p>Hôm nay, {new Date(lastFeed.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</p>
-                  <strong>{lastFeed.volume ? `${formatNumber(lastFeed.volume)} ml` : 'Chưa nhập ml'}</strong>
-                  <small>{timeSince(lastFeed.timestamp, nowMs)}</small>
-                </>
-              ) : (
-                <>
-                  <h3>Chưa có cữ bú</h3>
-                  <p>Ghi cữ đầu tiên để app nhắc nhịp bú tiếp theo.</p>
-                  <strong>-- ml</strong>
-                  <small>Sẵn sàng bắt đầu</small>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="home-reminder">
-            <span>{nextFeed ? nextFeed.label : '--:--'}</span>
-            <strong>{nextFeed ? nextFeed.countdownLabel : 'Chưa có lịch'}</strong>
-            <button type="button" onClick={onOpenFeedModal}>Ghi cữ ngay</button>
-          </div>
-        </div>
-
-        <div className="home-feed-progress" aria-hidden="true">
-          <span style={{ width: `${feedProgressPercent}%` }} />
-        </div>
       </section>
 
       <section className="home-card home-chart-card">

@@ -3,20 +3,10 @@ import { createPortal } from 'react-dom';
 import { createMilkBag } from '../utils/milkUtils';
 import GameIcon from './GameIcon';
 
-function toDateInput(date) {
+function toLocalDatetimeInput(date) {
   const value = new Date(date);
   value.setMinutes(value.getMinutes() - value.getTimezoneOffset());
-  return value.toISOString().slice(0, 10);
-}
-
-function toTimeInput(date) {
-  const value = new Date(date);
-  value.setMinutes(value.getMinutes() - value.getTimezoneOffset());
-  return value.toISOString().slice(11, 16);
-}
-
-function mergeDateTime(date, time) {
-  return new Date(`${date}T${time || '00:00'}`).toISOString();
+  return value.toISOString().slice(0, 16);
 }
 
 const STORAGE_CHOICES = [
@@ -24,22 +14,15 @@ const STORAGE_CHOICES = [
   { value: 'freezer', label: 'Ngăn đông', icon: 'snow', tone: 'lavender', hint: '6 tháng' },
   { value: 'room_temp', label: 'Để ngoài', icon: 'thermo', tone: 'orange', hint: '4 giờ' },
 ];
-const FEED_TICKS = [120, 130, 140, 150, 160, 170, 180];
-const MILK_TICKS = [200, 220, 240, 260, 280];
-
-function rangeProgress(value, min, max) {
-  return `${((Number(value) - min) / (max - min)) * 100}%`;
-}
 
 export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
   const now = useMemo(() => new Date(), []);
   const [activeTab, setActiveTab] = useState('feed');
   const [feedVolume, setFeedVolume] = useState(150);
-  const [feedTime, setFeedTime] = useState(toTimeInput(now));
+  const [feedAt, setFeedAt] = useState(toLocalDatetimeInput(now));
   const [milkVolume, setMilkVolume] = useState(240);
   const [storageStatus, setStorageStatus] = useState('fridge');
-  const [milkDate, setMilkDate] = useState(toDateInput(now));
-  const [milkTime, setMilkTime] = useState(toTimeInput(now));
+  const [milkAt, setMilkAt] = useState(toLocalDatetimeInput(now));
 
   const saveFeed = (event) => {
     event.preventDefault();
@@ -48,7 +31,7 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
       type: 'feed',
       side: 'bottle',
       volume: Number(feedVolume),
-      timestamp: mergeDateTime(toDateInput(now), feedTime),
+      timestamp: new Date(feedAt).toISOString(),
       note: '',
     });
     onClose();
@@ -58,7 +41,7 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
     event.preventDefault();
     onSaveMilkBag(createMilkBag({
       volume_ml: Number(milkVolume),
-      expressed_at: mergeDateTime(milkDate, milkTime),
+      expressed_at: new Date(milkAt).toISOString(),
       storage_status: storageStatus,
       note: '',
     }));
@@ -104,28 +87,27 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
               <p>Cân bằng, đơn giản</p>
             </div>
 
-            <label className="quick-add-range">
+            <label className="quick-add-field quick-number-field">
               <span>Lượng sữa (ml)</span>
-              <strong>{feedVolume}</strong>
-              <div className="quick-range-control">
+              <div className="quick-number-wrap">
                 <input
-                  type="range"
-                  min="120"
-                  max="180"
-                  step="10"
+                  type="number"
+                  className="form-input"
+                  min="1"
+                  max="1000"
+                  step="1"
+                  inputMode="numeric"
                   value={feedVolume}
                   onChange={event => setFeedVolume(event.target.value)}
-                  style={{ '--range-progress': rangeProgress(feedVolume, 120, 180) }}
+                  required
                 />
-                <div className="quick-range-ticks" style={{ '--tick-count': FEED_TICKS.length }} aria-hidden="true">
-                  {FEED_TICKS.map(tick => <span key={tick}>{tick}</span>)}
-                </div>
+                <em>ml</em>
               </div>
             </label>
 
             <div className="quick-add-field">
-              <label>Thời gian bắt đầu</label>
-              <input type="time" className="form-input" value={feedTime} onChange={event => setFeedTime(event.target.value)} required />
+              <label>Thời gian</label>
+              <input type="datetime-local" className="form-input" value={feedAt} onChange={event => setFeedAt(event.target.value)} required />
             </div>
 
             <button className="quick-add-submit purple" type="submit">
@@ -141,22 +123,21 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
               <p>Quản lý tồn kho di động</p>
             </div>
 
-            <label className="quick-add-range pink">
+            <label className="quick-add-field quick-number-field pink">
               <span>Thể tích (ml)</span>
-              <strong>{milkVolume}</strong>
-              <div className="quick-range-control">
+              <div className="quick-number-wrap">
                 <input
-                  type="range"
-                  min="200"
-                  max="280"
-                  step="10"
+                  type="number"
+                  className="form-input"
+                  min="1"
+                  max="1000"
+                  step="1"
+                  inputMode="numeric"
                   value={milkVolume}
                   onChange={event => setMilkVolume(event.target.value)}
-                  style={{ '--range-progress': rangeProgress(milkVolume, 200, 280) }}
+                  required
                 />
-                <div className="quick-range-ticks" style={{ '--tick-count': MILK_TICKS.length }} aria-hidden="true">
-                  {MILK_TICKS.map(tick => <span key={tick}>{tick}</span>)}
-                </div>
+                <em>ml</em>
               </div>
             </label>
 
@@ -178,15 +159,9 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
               </div>
             </div>
 
-            <div className="quick-add-two">
-              <div className="quick-add-field">
-                <label>Ngày hút</label>
-                <input type="date" className="form-input" value={milkDate} onChange={event => setMilkDate(event.target.value)} required />
-              </div>
-              <div className="quick-add-field">
-                <label>Giờ hút</label>
-                <input type="time" className="form-input" value={milkTime} onChange={event => setMilkTime(event.target.value)} required />
-              </div>
+            <div className="quick-add-field">
+              <label>Thời gian hút</label>
+              <input type="datetime-local" className="form-input" value={milkAt} onChange={event => setMilkAt(event.target.value)} required />
             </div>
 
             <button className="quick-add-submit pink" type="submit">
