@@ -200,6 +200,7 @@ export default function MilkStorageTab({
   const [search, setSearch] = useState('');
   const [sortMode, setSortMode] = useState('priority');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [editingBag, setEditingBag] = useState(null);
 
   const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
@@ -280,6 +281,12 @@ export default function MilkStorageTab({
     });
   }, [activeBags, activeFilter, milkBags, search, sortMode]);
 
+  const milkHistoryRows = useMemo(() => {
+    return [...milkBags].sort((a, b) =>
+      new Date(b.fed_at || b.expressed_at) - new Date(a.fed_at || a.expressed_at)
+    );
+  }, [milkBags]);
+
   const handleAddSave = useCallback((bag) => {
     onAddMilkBag(bag);
     setShowAddModal(false);
@@ -289,10 +296,6 @@ export default function MilkStorageTab({
     onUpdateMilkBag(updatedBag.id, updatedBag);
     setEditingBag(null);
   }, [onUpdateMilkBag]);
-
-  const scrollToDetails = () => {
-    document.getElementById('milk-detail-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   return (
     <div className="animate-fade-in milk-screen">
@@ -316,22 +319,16 @@ export default function MilkStorageTab({
           <strong>{formatNumber(summary.totalMl)} <small>ml</small></strong>
           <p>{summary.activeBagCount || 0} bịch đang lưu</p>
         </div>
-        <GameIcon name="bottle" size={88} variant="cream" />
-      </section>
-
-      <section className="milk-kpi-grid">
-        <article className="milk-kpi-card green">
-          <span>Đã dùng hôm nay</span>
-          <strong>{formatNumber(usedTodayMl)} <small>ml</small></strong>
-          <p>Mục tiêu: {formatNumber(avgDailyMl)} ml</p>
-          <div><span style={{ width: `${Math.min(100, avgDailyMl ? (usedTodayMl / avgDailyMl) * 100 : 0)}%` }} /></div>
-        </article>
-        <article className="milk-kpi-card pink">
-          <span>Sắp hết hạn</span>
-          <strong>{formatNumber(expiringSoonMl)} <small>ml</small></strong>
-          <p>{summary.expiringSoonCount || 0} bịch</p>
-          <div><span style={{ width: `${summary.expiringSoonCount ? 100 : 0}%` }} /></div>
-        </article>
+        <div className="milk-total-side">
+          <div>
+            <span>Đã dùng hôm nay</span>
+            <strong>{formatNumber(usedTodayMl)} ml</strong>
+          </div>
+          <div className={summary.expiringSoonCount ? 'warn' : ''}>
+            <span>Sắp hết hạn</span>
+            <strong>{formatNumber(expiringSoonMl)} ml</strong>
+          </div>
+        </div>
       </section>
 
       <section className="milk-chart-panel">
@@ -348,7 +345,7 @@ export default function MilkStorageTab({
             </div>
           ))}
         </div>
-        <button className="milk-detail-link" type="button" onClick={scrollToDetails}>
+        <button className="milk-detail-link" type="button" onClick={() => setShowHistoryModal(true)}>
           <GameIcon name="calendar" size={22} variant="lavender" bare />
           Xem lịch sử chi tiết
           <GameIcon name="right" size={18} variant="cream" bare />
@@ -432,6 +429,53 @@ export default function MilkStorageTab({
             setEditingBag(null);
           }}
         />
+      )}
+
+      {showHistoryModal && (
+        <>
+          <div className="modal-backdrop" onClick={() => setShowHistoryModal(false)} />
+          <section className="milk-history-modal animate-modal" role="dialog" aria-modal="true">
+            <div className="modal-handle" />
+            <div className="milk-history-modal-head">
+              <div>
+                <h2>Lịch sử kho sữa</h2>
+                <span>{milkHistoryRows.length} dòng ghi chép</span>
+              </div>
+              <button type="button" onClick={() => setShowHistoryModal(false)} aria-label="Đóng">
+                <GameIcon name="close" size={24} variant="cream" bare />
+              </button>
+            </div>
+            <div className="milk-history-table-wrap">
+              <table className="milk-history-table">
+                <thead>
+                  <tr>
+                    <th>Ngày</th>
+                    <th>ML</th>
+                    <th>Trạng thái</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {milkHistoryRows.map(bag => {
+                    const displayStatus = bag.storage_status === 'using' ? (bag.previous_status || 'fridge') : bag.storage_status;
+                    const cfg = STATUS_CONFIG[displayStatus] || STATUS_CONFIG.fridge;
+                    return (
+                      <tr key={bag.id}>
+                        <td>
+                          <strong>{formatDateShort(bag.expressed_at)}</strong>
+                          <span>{formatTime(bag.expressed_at)}</span>
+                        </td>
+                        <td>{formatNumber(bag.volume_ml)}</td>
+                        <td><em style={{ color: cfg.color }}>{cfg.label}</em></td>
+                        <td>{bag.note || '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
       )}
     </div>
   );

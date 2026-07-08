@@ -15,6 +15,15 @@ function formatDate(iso) {
   });
 }
 
+function formatCalendarDay(day) {
+  const date = new Date(day);
+  return {
+    weekday: date.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', ''),
+    date: date.toLocaleDateString('vi-VN', { day: '2-digit' }),
+    month: date.toLocaleDateString('vi-VN', { month: '2-digit' }),
+  };
+}
+
 function formatTime(iso) {
   return new Date(iso).toLocaleTimeString('vi-VN', {
     hour: '2-digit',
@@ -32,30 +41,8 @@ function groupByDay(records) {
   return Object.entries(groups).map(([day, recs]) => ({ day, recs }));
 }
 
-function getLast7Days() {
-  return Array.from({ length: 7 }, (_, index) => {
-    const day = new Date();
-    day.setHours(0, 0, 0, 0);
-    day.setDate(day.getDate() - (6 - index));
-    return day;
-  });
-}
-
-function buildChartData(records) {
-  return getLast7Days().map((day, index) => {
-    const dayKey = day.toDateString();
-    const feeds = records.filter(record =>
-      record.type === 'feed' && new Date(record.timestamp).toDateString() === dayKey
-    );
-    const totalMl = feeds.reduce((sum, record) => sum + (record.volume || 0), 0);
-
-    return {
-      label: index === 6 ? 'Hôm nay' : day.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
-      count: feeds.length,
-      totalMl,
-      active: index === 6,
-    };
-  });
+function getDayTotal(records) {
+  return records.reduce((sum, record) => sum + (record.volume || 0), 0);
 }
 
 function recordTitle(record) {
@@ -63,10 +50,47 @@ function recordTitle(record) {
   return 'Cữ bú';
 }
 
+function HistoryRows({ records, deleteConfirm, onDelete, onOpenFeedModal, onOpenWeightModal }) {
+  return (
+    <div className="history-records">
+      {records.map(record => (
+        <div className="history-record-row" key={record.id}>
+          <span className="history-time">{formatTime(record.timestamp)}</span>
+          <div className="history-record-main">
+            <strong>{recordTitle(record)}</strong>
+            <span>
+              {record.type === 'feed' && (record.volume ? `${formatNumber(record.volume)} ml` : 'Chưa nhập ml')}
+              {record.type === 'weight' && record.weight ? `${record.weight} kg` : ''}
+            </span>
+            {record.note && <p>{record.note}</p>}
+          </div>
+          <div className="history-row-actions">
+            <button
+              type="button"
+              onClick={() => record.type === 'feed' ? onOpenFeedModal(record) : onOpenWeightModal(record)}
+              aria-label="Sửa"
+            >
+              <GameIcon name="edit" size={20} variant="cream" bare />
+            </button>
+            <button
+              type="button"
+              className={deleteConfirm === record.id ? 'confirm' : ''}
+              onClick={() => onDelete(record.id)}
+              aria-label="Xóa"
+            >
+              <GameIcon name="trash" size={20} variant="cream" bare />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal, onDeleteRecord }) {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
-  const [expandedDays, setExpandedDays] = useState({});
+  const [selectedDay, setSelectedDay] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const filtered = useMemo(() => {
@@ -85,17 +109,15 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
   }, [records, filter, search]);
 
   const groups = useMemo(() => groupByDay(filtered), [filtered]);
-  const chartData = useMemo(() => buildChartData(records), [records]);
-  const maxChartValue = Math.max(...chartData.map(item => item.totalMl), 1);
+  const todayKey = new Date().toDateString();
+  const todayGroup = groups.find(group => group.day === todayKey);
+  const previousGroups = groups.filter(group => group.day !== todayKey);
+  const selectedGroup = selectedDay ? groups.find(group => group.day === selectedDay) : null;
 
-  const todayFeeds = chartData[chartData.length - 1] || { count: 0, totalMl: 0 };
-  const totalFeedMl = filtered
+  const todayTotal = todayGroup ? getDayTotal(todayGroup.recs) : 0;
+  const filteredFeedMl = filtered
     .filter(record => record.type === 'feed')
     .reduce((sum, record) => sum + (record.volume || 0), 0);
-
-  const toggleDay = (day) => {
-    setExpandedDays(prev => ({ ...prev, [day]: !(prev[day] ?? false) }));
-  };
 
   const handleDelete = (id) => {
     if (deleteConfirm === id) {
@@ -146,96 +168,85 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
         </div>
       </header>
 
-      <section className="history-chart-card">
-        <div className="history-summary-strip">
+      <section className="history-today-card">
+        <div className="history-section-head">
           <div>
-            <span>Hôm nay</span>
-            <strong>{formatNumber(todayFeeds.totalMl)} ml</strong>
+            <h2>Hôm nay</h2>
+            <span>{todayGroup?.recs.length || 0} lần • {formatNumber(todayTotal)} ml</span>
           </div>
-          <div>
-            <span>Số cữ</span>
-            <strong>{todayFeeds.count}</strong>
-          </div>
-          <div>
-            <span>Đang lọc</span>
-            <strong>{formatNumber(totalFeedMl)} ml</strong>
-          </div>
+          <strong>{formatNumber(filteredFeedMl)} ml</strong>
         </div>
 
-        <div className="history-mini-chart" aria-label="Biểu đồ lượng bú 7 ngày">
-          {chartData.map(item => (
-            <div className="history-chart-col" key={item.label}>
-              <span>{item.totalMl ? formatNumber(item.totalMl) : ''}</span>
-              <div
-                className={item.active ? 'active' : ''}
-                style={{ height: `${Math.max(12, (item.totalMl / maxChartValue) * 100)}%` }}
-              />
-              <small>{item.label}</small>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="history-list">
-        {groups.length === 0 ? (
-          <div className="history-empty">
-            <GameIcon name="search" size={48} variant="cream" />
-            <p>{search ? 'Không tìm thấy kết quả' : 'Chưa có dữ liệu'}</p>
-          </div>
+        {todayGroup ? (
+          <HistoryRows
+            records={todayGroup.recs}
+            deleteConfirm={deleteConfirm}
+            onDelete={handleDelete}
+            onOpenFeedModal={onOpenFeedModal}
+            onOpenWeightModal={onOpenWeightModal}
+          />
         ) : (
-          groups.map(({ day, recs }, index) => {
-            const isExpanded = expandedDays[day] ?? index === 0;
-            const dayTotal = recs.reduce((sum, record) => sum + (record.volume || 0), 0);
-
-            return (
-              <article key={day} className="history-day-card">
-                <button className="history-day-head" type="button" onClick={() => toggleDay(day)}>
-                  <div>
-                    <strong>{formatDate(recs[0].timestamp)}</strong>
-                    <span>{recs.length} lần {dayTotal > 0 ? `• ${formatNumber(dayTotal)} ml` : ''}</span>
-                  </div>
-                  <GameIcon name={isExpanded ? 'up' : 'down'} size={22} variant="cream" bare />
-                </button>
-
-                {isExpanded && (
-                  <div className="history-records">
-                    {recs.map(record => (
-                      <div className="history-record-row" key={record.id}>
-                        <span className="history-time">{formatTime(record.timestamp)}</span>
-                        <div className="history-record-main">
-                          <strong>{recordTitle(record)}</strong>
-                          <span>
-                            {record.type === 'feed' && (record.volume ? `${formatNumber(record.volume)} ml` : 'Chưa nhập ml')}
-                            {record.type === 'weight' && record.weight ? `${record.weight} kg` : ''}
-                          </span>
-                          {record.note && <p>{record.note}</p>}
-                        </div>
-                        <div className="history-row-actions">
-                          <button
-                            type="button"
-                            onClick={() => record.type === 'feed' ? onOpenFeedModal(record) : onOpenWeightModal(record)}
-                            aria-label="Sửa"
-                          >
-                            <GameIcon name="edit" size={20} variant="cream" bare />
-                          </button>
-                          <button
-                            type="button"
-                            className={deleteConfirm === record.id ? 'confirm' : ''}
-                            onClick={() => handleDelete(record.id)}
-                            aria-label="Xóa"
-                          >
-                            <GameIcon name="trash" size={20} variant="cream" bare />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </article>
-            );
-          })
+          <div className="history-empty compact">
+            <p>{search ? 'Không có dữ liệu hôm nay theo bộ lọc này' : 'Hôm nay chưa có ghi chép'}</p>
+          </div>
         )}
       </section>
+
+      <section className="history-calendar-card">
+        <div className="history-section-head">
+          <div>
+            <h2>Các ngày trước</h2>
+            <span>Chạm vào ngày để xem chi tiết</span>
+          </div>
+          <GameIcon name="calendar" size={24} variant="lavender" bare />
+        </div>
+
+        {previousGroups.length === 0 ? (
+          <div className="history-empty compact">
+            <p>{search ? 'Không có ngày phù hợp' : 'Chưa có dữ liệu ngày trước'}</p>
+          </div>
+        ) : (
+          <div className="history-calendar-grid">
+            {previousGroups.map(group => {
+              const day = formatCalendarDay(group.day);
+              const total = getDayTotal(group.recs);
+              return (
+                <button key={group.day} type="button" onClick={() => setSelectedDay(group.day)}>
+                  <span>{day.weekday}</span>
+                  <strong>{day.date}</strong>
+                  <small>Th {day.month}</small>
+                  <em>{group.recs.length} lần • {formatNumber(total)} ml</em>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {selectedGroup && (
+        <>
+          <div className="modal-backdrop" onClick={() => setSelectedDay(null)} />
+          <section className="history-day-modal animate-modal" role="dialog" aria-modal="true">
+            <div className="modal-handle" />
+            <div className="history-modal-head">
+              <div>
+                <h2>{formatDate(selectedGroup.recs[0].timestamp)}</h2>
+                <span>{selectedGroup.recs.length} lần • {formatNumber(getDayTotal(selectedGroup.recs))} ml</span>
+              </div>
+              <button type="button" onClick={() => setSelectedDay(null)} aria-label="Đóng">
+                <GameIcon name="close" size={24} variant="cream" bare />
+              </button>
+            </div>
+            <HistoryRows
+              records={selectedGroup.recs}
+              deleteConfirm={deleteConfirm}
+              onDelete={handleDelete}
+              onOpenFeedModal={onOpenFeedModal}
+              onOpenWeightModal={onOpenWeightModal}
+            />
+          </section>
+        </>
+      )}
     </div>
   );
 }

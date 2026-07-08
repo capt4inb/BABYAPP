@@ -87,7 +87,6 @@ function getBabyAge(babyBirthDate) {
 export default function DashboardTab({
   records,
   settings,
-  onOpenFeedModal,
   milkBags = [],
   onNavigateToMilk,
   memos = [],
@@ -216,10 +215,6 @@ export default function DashboardTab({
             <span>Cữ tiếp theo</span>
             <strong>{nextFeed ? nextFeed.label : '--:--'}</strong>
             <p>{nextFeed ? nextFeed.countdownLabel : 'Chưa có lịch nhắc'}</p>
-            <button type="button" onClick={onOpenFeedModal}>
-              <GameIcon name="plus" size={18} variant="cream" bare />
-              Ghi
-            </button>
           </div>
         </div>
 
@@ -230,27 +225,19 @@ export default function DashboardTab({
         )}
       </section>
 
-      <section className="home-card home-today-card">
-        <div className="home-card-head">
+      <section className="home-card home-today-card home-today-compact">
+        <div className="home-today-label">
           <h2>Hôm nay</h2>
-          <span className="home-date-pill">
-            <GameIcon name="calendar" size={22} variant="lavender" bare />
-            {todayDateLabel}
-          </span>
+          <span>{todayDateLabel}</span>
         </div>
-
-        <div className="home-stat-grid home-stat-grid-compact">
-          <div className="home-stat">
-            <GameIcon name="bottle" size={36} variant="lavender" />
+        <div className="home-today-metrics">
+          <div>
             <strong>{todayFeeds.length}</strong>
-            <span>cữ bú</span>
-            <small>/ {targetFeeds} cữ</small>
+            <span>cữ / {targetFeeds}</span>
           </div>
-          <div className="home-stat">
-            <GameIcon name="drop" size={36} variant="blue" />
+          <div>
             <strong>{formatNumber(todayFeedVol)}</strong>
             <span>ml</span>
-            <small>tổng hôm nay</small>
           </div>
         </div>
       </section>

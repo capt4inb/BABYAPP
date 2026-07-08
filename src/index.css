@@ -2205,6 +2205,314 @@
   color: var(--color-error);
 }
 
+.home-feed-next {
+  display: block;
+  background: var(--color-error);
+  border-color: var(--color-error);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.home-today-compact {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+}
+
+.home-today-label h2,
+.home-today-label span {
+  display: block;
+}
+
+.home-today-label h2 {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.home-today-label span {
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.home-today-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(68px, 1fr));
+  gap: 7px;
+}
+
+.home-today-metrics div {
+  min-width: 0;
+  padding: 8px 9px;
+  border-radius: 8px;
+  background: var(--color-base-200);
+  text-align: center;
+}
+
+.home-today-metrics strong,
+.home-today-metrics span {
+  display: block;
+}
+
+.home-today-metrics strong {
+  color: var(--color-base-content);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.home-today-metrics span {
+  margin-top: 4px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.home-memo-card {
+  order: 20;
+}
+
+.history-today-card,
+.history-calendar-card {
+  margin: 12px 14px 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--color-base-300) 74%, white);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: var(--shadow-sm);
+}
+
+.history-section-head {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.history-section-head h2,
+.history-section-head span,
+.history-section-head strong {
+  display: block;
+}
+
+.history-section-head h2 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.history-section-head span {
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.history-section-head > strong {
+  color: var(--color-primary);
+  font-size: 17px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.history-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+}
+
+.history-calendar-grid button {
+  min-width: 0;
+  min-height: 92px;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 3px;
+  padding: 9px 6px;
+  border: 1px solid color-mix(in oklab, var(--color-primary) 18%, white);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-primary) 6%, white);
+  color: var(--color-base-content);
+  cursor: pointer;
+}
+
+.history-calendar-grid button span,
+.history-calendar-grid button small,
+.history-calendar-grid button em {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+  text-align: center;
+}
+
+.history-calendar-grid button strong {
+  color: var(--color-primary);
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.history-calendar-grid button em {
+  margin-top: 5px;
+  line-height: 1.2;
+}
+
+.history-day-modal,
+.milk-history-modal {
+  position: fixed;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  z-index: 221;
+  width: min(calc(100% - 20px), 720px);
+  max-height: min(82dvh, 680px);
+  overflow-y: auto;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+  transform: translateX(-50%);
+}
+
+.history-modal-head,
+.milk-history-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px 12px;
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.history-modal-head h2,
+.milk-history-modal-head h2 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.history-modal-head span,
+.milk-history-modal-head span {
+  display: block;
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.history-modal-head button,
+.milk-history-modal-head button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-base-200);
+  cursor: pointer;
+}
+
+.milk-total-card {
+  min-height: 126px;
+}
+
+.milk-total-side {
+  min-width: 168px;
+  display: grid;
+  gap: 8px;
+}
+
+.milk-total-side div {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.milk-total-side div.warn {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.milk-total-side span,
+.milk-total-side strong {
+  display: block;
+}
+
+.milk-total-side span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.milk-total-side strong {
+  margin-top: 4px;
+  color: white;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.milk-history-table-wrap {
+  overflow-x: auto;
+  padding: 0 12px 14px;
+}
+
+.milk-history-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.milk-history-table th,
+.milk-history-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--color-base-300);
+  color: var(--color-base-content);
+  font-size: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.milk-history-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-base-100);
+  color: var(--color-text-muted);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.milk-history-table td strong,
+.milk-history-table td span,
+.milk-history-table td em {
+  display: block;
+}
+
+.milk-history-table td span {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.milk-history-table td em {
+  font-style: normal;
+  font-weight: 900;
+}
+
 .quick-add-range,
 .quick-add-legacy {
   display: none !important;
@@ -3028,6 +3336,18 @@
     grid-template-columns: 1fr;
   }
 
+  .history-calendar-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .milk-total-card {
+    align-items: stretch;
+  }
+
+  .milk-total-side {
+    min-width: 138px;
+  }
+
   .home-feed-layout {
     grid-template-columns: 1fr;
   }
@@ -3151,6 +3471,35 @@
   .home-stat span,
   .home-stat small {
     font-size: 11px;
+  }
+
+  .home-today-compact {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .home-today-metrics {
+    grid-template-columns: repeat(2, minmax(56px, 1fr));
+  }
+
+  .home-today-metrics div {
+    padding: 7px;
+  }
+
+  .home-today-metrics strong {
+    font-size: 18px;
+  }
+
+  .home-today-metrics span {
+    font-size: 10px;
+  }
+
+  .milk-total-card {
+    display: grid;
+  }
+
+  .milk-total-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .home-feed-last,
