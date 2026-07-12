@@ -43,10 +43,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
   const [volumeStr, setVolumeStr] = useState(() => editBag ? editBag.volume_ml.toString() : '');
   const [expressedAt, setExpressedAt] = useState(() => toLocalDatetimeInput(editBag?.expressed_at || new Date()));
   const [storageStatus, setStorageStatus] = useState(() => editBag?.storage_status || 'fridge');
-  const [note, setNote] = useState(() => editBag?.note || '');
   const [error, setError] = useState('');
-
-  const combinedNote = note.trim();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -64,7 +61,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
         volume_ml: vol,
         expressed_at: new Date(expressedAt).toISOString(),
         storage_status: storageStatus,
-        note: combinedNote,
+        note: '',
       };
       
       // If we modified storage status away from used/expired, clean up fed_at, etc.
@@ -84,7 +81,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
         volume_ml: vol,
         expressed_at: new Date(expressedAt).toISOString(),
         storage_status: storageStatus,
-        note: combinedNote,
+        note: '',
       });
       onSave(bag);
     }
@@ -229,18 +226,6 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
                 {selectedStorage.desc}
               </p>
             )}
-          </div>
-
-          {/* Ghi chú */}
-          <div className="form-group">
-            <label className="form-label">Ghi chú</label>
-            <input
-              type="text"
-              className="form-input"
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              placeholder="Thêm ghi chú..."
-            />
           </div>
 
           {/* Actions */}

@@ -248,17 +248,20 @@ export default function HistoryTab({ records, onOpenFeedModal, onOpenWeightModal
                 <h2>{relativeDayLabel(selectedGroup.day)}</h2>
                 <span>{selectedGroup.recs.length} lần • {formatNumber(getDayTotal(selectedGroup.recs))} ml</span>
               </div>
-              <button type="button" onClick={() => setSelectedDay(null)} aria-label="Đóng">
-                <GameIcon name="close" size={24} variant="cream" bare />
-              </button>
             </div>
-            <HistoryRows
-              records={selectedGroup.recs}
-              deleteConfirm={deleteConfirm}
-              onDelete={handleDelete}
-              onOpenFeedModal={onOpenFeedModal}
-              onOpenWeightModal={onOpenWeightModal}
-            />
+            <div className="history-modal-scroll">
+              <HistoryRows
+                records={selectedGroup.recs}
+                deleteConfirm={deleteConfirm}
+                onDelete={handleDelete}
+                onOpenFeedModal={onOpenFeedModal}
+                onOpenWeightModal={onOpenWeightModal}
+              />
+            </div>
+            <button className="history-modal-close-bottom" type="button" onClick={() => setSelectedDay(null)}>
+              <GameIcon name="close" size={20} variant="cream" bare />
+              Đóng
+            </button>
           </section>
         </>
       )}

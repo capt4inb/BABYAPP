@@ -1903,7 +1903,7 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 7px 12px;
   border: 1px solid var(--color-base-300);
   border-radius: 999px;
@@ -1923,12 +1923,15 @@
 .milk-filter-tabs button span {
   min-width: 22px;
   min-height: 22px;
+  padding: 0 8px;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.55);
   color: currentColor;
   font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .milk-detail-list {
@@ -2399,6 +2402,44 @@
   animation: centerModalAppear 0.2s ease-out both;
 }
 
+.history-day-modal {
+  width: min(calc(100vw - 32px), 360px);
+  height: min(calc(100vw - 32px), 360px, calc(100dvh - 48px));
+  max-height: none;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+
+.history-day-modal .modal-handle {
+  margin-bottom: 0;
+}
+
+.history-modal-scroll {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.history-modal-scroll .history-records {
+  border-top: 0;
+}
+
+.history-modal-close-bottom {
+  min-height: 46px;
+  margin: 10px 12px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .history-modal-head,
 .milk-history-modal-head {
   display: flex;
@@ -2512,22 +2553,17 @@
 
 .milk-history-table th:nth-child(1),
 .milk-history-table td:nth-child(1) {
-  width: 24%;
+  width: 42%;
 }
 
 .milk-history-table th:nth-child(2),
 .milk-history-table td:nth-child(2) {
-  width: 14%;
+  width: 20%;
 }
 
 .milk-history-table th:nth-child(3),
 .milk-history-table td:nth-child(3) {
-  width: 26%;
-}
-
-.milk-history-table th:nth-child(4),
-.milk-history-table td:nth-child(4) {
-  width: 36%;
+  width: 38%;
 }
 
 .milk-history-table td strong,
@@ -2586,7 +2622,9 @@
 
 .milk-sort-tools {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
@@ -2594,38 +2632,24 @@
   width: min(100%, 220px);
 }
 
-.milk-bag-tags {
-  display: flex !important;
-  gap: 5px;
-  margin: 0 0 5px;
-  flex-wrap: wrap;
-}
-
-.milk-bag-tag {
-  display: inline-flex;
+.milk-filter-tools {
   align-items: center;
-  min-height: 20px;
-  padding: 3px 7px;
-  border-radius: 999px;
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 900;
-  white-space: nowrap;
+  justify-content: space-between;
 }
 
-.milk-bag-tag.primary {
-  background: color-mix(in oklab, var(--color-primary) 13%, white);
-  color: var(--color-primary);
+.milk-filter-tools .milk-sort-box,
+.milk-filter-tools .milk-custom-date-box {
+  flex: 1 1 165px;
+  min-width: 0;
+  width: auto;
 }
 
-.milk-bag-tag.success {
-  background: color-mix(in oklab, var(--color-success) 14%, white);
-  color: var(--color-success);
+.milk-filter-tools .milk-custom-date-box {
+  display: block;
 }
 
-.milk-bag-tag.info {
-  background: color-mix(in oklab, var(--color-info) 16%, white);
-  color: color-mix(in oklab, var(--color-info) 72%, #1f2937);
+.milk-filter-tools .milk-custom-date-box input {
+  width: 100%;
 }
 
 .milk-total-card {
@@ -3495,7 +3519,16 @@
 
 @media (max-width: 560px) {
   .milk-sort-tools {
-    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .milk-filter-tools {
+    align-items: stretch;
+  }
+
+  .milk-filter-tools .milk-sort-box,
+  .milk-filter-tools .milk-custom-date-box {
+    flex-basis: 100%;
   }
 
   .history-calendar-grid {

@@ -18,8 +18,14 @@ const FILTERS = [
   { id: 'fridge', label: 'Ngăn mát' },
   { id: 'freezer', label: 'Ngăn đông' },
   { id: 'thawing', label: 'Đang rã' },
-  { id: 'ready', label: 'Sẵn dùng' },
-  { id: 'done', label: 'Đã dùng' },
+];
+
+const DATE_FILTERS = [
+  { id: 'all', label: 'Tất cả ngày' },
+  { id: 'today', label: 'Hôm nay' },
+  { id: 'yesterday', label: 'Hôm qua' },
+  { id: 'two_days_ago', label: 'Hôm kia' },
+  { id: 'custom', label: 'Chọn ngày' },
 ];
 
 const NUMBER_FORMATTER = new Intl.NumberFormat('vi-VN');
@@ -30,6 +36,38 @@ function formatNumber(value) {
 
 function isActiveBag(bag) {
   return bag.storage_status !== 'used' && bag.storage_status !== 'expired';
+}
+
+function toDateInputValue(dateLike) {
+  const date = new Date(dateLike);
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
+}
+
+function getRelativeDateValue(daysAgo) {
+  const day = new Date();
+  day.setHours(0, 0, 0, 0);
+  day.setDate(day.getDate() - daysAgo);
+  return toDateInputValue(day);
+}
+
+function getDateFilterValue(filter, customDate) {
+  if (filter === 'today') return getRelativeDateValue(0);
+  if (filter === 'yesterday') return getRelativeDateValue(1);
+  if (filter === 'two_days_ago') return getRelativeDateValue(2);
+  if (filter === 'custom') return customDate || '';
+  return '';
+}
+
+function sumVolume(bags) {
+  return bags.reduce((sum, bag) => sum + (bag.volume_ml || 0), 0);
+}
+
+function getFilterStats(bags) {
+  return {
+    count: bags.length,
+    ml: sumVolume(bags),
+  };
 }
 
 function getLast7Days() {
@@ -66,26 +104,13 @@ function buildMilkChartData(milkBags) {
   });
 }
 
-function getBagTags(bag, newestBagId) {
-  const tags = [];
-  const expressedAt = new Date(bag.expressed_at);
-  const ageHours = Math.max(0, (Date.now() - expressedAt.getTime()) / 3600000);
-
-  if (bag.id === newestBagId) tags.push({ label: 'Mới nhất', tone: 'primary' });
-  if (ageHours <= 24) tags.push({ label: 'Mới thêm', tone: 'success' });
-  if (ageHours <= 72) tags.push({ label: 'Gần hôm nay', tone: 'info' });
-
-  return tags.slice(0, 2);
-}
-
-function MilkBagCard({ bag, newestBagId, onUpdate, onDelete, onEdit }) {
+function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
   const [expanded, setExpanded] = useState(false);
   const [showThawModal, setShowThawModal] = useState(false);
   const displayStatus = bag.storage_status === 'using' ? (bag.previous_status || 'fridge') : bag.storage_status;
   const cfg = STATUS_CONFIG[displayStatus] || STATUS_CONFIG.fridge;
   const remaining = bag.expiry_at ? getTimeRemaining(bag.expiry_at) : null;
   const isDone = bag.storage_status === 'used' || bag.storage_status === 'expired';
-  const bagTags = getBagTags(bag, newestBagId);
 
   const handleTransition = useCallback((newStatus, extra = {}) => {
     onUpdate(bag.id, transitionBag(bag, newStatus, extra));
@@ -113,13 +138,6 @@ function MilkBagCard({ bag, newestBagId, onUpdate, onDelete, onEdit }) {
               <strong>{cfg.label}</strong>
               <em style={{ color: cfg.color }}>{statusText}</em>
             </span>
-            {bagTags.length > 0 && (
-              <span className="milk-bag-tags">
-                {bagTags.map(tag => (
-                  <b key={tag.label} className={`milk-bag-tag ${tag.tone}`}>{tag.label}</b>
-                ))}
-              </span>
-            )}
             <span>Hút {formatDateShort(bag.expressed_at)} lúc {formatTime(bag.expressed_at)}</span>
           </span>
           <GameIcon name="right" size={22} variant="cream" bare />
@@ -131,10 +149,6 @@ function MilkBagCard({ bag, newestBagId, onUpdate, onDelete, onEdit }) {
               <div>
                 <dt>ID</dt>
                 <dd>{bag.id.slice(0, 6).toUpperCase()}</dd>
-              </div>
-              <div>
-                <dt>Ghi chú</dt>
-                <dd>{bag.note || 'Không có'}</dd>
               </div>
               {bag.fed_at && (
                 <div>
@@ -218,16 +232,21 @@ export default function MilkStorageTab({
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [sortMode, setSortMode] = useState('priority');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [customDate, setCustomDate] = useState(() => toDateInputValue(new Date()));
   const [showAddModal, setShowAddModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [editingBag, setEditingBag] = useState(null);
 
   const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
   const summary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
-  const activeBags = useMemo(() => milkBags.filter(isActiveBag), [milkBags]);
-  const newestBagId = useMemo(() => {
-    return [...activeBags].sort((a, b) => new Date(b.expressed_at) - new Date(a.expressed_at))[0]?.id || null;
-  }, [activeBags]);
+  const allActiveBags = useMemo(() => milkBags.filter(isActiveBag), [milkBags]);
+  const dateFilterValue = useMemo(() => getDateFilterValue(dateFilter, customDate), [customDate, dateFilter]);
+  const dateScopedBags = useMemo(() => {
+    if (!dateFilterValue) return milkBags;
+    return milkBags.filter(bag => toDateInputValue(bag.expressed_at) === dateFilterValue);
+  }, [dateFilterValue, milkBags]);
+  const activeBags = useMemo(() => dateScopedBags.filter(isActiveBag), [dateScopedBags]);
   const chartData = useMemo(() => buildMilkChartData(milkBags), [milkBags]);
   const maxChartValue = Math.max(...chartData.map(item => item.total), 1);
 
@@ -241,28 +260,25 @@ export default function MilkStorageTab({
     .filter(bag => bag.storage_status === 'used' && bag.fed_at && new Date(bag.fed_at) >= todayStart)
     .reduce((sum, bag) => sum + (bag.volume_ml || 0), 0), [milkBags, todayStart]);
 
-  const expiringSoonMl = useMemo(() => activeBags
+  const expiringSoonMl = useMemo(() => allActiveBags
     .filter(bag => {
       if (!bag.expiry_at) return false;
       const remaining = getTimeRemaining(bag.expiry_at);
       return remaining && !remaining.expired && remaining.hours < 24;
     })
-    .reduce((sum, bag) => sum + (bag.volume_ml || 0), 0), [activeBags]);
+    .reduce((sum, bag) => sum + (bag.volume_ml || 0), 0), [allActiveBags]);
 
   const filterCounts = useMemo(() => {
-    const count = (predicate) => activeBags.filter(predicate).length;
+    const stats = (predicate) => getFilterStats(activeBags.filter(predicate));
     return {
-      all: activeBags.length,
-      fridge: count(bag => bag.storage_status === 'fridge' || (bag.storage_status === 'using' && bag.previous_status === 'fridge')),
-      freezer: count(bag => bag.storage_status === 'freezer' || (bag.storage_status === 'using' && bag.previous_status === 'freezer')),
-      thawing: count(bag => bag.storage_status === 'thawing'),
-      ready: count(bag => ['room_temp', 'thawed', 'warmed', 'using'].includes(bag.storage_status)),
-      done: milkBags.filter(bag => bag.storage_status === 'used' || bag.storage_status === 'expired').length,
+      all: getFilterStats(activeBags),
+      fridge: stats(bag => bag.storage_status === 'fridge' || (bag.storage_status === 'using' && bag.previous_status === 'fridge')),
+      freezer: stats(bag => bag.storage_status === 'freezer' || (bag.storage_status === 'using' && bag.previous_status === 'freezer')),
+      thawing: stats(bag => bag.storage_status === 'thawing'),
     };
-  }, [activeBags, milkBags]);
+  }, [activeBags]);
 
   const filteredBags = useMemo(() => {
-    const done = milkBags.filter(bag => bag.storage_status === 'used' || bag.storage_status === 'expired');
     let list = activeBags;
 
     if (activeFilter === 'fridge') {
@@ -271,10 +287,6 @@ export default function MilkStorageTab({
       list = activeBags.filter(bag => bag.storage_status === 'freezer' || (bag.storage_status === 'using' && bag.previous_status === 'freezer'));
     } else if (activeFilter === 'thawing') {
       list = activeBags.filter(bag => bag.storage_status === 'thawing');
-    } else if (activeFilter === 'ready') {
-      list = activeBags.filter(bag => ['room_temp', 'thawed', 'warmed', 'using'].includes(bag.storage_status));
-    } else if (activeFilter === 'done') {
-      list = done;
     }
 
     return [...list].sort((a, b) => {
@@ -282,10 +294,9 @@ export default function MilkStorageTab({
       if (sortMode === 'oldest') return new Date(a.expressed_at) - new Date(b.expressed_at);
       if (sortMode === 'volume_desc') return (b.volume_ml || 0) - (a.volume_ml || 0);
       if (sortMode === 'volume_asc') return (a.volume_ml || 0) - (b.volume_ml || 0);
-      if (activeFilter === 'done') return new Date(b.fed_at || b.expressed_at) - new Date(a.fed_at || a.expressed_at);
       return getPriorityScore(a) - getPriorityScore(b);
     });
-  }, [activeBags, activeFilter, milkBags, sortMode]);
+  }, [activeBags, activeFilter, sortMode]);
 
   const milkHistoryRows = useMemo(() => {
     return [...milkBags].sort((a, b) =>
@@ -364,7 +375,29 @@ export default function MilkStorageTab({
           <span>{filteredBags.length} bịch</span>
         </div>
 
-        <div className="milk-sort-tools">
+        <div className="milk-sort-tools milk-filter-tools">
+          <label className="milk-sort-box milk-date-filter-box">
+            <GameIcon name="calendar" size={20} variant="cream" bare />
+            <select
+              className="form-input"
+              value={dateFilter}
+              onChange={event => setDateFilter(event.target.value)}
+            >
+              {DATE_FILTERS.map(filter => (
+                <option key={filter.id} value={filter.id}>{filter.label}</option>
+              ))}
+            </select>
+          </label>
+          {dateFilter === 'custom' && (
+            <label className="milk-custom-date-box">
+              <input
+                className="form-input"
+                type="date"
+                value={customDate}
+                onChange={event => setCustomDate(event.target.value)}
+              />
+            </label>
+          )}
           <label className="milk-sort-box">
             <GameIcon name="sliders" size={20} variant="cream" bare />
             <select className="form-input" value={sortMode} onChange={event => setSortMode(event.target.value)}>
@@ -378,16 +411,19 @@ export default function MilkStorageTab({
         </div>
 
         <div className="milk-filter-tabs">
-          {FILTERS.map(filter => (
-            <button
-              key={filter.id}
-              type="button"
-              className={activeFilter === filter.id ? 'active' : ''}
-              onClick={() => setActiveFilter(filter.id)}
-            >
-              {filter.label} <span>{filterCounts[filter.id] || 0}</span>
-            </button>
-          ))}
+          {FILTERS.map(filter => {
+            const stats = filterCounts[filter.id] || { count: 0, ml: 0 };
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                className={activeFilter === filter.id ? 'active' : ''}
+                onClick={() => setActiveFilter(filter.id)}
+              >
+                {filter.label} <span>{stats.count} bịch · {formatNumber(stats.ml)} ml</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="milk-detail-list">
@@ -406,7 +442,6 @@ export default function MilkStorageTab({
               <MilkBagCard
                 key={bag.id}
                 bag={bag}
-                newestBagId={newestBagId}
                 onUpdate={(id, updated) => onUpdateMilkBag(id, updated)}
                 onDelete={onDeleteMilkBag}
                 onEdit={setEditingBag}
@@ -449,7 +484,6 @@ export default function MilkStorageTab({
                     <th>Ngày</th>
                     <th>ML</th>
                     <th>Trạng thái</th>
-                    <th>Ghi chú</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -464,7 +498,6 @@ export default function MilkStorageTab({
                         </td>
                         <td>{formatNumber(bag.volume_ml)}</td>
                         <td><em style={{ color: cfg.color }}>{cfg.label}</em></td>
-                        <td>{bag.note || '-'}</td>
                       </tr>
                     );
                   })}
