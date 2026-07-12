@@ -420,7 +420,11 @@ export default function MilkStorageTab({
                 className={activeFilter === filter.id ? 'active' : ''}
                 onClick={() => setActiveFilter(filter.id)}
               >
-                {filter.label} <span>{stats.count} bịch · {formatNumber(stats.ml)} ml</span>
+                {filter.label}
+                <span className="milk-filter-stat">
+                  <em>{stats.count} bịch</em>
+                  <strong>{formatNumber(stats.ml)} ml</strong>
+                </span>
               </button>
             );
           })}

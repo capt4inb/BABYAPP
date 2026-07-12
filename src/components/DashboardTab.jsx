@@ -8,15 +8,6 @@ function formatNumber(value) {
   return NUMBER_FORMATTER.format(value || 0);
 }
 
-function timeSince(isoString, nowMs) {
-  const diff = nowMs - new Date(isoString).getTime();
-  const mins = Math.max(0, Math.floor(diff / 60000));
-  if (mins < 60) return `${mins} phút trước`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} giờ ${mins % 60} phút trước`;
-  return `${Math.floor(hrs / 24)} ngày trước`;
-}
-
 function timeUntilNext(lastIso, intervalHours, nowMs) {
   if (!lastIso) return null;
   const next = new Date(new Date(lastIso).getTime() + intervalHours * 3600000);
@@ -89,15 +80,9 @@ export default function DashboardTab({
   settings,
   milkBags = [],
   onNavigateToMilk,
-  memos = [],
-  onAddMemo,
-  onDeleteMemo
 }) {
   const { babyName, babyBirthDate, feedIntervalHours = 3 } = settings;
   const [nowMs] = useState(() => Date.now());
-  const [isWritingMemo, setIsWritingMemo] = useState(false);
-  const [memoContent, setMemoContent] = useState('');
-  const [memoAuthor, setMemoAuthor] = useState('Mẹ');
 
   const todayStart = useMemo(() => {
     const day = new Date();
@@ -160,28 +145,6 @@ export default function DashboardTab({
   const lastFeedTime = lastFeed
     ? new Date(lastFeed.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     : null;
-
-  const handleOpenMemo = () => {
-    setIsWritingMemo(true);
-    requestAnimationFrame(() => {
-      document.getElementById('home-memo-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  };
-
-  const handleSaveMemo = (event) => {
-    event.preventDefault();
-    if (!memoContent.trim()) return;
-
-    onAddMemo({
-      id: crypto.randomUUID(),
-      content: memoContent.trim(),
-      author: memoAuthor,
-      createdAt: new Date().toISOString()
-    });
-
-    setMemoContent('');
-    setIsWritingMemo(false);
-  };
 
   return (
     <div className="animate-fade-in home-screen">
@@ -276,58 +239,6 @@ export default function DashboardTab({
             </div>
           </div>
         </div>
-      </section>
-
-      <section className="home-card home-memo-card compact" id="home-memo-form">
-        <div className="home-card-head">
-          <h2>Ghi chú gia đình</h2>
-          <span className="home-date-pill">{memos.length} ghi chú</span>
-        </div>
-
-        {isWritingMemo ? (
-          <form className="home-memo-form" onSubmit={handleSaveMemo}>
-            <textarea
-              className="form-input"
-              value={memoContent}
-              onChange={event => setMemoContent(event.target.value)}
-              placeholder="Nhập ghi chú cho cả nhà..."
-              rows={2}
-              required
-            />
-            <div className="home-memo-actions">
-              <select className="form-input" value={memoAuthor} onChange={event => setMemoAuthor(event.target.value)}>
-                <option>Mẹ</option>
-                <option>Bố</option>
-                <option>Bà</option>
-                <option>Ông</option>
-              </select>
-              <button className="btn btn-ghost" type="button" onClick={() => setIsWritingMemo(false)}>Huỷ</button>
-              <button className="btn btn-primary" type="submit">Lưu</button>
-            </div>
-          </form>
-        ) : (
-          <button className="home-memo-empty" type="button" onClick={handleOpenMemo}>
-            <GameIcon name="note" size={30} variant="orange" />
-            <span>{memos[0] ? memos[0].content : 'Thêm ghi chú nhanh cho hôm nay'}</span>
-          </button>
-        )}
-
-        {memos.length > 0 && (
-          <div className="home-memo-list">
-            {memos.slice(0, 2).map(memo => (
-              <article key={memo.id}>
-                <div>
-                  <strong>{memo.author}</strong>
-                  <span>{timeSince(memo.createdAt, nowMs)}</span>
-                </div>
-                <p>{memo.content}</p>
-                <button type="button" onClick={() => onDeleteMemo(memo.id)} aria-label="Xoá ghi chú">
-                  <GameIcon name="trash" size={18} variant="cream" bare />
-                </button>
-              </article>
-            ))}
-          </div>
-        )}
       </section>
 
       <section className="home-card home-chart-card">
