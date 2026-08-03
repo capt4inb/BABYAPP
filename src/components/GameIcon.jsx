@@ -48,6 +48,12 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import feedIcon from '../assets/activity-feed.svg';
+import diaperIcon from '../assets/activity-diaper.svg';
+import sleepIcon from '../assets/activity-sleep.svg';
+import statsIcon from '../assets/activity-stats.svg';
+import pumpIcon from '../assets/activity-pump.svg';
+import milkStorageIcon from '../assets/activity-milk-storage.svg';
 
 const ICONS = {
   home: Home,
@@ -103,6 +109,19 @@ const ICONS = {
   tag: Tag,
 };
 
+const CUSTOM_ICONS = {
+  feed: feedIcon,
+  bottle: feedIcon,
+  diaper: diaperIcon,
+  poop: diaperIcon,
+  sleep: sleepIcon,
+  moon: sleepIcon,
+  stats: statsIcon,
+  pump: pumpIcon,
+  milkStorage: milkStorageIcon,
+  milk: milkStorageIcon,
+};
+
 export default function GameIcon({
   name,
   size = 34,
@@ -112,6 +131,7 @@ export default function GameIcon({
   bare = false,
   style,
 }) {
+  const customIcon = CUSTOM_ICONS[name];
   const Icon = ICONS[name] || Circle;
   const classes = bare
     ? `game-icon-bare ${className}`.trim()
@@ -125,7 +145,11 @@ export default function GameIcon({
       aria-hidden={label ? undefined : true}
       role={label ? 'img' : undefined}
     >
-      <Icon size={Math.max(12, Math.round(size * 0.58))} strokeWidth={2.2} />
+      {customIcon ? (
+        <img className="game-icon-image" src={customIcon} alt="" aria-hidden="true" draggable="false" />
+      ) : (
+        <Icon size={Math.max(12, Math.round(size * 0.58))} strokeWidth={2.2} />
+      )}
     </span>
   );
 }

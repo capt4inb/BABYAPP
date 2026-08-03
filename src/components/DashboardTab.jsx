@@ -115,7 +115,7 @@ function buildTodayJournal({ records, milkBags, diapers, sleeps, todayStart }) {
       id: `milk-${group.ids.join('-')}`,
       time: group.time,
       type: 'milk',
-      icon: 'milk',
+      icon: 'pump',
       tone: 'lavender',
       title: 'Hút sữa',
       detail: `${formatNumber(group.volume)} ml thêm vào ${milkStorageLabel(group.storage)}`,
@@ -255,25 +255,20 @@ export default function DashboardTab({
 
       <section className="home-card home-care-card">
         <div className="home-care-actions home-care-actions-v2">
-          <button type="button" className="home-care-tile feed" onClick={onOpenFeed}>
+          <button type="button" className="home-care-tile feed" onClick={onOpenFeed} aria-label="Bú" title="Bú">
             <GameIcon name="bottle" size={44} variant="lavender" />
-            <span>Bú</span>
           </button>
-          <button type="button" className="home-care-tile diaper" onClick={() => onNavigateToCare?.('diaper')}>
+          <button type="button" className="home-care-tile diaper" onClick={() => onNavigateToCare?.('diaper')} aria-label="Tã" title="Tã">
             <GameIcon name="poop" size={44} variant="green" />
-            <span>Tã</span>
           </button>
-          <button type="button" className="home-care-tile sleep" onClick={() => onNavigateToCare?.('sleep')}>
+          <button type="button" className="home-care-tile sleep" onClick={() => onNavigateToCare?.('sleep')} aria-label="Ngủ" title="Ngủ">
             <GameIcon name="moon" size={44} variant="blue" />
-            <span>Ngủ</span>
           </button>
-          <button type="button" className="home-care-tile stats" onClick={() => onNavigateToCare?.('stats')}>
+          <button type="button" className="home-care-tile stats" onClick={() => onNavigateToCare?.('stats')} aria-label="Chỉ số" title="Chỉ số">
             <GameIcon name="stats" size={44} variant="lavender" />
-            <span>Chỉ số</span>
           </button>
-          <button type="button" className="home-care-tile milk" onClick={() => onNavigateToMilk?.()}>
+          <button type="button" className="home-care-tile milk" onClick={() => onNavigateToMilk?.()} aria-label="Kho sữa" title="Kho sữa">
             <GameIcon name="milk" size={44} variant="blue" />
-            <span>Kho sữa</span>
           </button>
         </div>
       </section>

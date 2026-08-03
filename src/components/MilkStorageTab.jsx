@@ -539,7 +539,7 @@ export default function MilkStorageTab({
         <div className={selectedMilkGroup ? 'milk-detail-list' : 'milk-day-list'}>
           {filteredBags.length === 0 ? (
             <div className="milk-empty-state">
-              <GameIcon name="bottle" size={54} variant="blue" />
+              <GameIcon name="milk" size={54} variant="blue" />
               <strong>Chưa có bịch sữa</strong>
               <p>Thêm bịch sữa đầu tiên để bắt đầu quản lý kho.</p>
               <button className="btn btn-primary" type="button" onClick={() => setShowAddModal(true)}>

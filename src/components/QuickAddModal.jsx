@@ -118,7 +118,7 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
         ) : (
           <form className="quick-add-form" onSubmit={saveMilk}>
             <div className="quick-add-hero pink">
-              <GameIcon name="bottle" size={66} variant="pink" />
+              <GameIcon name="pump" size={66} variant="pink" />
               <h2>Thêm sữa vào kho</h2>
               <p>Quản lý tồn kho di động</p>
             </div>

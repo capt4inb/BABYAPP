@@ -125,7 +125,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
               border: '1px solid var(--color-base-300)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <GameIcon name="bottle" size={30} variant="blue" />
+              <GameIcon name="pump" size={30} variant="blue" />
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>

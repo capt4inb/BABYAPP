@@ -56,7 +56,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
               border: '1px solid var(--color-base-300)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              {isFeed ? <GameIcon name="drop" size={30} variant="pink" /> : <GameIcon name="weight" size={30} variant="blue" />}
+              {isFeed ? <GameIcon name="bottle" size={30} variant="pink" /> : <GameIcon name="stats" size={30} variant="blue" />}
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
