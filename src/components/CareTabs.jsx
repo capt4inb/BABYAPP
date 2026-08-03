@@ -9,6 +9,7 @@ import {
   getLast7DayStats,
   getNextVaccine,
   isToday,
+  toLocalDatetimeInput,
 } from '../utils/careUtils';
 import GameIcon from './GameIcon';
 
@@ -160,6 +161,9 @@ export function DiaperTab({ diapers = [], onAddDiaper, onUpdateDiaper, onDeleteD
 }
 
 export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep, onBack }) {
+  const [startMode, setStartMode] = useState('now');
+  const [customStartAt, setCustomStartAt] = useState(() => toLocalDatetimeInput(new Date()));
+  const [startError, setStartError] = useState('');
   const activeSleep = useMemo(() => sleeps.find(item => !item.endAt), [sleeps]);
   const todaySleeps = useMemo(
     () => sleeps.filter(item => isToday(item.startAt)).sort((a, b) => new Date(b.startAt) - new Date(a.startAt)),
@@ -176,12 +180,24 @@ export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep
 
   const handleStart = () => {
     if (activeSleep) return;
+    const startAt = startMode === 'custom' ? new Date(customStartAt) : new Date();
+    if (Number.isNaN(startAt.getTime())) {
+      setStartError('Vui lòng chọn giờ bắt đầu hợp lệ.');
+      return;
+    }
+    if (startAt.getTime() > Date.now()) {
+      setStartError('Giờ bắt đầu không được ở tương lai.');
+      return;
+    }
+    setStartError('');
     onAddSleep({
       id: crypto.randomUUID(),
-      startAt: new Date().toISOString(),
+      startAt: startAt.toISOString(),
       endAt: null,
       createdAt: new Date().toISOString(),
     });
+    setCustomStartAt(toLocalDatetimeInput(new Date()));
+    setStartMode('now');
   };
 
   const handleEnd = () => {
@@ -204,6 +220,45 @@ export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep
         </div>
         <strong>{activeSleep ? formatDuration(getDurationMinutes(activeSleep.startAt)) : '--:--'}</strong>
         <p>{activeSleep ? `Bé đã ngủ từ ${formatTime(activeSleep.startAt)}` : 'Bấm bắt đầu khi bé ngủ.'}</p>
+        {!activeSleep && (
+          <div className="sleep-start-options">
+            <div className="sleep-start-tabs" role="tablist" aria-label="Chọn giờ bắt đầu ngủ">
+              <button
+                type="button"
+                className={startMode === 'now' ? 'active' : ''}
+                onClick={() => {
+                  setStartMode('now');
+                  setStartError('');
+                }}
+              >
+                Bây giờ
+              </button>
+              <button
+                type="button"
+                className={startMode === 'custom' ? 'active' : ''}
+                onClick={() => setStartMode('custom')}
+              >
+                Chọn giờ
+              </button>
+            </div>
+            {startMode === 'custom' && (
+              <label className="sleep-start-custom">
+                <span>Bé ngủ từ</span>
+                <input
+                  type="datetime-local"
+                  className="form-input"
+                  value={customStartAt}
+                  max={toLocalDatetimeInput(new Date())}
+                  onChange={event => {
+                    setCustomStartAt(event.target.value);
+                    setStartError('');
+                  }}
+                />
+              </label>
+            )}
+            {startError && <p className="sleep-start-error">{startError}</p>}
+          </div>
+        )}
         <div className="sleep-actions">
           <button className="btn btn-primary" type="button" onClick={handleStart} disabled={Boolean(activeSleep)}>
             <GameIcon name="plus" size={22} variant="cream" />
