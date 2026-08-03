@@ -18,7 +18,7 @@ import {
   updateRoomSleeps,
   updateRoomVaccines,
 } from './services/firebase';
-import { generateVaccineSchedule } from './utils/careUtils';
+import { formatLiveDuration, generateVaccineSchedule } from './utils/careUtils';
 
 // ── localStorage keys ─────────────────────────────────────────
 const STORAGE_KEYS = {
@@ -66,6 +66,20 @@ function saveToStorage(key, value) {
 }
 
 // ── App Component ─────────────────────────────────────────────
+function SleepFloatingBubble({ sleep, nowMs, onOpen }) {
+  if (!sleep) return null;
+
+  return (
+    <button className="sleep-floating-bubble animate-scale-in" type="button" onClick={onOpen} aria-label="Mở thời gian ngủ">
+      <span className="sleep-floating-icon">
+        <GameIcon name="moon" size={42} variant="cream" bare />
+      </span>
+      <span>Thời gian ngủ</span>
+      <strong>{formatLiveDuration(sleep.startAt, nowMs)}</strong>
+    </button>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [records, setRecords] = useState(() =>
@@ -92,6 +106,8 @@ export default function App() {
   });
   const [modal, setModal] = useState(null); // null | { type: 'feed' | 'weight', editRecord: null | object }
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [sleepNowMs, setSleepNowMs] = useState(() => Date.now());
+  const [sleepBubbleMinimized, setSleepBubbleMinimized] = useState(false);
   
   // Sync state
   const [syncPin, setSyncPin] = useState(() => loadFromStorage('bmt_sync_pin', null));
@@ -178,6 +194,16 @@ export default function App() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.VACCINES, vaccines);
   }, [vaccines]);
+
+  const activeSleep = sleeps.find(item => !item.endAt);
+  const activeSleepId = activeSleep?.id || '';
+  const activeSleepStartAt = activeSleep?.startAt || '';
+
+  useEffect(() => {
+    if (!activeSleepId) return undefined;
+    const intervalId = window.setInterval(() => setSleepNowMs(Date.now()), 1000);
+    return () => window.clearInterval(intervalId);
+  }, [activeSleepId, activeSleepStartAt]);
 
   useEffect(() => {
     if (!settings.babyBirthDate || vaccines.length > 0) return;
@@ -279,6 +305,8 @@ export default function App() {
   }, [syncPin]);
 
   const addSleep = useCallback((sleep) => {
+    setSleepNowMs(Date.now());
+    setSleepBubbleMinimized(false);
     setSleeps(prev => {
       const next = [sleep, ...prev].sort((a, b) => new Date(b.startAt) - new Date(a.startAt));
       if (syncPin) updateRoomSleeps(syncPin, next).catch(console.error);
@@ -287,6 +315,7 @@ export default function App() {
   }, [syncPin]);
 
   const updateSleep = useCallback((id, updated) => {
+    if (updated.endAt) setSleepBubbleMinimized(false);
     setSleeps(prev => {
       const next = prev.map(item => item.id === id ? { ...item, ...updated } : item);
       if (syncPin) updateRoomSleeps(syncPin, next).catch(console.error);
@@ -384,9 +413,14 @@ export default function App() {
         {activeTab === 'sleep' && (
           <SleepTab
             sleeps={sleeps}
+            nowMs={sleepNowMs}
             onAddSleep={addSleep}
             onUpdateSleep={updateSleep}
             onDeleteSleep={deleteSleep}
+            onMinimize={() => {
+              setSleepBubbleMinimized(true);
+              setActiveTab('dashboard');
+            }}
             onBack={() => setActiveTab('dashboard')}
           />
         )}
@@ -501,6 +535,17 @@ export default function App() {
           </button>
         ))}
       </nav>
+
+      {activeSleep && sleepBubbleMinimized && (
+        <SleepFloatingBubble
+          sleep={activeSleep}
+          nowMs={sleepNowMs}
+          onOpen={() => {
+            setSleepBubbleMinimized(false);
+            setActiveTab('sleep');
+          }}
+        />
+      )}
 
       {/* Record Modal */}
       {modal && (

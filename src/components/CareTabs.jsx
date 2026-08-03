@@ -4,6 +4,7 @@ import {
   daysUntil,
   formatDate,
   formatDuration,
+  formatLiveDuration,
   formatTime,
   getDurationMinutes,
   getLast7DayStats,
@@ -160,9 +161,11 @@ export function DiaperTab({ diapers = [], onAddDiaper, onUpdateDiaper, onDeleteD
   );
 }
 
-export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep, onBack }) {
+export function SleepTab({ sleeps = [], nowMs = 0, onAddSleep, onUpdateSleep, onDeleteSleep, onMinimize, onBack }) {
   const [startMode, setStartMode] = useState('now');
   const [customStartAt, setCustomStartAt] = useState(() => toLocalDatetimeInput(new Date()));
+  const [manualStartAt, setManualStartAt] = useState(() => toLocalDatetimeInput(new Date()));
+  const [manualEndAt, setManualEndAt] = useState(() => toLocalDatetimeInput(new Date()));
   const [startError, setStartError] = useState('');
   const activeSleep = useMemo(() => sleeps.find(item => !item.endAt), [sleeps]);
   const todaySleeps = useMemo(
@@ -170,7 +173,7 @@ export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep
     [sleeps]
   );
   const totalTodayMinutes = todaySleeps.reduce(
-    (sum, item) => sum + getDurationMinutes(item.startAt, item.endAt || new Date().toISOString()),
+    (sum, item) => sum + getDurationMinutes(item.startAt, item.endAt || new Date(nowMs).toISOString()),
     0
   );
   const chartData = useMemo(
@@ -209,6 +212,34 @@ export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep
     });
   };
 
+  const handleManualSave = () => {
+    const startAt = new Date(manualStartAt);
+    const endAt = new Date(manualEndAt);
+    if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
+      setStartError('Vui lòng nhập đủ giờ bắt đầu và giờ kết thúc.');
+      return;
+    }
+    if (startAt.getTime() >= endAt.getTime()) {
+      setStartError('Giờ kết thúc phải sau giờ bắt đầu.');
+      return;
+    }
+    if (endAt.getTime() > Date.now()) {
+      setStartError('Giờ kết thúc không được ở tương lai.');
+      return;
+    }
+
+    setStartError('');
+    onAddSleep({
+      id: crypto.randomUUID(),
+      startAt: startAt.toISOString(),
+      endAt: endAt.toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    setManualStartAt(toLocalDatetimeInput(new Date()));
+    setManualEndAt(toLocalDatetimeInput(new Date()));
+  };
+
   return (
     <div className="animate-fade-in care-screen sleep-screen">
       <ScreenHeader title="Giấc ngủ" icon="moon" onBack={onBack} />
@@ -218,7 +249,7 @@ export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep
           <h2>{activeSleep ? 'Đang ngủ' : 'Chưa ngủ'}</h2>
           <span>Giấc {todaySleeps.length}</span>
         </div>
-        <strong>{activeSleep ? formatDuration(getDurationMinutes(activeSleep.startAt)) : '--:--'}</strong>
+        <strong className="sleep-live-timer">{activeSleep ? formatLiveDuration(activeSleep.startAt, nowMs) : '--:--'}</strong>
         <p>{activeSleep ? `Bé đã ngủ từ ${formatTime(activeSleep.startAt)}` : 'Bấm bắt đầu khi bé ngủ.'}</p>
         {!activeSleep && (
           <div className="sleep-start-options">
@@ -240,6 +271,13 @@ export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep
               >
                 Chọn giờ
               </button>
+              <button
+                type="button"
+                className={startMode === 'manual' ? 'active' : ''}
+                onClick={() => setStartMode('manual')}
+              >
+                Nhập tay
+              </button>
             </div>
             {startMode === 'custom' && (
               <label className="sleep-start-custom">
@@ -256,18 +294,67 @@ export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep
                 />
               </label>
             )}
+            {startMode === 'manual' && (
+              <div className="sleep-manual-form">
+                <label>
+                  <span>Bắt đầu</span>
+                  <input
+                    type="datetime-local"
+                    className="form-input"
+                    value={manualStartAt}
+                    max={toLocalDatetimeInput(new Date())}
+                    onChange={event => {
+                      setManualStartAt(event.target.value);
+                      setStartError('');
+                    }}
+                  />
+                </label>
+                <label>
+                  <span>Kết thúc</span>
+                  <input
+                    type="datetime-local"
+                    className="form-input"
+                    value={manualEndAt}
+                    max={toLocalDatetimeInput(new Date())}
+                    onChange={event => {
+                      setManualEndAt(event.target.value);
+                      setStartError('');
+                    }}
+                  />
+                </label>
+                <button className="btn btn-primary" type="button" onClick={handleManualSave}>
+                  <GameIcon name="save" size={22} variant="cream" />
+                  Lưu giấc ngủ
+                </button>
+              </div>
+            )}
             {startError && <p className="sleep-start-error">{startError}</p>}
           </div>
         )}
         <div className="sleep-actions">
-          <button className="btn btn-primary" type="button" onClick={handleStart} disabled={Boolean(activeSleep)}>
-            <GameIcon name="plus" size={22} variant="cream" />
-            Bắt đầu ngủ
-          </button>
-          <button className="btn btn-ghost" type="button" onClick={handleEnd} disabled={!activeSleep}>
-            <GameIcon name="check" size={22} variant="cream" />
-            Kết thúc
-          </button>
+          {activeSleep ? (
+            <>
+              <button className="btn btn-primary" type="button" onClick={handleEnd}>
+                <GameIcon name="check" size={22} variant="cream" />
+                Dừng lại
+              </button>
+              <button className="btn btn-ghost" type="button" onClick={onMinimize}>
+                <GameIcon name="moon" size={22} variant="lavender" />
+                Thu nhỏ
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="btn btn-primary" type="button" onClick={handleStart} disabled={startMode === 'manual'}>
+                <GameIcon name="plus" size={22} variant="cream" />
+                Bắt đầu ngủ
+              </button>
+              <button className="btn btn-ghost" type="button" onClick={handleEnd} disabled>
+                <GameIcon name="check" size={22} variant="cream" />
+                Kết thúc
+              </button>
+            </>
+          )}
         </div>
       </section>
 
@@ -290,7 +377,7 @@ export function SleepTab({ sleeps = [], onAddSleep, onUpdateSleep, onDeleteSleep
           {todaySleeps.map(item => (
             <article className="care-list-item" key={item.id}>
               <time>{formatTime(item.startAt)} - {item.endAt ? formatTime(item.endAt) : 'Hiện tại'}</time>
-              <span>{formatDuration(getDurationMinutes(item.startAt, item.endAt || new Date().toISOString()))}</span>
+              <span>{formatDuration(getDurationMinutes(item.startAt, item.endAt || new Date(nowMs).toISOString()))}</span>
               <button type="button" onClick={() => onDeleteSleep(item.id)}>
                 <GameIcon name="trash" size={18} variant="cream" bare />
               </button>

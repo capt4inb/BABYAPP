@@ -410,6 +410,53 @@
   transform: translateY(0);
 }
 
+.sleep-floating-bubble {
+  position: fixed;
+  right: max(12px, calc((100vw - 768px) / 2 + 12px));
+  bottom: calc(72px + max(10px, env(safe-area-inset-bottom, 0px)));
+  z-index: 130;
+  width: 104px;
+  height: 104px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  padding: 10px 8px 12px;
+  border: 1px solid color-mix(in oklab, var(--color-primary) 25%, white);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0 46%, var(--color-primary) 47% 100%);
+  color: var(--color-primary);
+  box-shadow: 0 12px 28px rgba(70, 57, 140, 0.28);
+  cursor: pointer;
+}
+
+.sleep-floating-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 36px;
+  color: var(--color-primary);
+}
+
+.sleep-floating-bubble span:not(.sleep-floating-icon) {
+  max-width: 88px;
+  color: var(--color-primary);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+}
+
+.sleep-floating-bubble strong {
+  color: white;
+  font-size: 18px;
+  font-weight: 1000;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
 .tab-icon {
   width: 28px;
   height: 28px;
@@ -3978,6 +4025,11 @@
   background: linear-gradient(135deg, #EFF7FF, #FFFFFF);
 }
 
+.sleep-live-timer {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
 .sleep-live-card p {
   margin: 0 0 14px;
   color: var(--color-text-muted);
@@ -3993,7 +4045,7 @@
 
 .sleep-start-tabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 4px;
   border: 1px solid var(--color-base-300);
@@ -4023,7 +4075,25 @@
   gap: 6px;
 }
 
+.sleep-manual-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.sleep-manual-form label {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.sleep-manual-form button {
+  grid-column: 1 / -1;
+  min-height: 42px;
+}
+
 .sleep-start-custom span,
+.sleep-manual-form span,
 .sleep-start-error {
   color: var(--color-text-muted);
   font-size: 12px;
@@ -4222,6 +4292,10 @@
 }
 
 @media (max-width: 560px) {
+  .sleep-manual-form {
+    grid-template-columns: 1fr;
+  }
+
   .milk-day-card {
     grid-template-columns: minmax(0, 1fr) auto;
   }

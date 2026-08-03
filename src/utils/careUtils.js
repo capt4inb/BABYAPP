@@ -92,6 +92,18 @@ export function formatDuration(minutes) {
   return `${hours}h ${mins}m`;
 }
 
+export function formatLiveDuration(startAt, nowMs = Date.now()) {
+  if (!startAt) return '--:--:--';
+  const startMs = new Date(startAt).getTime();
+  if (Number.isNaN(startMs)) return '--:--:--';
+
+  const totalSeconds = Math.max(0, Math.floor((nowMs - startMs) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
+
 export function addMonths(dateLike, months) {
   const date = new Date(dateLike);
   if (Number.isNaN(date.getTime())) return null;
