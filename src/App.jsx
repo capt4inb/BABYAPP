@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import DashboardTab from './components/DashboardTab';
-import HistoryTab from './components/HistoryTab';
+import FeedTab from './components/FeedTab';
 import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
-import { DiaperTab, SleepTab, VaccineTab } from './components/CareTabs';
+import { DiaperTab, SleepTab } from './components/CareTabs';
 import RecordModal from './components/RecordModal';
 import QuickAddModal from './components/QuickAddModal';
 import GameIcon from './components/GameIcon';
@@ -43,8 +43,6 @@ const DEFAULT_SETTINGS = {
 // ── Tab config ────────────────────────────────────────────────
 const TABS = [
   { id: 'dashboard', label: 'Trang chủ', icon: 'home', tone: 'pink' },
-  { id: 'history',   label: 'Lịch sử',   icon: 'history', tone: 'green' },
-  { id: 'milk',      label: 'Kho sữa',   icon: 'milk', tone: 'blue' },
   { id: 'settings',  label: 'Cài đặt',   icon: 'settings', tone: 'blue' },
 ];
 
@@ -78,6 +76,17 @@ function SleepFloatingBubble({ sleep, nowMs, position, onPositionChange, onOpen 
 
   if (!sleep) return null;
 
+  const bubbleSize = 104;
+  const safeMargin = 8;
+  const bubbleStyle = position && typeof window !== 'undefined'
+    ? {
+        left: clamp(position.x, safeMargin, window.innerWidth - bubbleSize - safeMargin),
+        top: clamp(position.y, safeMargin, window.innerHeight - bubbleSize - safeMargin),
+        right: 'auto',
+        bottom: 'auto',
+      }
+    : undefined;
+
   const handlePointerDown = (event) => {
     const rect = event.currentTarget.getBoundingClientRect();
     dragRef.current = {
@@ -102,7 +111,6 @@ function SleepFloatingBubble({ sleep, nowMs, position, onPositionChange, onOpen 
     const dy = event.clientY - drag.startY;
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) drag.moved = true;
 
-    const safeMargin = 8;
     onPositionChange({
       x: clamp(drag.originLeft + dx, safeMargin, window.innerWidth - drag.width - safeMargin),
       y: clamp(drag.originTop + dy, safeMargin, window.innerHeight - drag.height - safeMargin),
@@ -138,7 +146,7 @@ function SleepFloatingBubble({ sleep, nowMs, position, onPositionChange, onOpen 
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      style={position ? { left: position.x, top: position.y, right: 'auto', bottom: 'auto' } : undefined}
+      style={bubbleStyle}
       aria-label="Mở thời gian ngủ"
     >
       <span className="sleep-floating-icon">
@@ -277,6 +285,28 @@ export default function App() {
   const activeSleepStartAt = activeSleep?.startAt || '';
 
   useEffect(() => {
+    if (!activeSleepId || !sleepBubblePosition) return undefined;
+
+    const normalizeBubblePosition = () => {
+      const safeMargin = 8;
+      const bubbleSize = 104;
+      setSleepBubblePosition(prev => {
+        if (!prev) return prev;
+        const next = {
+          x: clamp(prev.x, safeMargin, window.innerWidth - bubbleSize - safeMargin),
+          y: clamp(prev.y, safeMargin, window.innerHeight - bubbleSize - safeMargin),
+        };
+
+        return next.x === prev.x && next.y === prev.y ? prev : next;
+      });
+    };
+
+    normalizeBubblePosition();
+    window.addEventListener('resize', normalizeBubblePosition);
+    return () => window.removeEventListener('resize', normalizeBubblePosition);
+  }, [activeSleepId, sleepBubblePosition]);
+
+  useEffect(() => {
     if (!activeSleepId) return undefined;
     const intervalId = window.setInterval(() => setSleepNowMs(Date.now()), 1000);
     return () => window.clearInterval(intervalId);
@@ -408,14 +438,6 @@ export default function App() {
     });
   }, [syncPin]);
 
-  const updateVaccine = useCallback((id, updated) => {
-    setVaccines(prev => {
-      const next = prev.map(item => item.id === id ? { ...item, ...updated } : item);
-      if (syncPin) updateRoomVaccines(syncPin, next).catch(console.error);
-      return next;
-    });
-  }, [syncPin]);
-
   const handleSaveSettings = useCallback((newSettings) => {
     setSettings(newSettings);
     if (syncPin) updateRoomSettings(syncPin, newSettings).catch(console.error);
@@ -467,9 +489,9 @@ export default function App() {
             milkBags={milkBags}
             diapers={diapers}
             sleeps={sleeps}
-            vaccines={vaccines}
             onAddMilkBag={addMilkBag}
             onUpdateMilkBag={updateMilkBag}
+            onOpenFeed={() => setActiveTab('feed')}
             onNavigateToMilk={() => setActiveTab('milk')}
             onNavigateToCare={setActiveTab}
             memos={memos}
@@ -477,7 +499,14 @@ export default function App() {
             onDeleteMemo={deleteMemo}
           />
         )}
-        {activeTab === 'history'   && <HistoryTab   {...sharedProps} />}
+        {activeTab === 'feed' && (
+          <FeedTab
+            records={records}
+            settings={settings}
+            onOpenFeedModal={openFeedModal}
+            onDeleteRecord={deleteRecord}
+          />
+        )}
         {activeTab === 'diaper' && (
           <DiaperTab
             diapers={diapers}
@@ -498,14 +527,6 @@ export default function App() {
               setSleepBubbleMinimized(true);
               setActiveTab('dashboard');
             }}
-            onBack={() => setActiveTab('dashboard')}
-          />
-        )}
-        {activeTab === 'vaccine' && (
-          <VaccineTab
-            settings={settings}
-            vaccines={vaccines}
-            onUpdateVaccine={updateVaccine}
             onBack={() => setActiveTab('dashboard')}
           />
         )}
@@ -572,7 +593,7 @@ export default function App() {
 
       {/* Bottom Tab Navigation */}
       <nav className="tab-bar">
-        {TABS.slice(0, 2).map(({ id, label, icon, tone }) => (
+        {TABS.slice(0, Math.ceil(TABS.length / 2)).map(({ id, label, icon, tone }) => (
           <button
             key={id}
             className={`tab-item ${activeTab === id ? 'active' : ''}`}
@@ -596,7 +617,7 @@ export default function App() {
         >
           <GameIcon name="plus" size={40} variant="cream" />
         </button>
-        {TABS.slice(2).map(({ id, label, icon, tone }) => (
+        {TABS.slice(Math.ceil(TABS.length / 2)).map(({ id, label, icon, tone }) => (
           <button
             key={id}
             className={`tab-item ${activeTab === id ? 'active' : ''}`}
@@ -613,7 +634,7 @@ export default function App() {
         ))}
       </nav>
 
-      {activeSleep && sleepBubbleMinimized && (
+      {activeSleep && (sleepBubbleMinimized || activeTab !== 'sleep') && (
         <SleepFloatingBubble
           sleep={activeSleep}
           nowMs={sleepNowMs}

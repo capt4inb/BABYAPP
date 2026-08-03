@@ -1,12 +1,15 @@
 import { useState, useMemo } from 'react';
-import { getMilkSummary, getAvgDailyMl } from '../utils/milkUtils';
-import { daysUntil, formatDuration, getDurationMinutes, getNextVaccine } from '../utils/careUtils';
+import { DIAPER_TYPES, formatDuration, getDurationMinutes } from '../utils/careUtils';
 import GameIcon from './GameIcon';
 
 const NUMBER_FORMATTER = new Intl.NumberFormat('vi-VN');
 
 function formatNumber(value) {
   return NUMBER_FORMATTER.format(value || 0);
+}
+
+function formatTime(dateLike) {
+  return new Date(dateLike).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 }
 
 function timeUntilNext(lastIso, intervalHours, nowMs) {
@@ -26,25 +29,6 @@ function timeUntilNext(lastIso, intervalHours, nowMs) {
     : `${Math.floor(diffMins / 60)} giờ ${diffMins % 60} phút nữa`;
 
   return { label: `${hrs}:${mins}`, overdue: false, nextDate: next, countdownLabel };
-}
-
-function getLast7Days() {
-  return Array.from({ length: 7 }, (_, index) => {
-    const day = new Date();
-    day.setHours(0, 0, 0, 0);
-    day.setDate(day.getDate() - (6 - index));
-    return day;
-  });
-}
-
-function dayKey(date) {
-  return date.toDateString();
-}
-
-function shortDayLabel(date) {
-  const weekday = date.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', '').toUpperCase();
-  const dayMonth = date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-  return `${weekday} (${dayMonth})`;
 }
 
 function getBabyAge(babyBirthDate) {
@@ -76,13 +60,87 @@ function getBabyAge(babyBirthDate) {
   return { totalDays, months, days, weeks, weekDays, compact, readable, weekLabel };
 }
 
+function milkStorageLabel(status) {
+  if (status === 'freezer') return 'ngăn đông';
+  if (status === 'fridge') return 'ngăn mát';
+  if (status === 'room_temp') return 'để ngoài';
+  return 'kho sữa';
+}
+
+function buildTodayJournal({ records, milkBags, diapers, sleeps, todayStart }) {
+  const items = [];
+
+  records
+    .filter(record => record.type === 'feed' && new Date(record.timestamp) >= todayStart)
+    .forEach(record => {
+      items.push({
+        id: `feed-${record.id}`,
+        time: record.timestamp,
+        type: 'feed',
+        icon: 'bottle',
+        tone: 'lavender',
+        title: 'Bú',
+        detail: `${formatNumber(record.volume || 0)} ml`,
+        badge: `${formatNumber(record.volume || 0)} ml`,
+      });
+    });
+
+  milkBags
+    .filter(bag => new Date(bag.expressed_at) >= todayStart)
+    .forEach(bag => {
+      items.push({
+        id: `milk-${bag.id}`,
+        time: bag.expressed_at,
+        type: 'milk',
+        icon: 'milk',
+        tone: 'lavender',
+        title: 'Hút sữa',
+        detail: `${formatNumber(bag.volume_ml || 0)} ml thêm vào ${milkStorageLabel(bag.storage_status)}`,
+        badge: `+${formatNumber(bag.volume_ml || 0)} ml`,
+      });
+    });
+
+  diapers
+    .filter(item => new Date(item.timestamp) >= todayStart)
+    .forEach(item => {
+      const cfg = DIAPER_TYPES[item.type] || DIAPER_TYPES.wet;
+      items.push({
+        id: `diaper-${item.id}`,
+        time: item.timestamp,
+        type: 'diaper',
+        icon: 'poop',
+        tone: 'green',
+        title: 'Thay tã',
+        detail: cfg.shortLabel.toLowerCase(),
+        badge: '✓',
+      });
+    });
+
+  sleeps
+    .filter(item => new Date(item.startAt) >= todayStart)
+    .forEach(item => {
+      items.push({
+        id: `sleep-${item.id}`,
+        time: item.startAt,
+        type: 'sleep',
+        icon: 'moon',
+        tone: 'blue',
+        title: 'Ngủ',
+        detail: item.endAt ? formatDuration(getDurationMinutes(item.startAt, item.endAt)) : 'Đang ngủ',
+        badge: 'Zz',
+      });
+    });
+
+  return items.sort((a, b) => new Date(a.time) - new Date(b.time));
+}
+
 export default function DashboardTab({
   records,
   settings,
   milkBags = [],
   diapers = [],
   sleeps = [],
-  vaccines = [],
+  onOpenFeed,
   onNavigateToMilk,
   onNavigateToCare,
 }) {
@@ -102,66 +160,12 @@ export default function DashboardTab({
   );
   const todayFeedVol = todayFeeds.reduce((sum, record) => sum + (record.volume || 0), 0);
   const targetFeeds = Math.max(1, Math.round(24 / Number(feedIntervalHours || 3)));
-  const milkSummary = useMemo(() => getMilkSummary(milkBags), [milkBags]);
-  const avgDailyMl = useMemo(() => getAvgDailyMl(records, 7), [records]);
   const ageInfo = useMemo(() => getBabyAge(babyBirthDate), [babyBirthDate]);
   const nextFeed = timeUntilNext(lastFeed?.timestamp, feedIntervalHours, nowMs);
-  const todayDateLabel = new Date().toLocaleDateString('vi-VN', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit'
-  });
-
-  const days7 = useMemo(() => getLast7Days(), []);
-  const dailyStats = useMemo(() => {
-    return days7.map(day => {
-      const key = dayKey(day);
-      const dayFeeds = records.filter(record =>
-        record.type === 'feed' && new Date(record.timestamp).toDateString() === key
-      );
-      const feedVol = dayFeeds.reduce((sum, record) => sum + (record.volume || 0), 0);
-      return { label: shortDayLabel(day), feedCount: dayFeeds.length, feedVol };
-    });
-  }, [days7, records]);
-
-  const maxFeedVolume = Math.max(...dailyStats.map(day => day.feedVol), 1);
-  const weekFeedVolume = dailyStats.reduce((sum, day) => sum + day.feedVol, 0);
-  const previousAvg = dailyStats.slice(0, 6).reduce((sum, day) => sum + day.feedVol, 0) / 6 || 0;
-  const trendPercent = previousAvg > 0 ? Math.round(((todayFeedVol - previousAvg) / previousAvg) * 100) : 0;
-
-  const activeBags = useMemo(
-    () => milkBags.filter(bag => bag.storage_status !== 'used' && bag.storage_status !== 'expired'),
-    [milkBags]
+  const todayJournal = useMemo(
+    () => buildTodayJournal({ records, milkBags, diapers, sleeps, todayStart }),
+    [diapers, milkBags, records, sleeps, todayStart]
   );
-  const fridgeBags = useMemo(
-    () => activeBags.filter(bag => bag.storage_status === 'fridge' || (bag.storage_status === 'using' && bag.previous_status === 'fridge')),
-    [activeBags]
-  );
-  const freezerBags = useMemo(
-    () => activeBags.filter(bag => bag.storage_status === 'freezer' || (bag.storage_status === 'using' && bag.previous_status === 'freezer')),
-    [activeBags]
-  );
-  const fridgeMl = fridgeBags.reduce((sum, bag) => sum + (bag.volume_ml || 0), 0);
-  const freezerMl = freezerBags.reduce((sum, bag) => sum + (bag.volume_ml || 0), 0);
-  const todayDiapers = useMemo(
-    () => diapers.filter(item => new Date(item.timestamp) >= todayStart),
-    [diapers, todayStart]
-  );
-  const todayDiaperCounts = todayDiapers.reduce((acc, item) => {
-    acc[item.type] = (acc[item.type] || 0) + 1;
-    return acc;
-  }, {});
-  const todaySleeps = useMemo(
-    () => sleeps.filter(item => new Date(item.startAt) >= todayStart),
-    [sleeps, todayStart]
-  );
-  const activeSleep = sleeps.find(item => !item.endAt);
-  const sleepMinutesToday = todaySleeps.reduce(
-    (sum, item) => sum + getDurationMinutes(item.startAt, item.endAt || new Date().toISOString()),
-    0
-  );
-  const nextVaccine = useMemo(() => getNextVaccine(vaccines), [vaccines]);
-  const nextVaccineDays = nextVaccine ? daysUntil(nextVaccine.dueDate) : null;
 
   const feedProgressPercent = lastFeed
     ? Math.min(100, Math.max(10, ((nowMs - new Date(lastFeed.timestamp).getTime()) / (feedIntervalHours * 3600000)) * 100))
@@ -171,13 +175,27 @@ export default function DashboardTab({
     : null;
 
   return (
-    <div className="animate-fade-in home-screen">
-      <header className="home-header home-header-compact">
-        <div className="home-title-row">
-          <h1>{babyName || 'Bé Yêu'}</h1>
-          <span className="home-age-badge">{ageInfo ? ageInfo.weekLabel : 'Chưa có ngày sinh'}</span>
+    <div className="animate-fade-in home-screen home-screen-v2">
+      <header className="home-hero-v2">
+        <div className="home-hero-copy">
+          <div className="home-title-row">
+            <h1>{babyName || 'Bé Yêu'}</h1>
+            <span className="home-age-badge">{ageInfo ? ageInfo.weekLabel : 'Chưa có ngày sinh'}</span>
+          </div>
+          <p>Hôm nay tốt nhé! <span>♥</span></p>
         </div>
-        <p>Hôm nay tốt nhé!</p>
+        <div className="home-hero-stats">
+          <button type="button" onClick={onOpenFeed}>
+            <GameIcon name="bottle" size={34} variant="lavender" />
+            <strong>{todayFeeds.length}</strong>
+            <span>cữ / {targetFeeds}</span>
+          </button>
+          <button type="button" onClick={onOpenFeed}>
+            <GameIcon name="drop" size={34} variant="blue" />
+            <strong>{formatNumber(todayFeedVol)}</strong>
+            <span>ml</span>
+          </button>
+        </div>
       </header>
 
       <section className="home-card home-feed-card home-feed-spotlight">
@@ -212,114 +230,51 @@ export default function DashboardTab({
         )}
       </section>
 
-      <section className="home-card home-today-card home-today-compact">
-        <div className="home-today-label">
-          <h2>Hôm nay</h2>
-          <span>{todayDateLabel}</span>
-        </div>
-        <div className="home-today-metrics">
-          <div>
-            <strong>{todayFeeds.length}</strong>
-            <span>cữ / {targetFeeds}</span>
-          </div>
-          <div>
-            <strong>{formatNumber(todayFeedVol)}</strong>
-            <span>ml</span>
-          </div>
-        </div>
-      </section>
-
       <section className="home-card home-care-card">
-        <div className="home-card-head">
-          <h2>Chăm sóc hôm nay</h2>
-          <span className="home-date-pill">Đồng bộ gia đình</span>
-        </div>
-        <div className="home-care-actions">
+        <div className="home-care-actions home-care-actions-v2">
+          <button type="button" className="home-care-tile feed" onClick={onOpenFeed}>
+            <GameIcon name="bottle" size={44} variant="lavender" />
+            <span>Bú</span>
+          </button>
           <button type="button" className="home-care-tile diaper" onClick={() => onNavigateToCare?.('diaper')}>
-            <GameIcon name="poop" size={36} variant="green" />
-            <span>Thay tã</span>
-            <strong>{todayDiapers.length}</strong>
-            <small>
-              <b>{todayDiaperCounts.wet || 0}</b> ướt
-              <b>{todayDiaperCounts.dirty || 0}</b> bẩn
-            </small>
+            <GameIcon name="poop" size={44} variant="green" />
+            <span>Tã</span>
           </button>
           <button type="button" className="home-care-tile sleep" onClick={() => onNavigateToCare?.('sleep')}>
-            <GameIcon name="moon" size={36} variant="blue" />
-            <span>Giấc ngủ</span>
-            <strong>{formatDuration(sleepMinutesToday)}</strong>
-            <small>{activeSleep ? 'Đang ngủ' : `${todaySleeps.length} giấc ngủ`}</small>
+            <GameIcon name="moon" size={44} variant="blue" />
+            <span>Ngủ</span>
           </button>
-          <button type="button" className="home-care-tile vaccine" onClick={() => onNavigateToCare?.('vaccine')}>
-            <GameIcon name="syringe" size={36} variant="orange" />
-            <span>Tiêm chủng</span>
-            <strong>{nextVaccine ? nextVaccine.title : 'Đủ lịch'}</strong>
-            <small>
-              {nextVaccine
-                ? nextVaccineDays <= 0 ? 'Đến hạn' : `${nextVaccineDays} ngày nữa`
-                : 'Chưa có mũi sắp tới'}
-            </small>
+          <button type="button" className="home-care-tile milk" onClick={() => onNavigateToMilk?.()}>
+            <GameIcon name="milk" size={44} variant="blue" />
+            <span>Kho sữa</span>
           </button>
         </div>
       </section>
 
-      <section className="home-card home-storage-card home-storage-card-compact">
+      <section className="home-card home-journal-card">
         <div className="home-card-head">
-          <h2>Kho sữa</h2>
-          <button type="button" onClick={() => onNavigateToMilk?.()}>
-            Xem chi tiết <GameIcon name="right" size={18} variant="lavender" bare />
-          </button>
+          <h2>Nhật ký hôm nay</h2>
         </div>
-
-        <div className="home-storage-grid">
-          <div className="home-storage-tile purple">
-            <GameIcon name="bottle" size={38} variant="lavender" />
-            <div>
-              <span>Tổng trong kho</span>
-              <strong>{formatNumber(milkSummary.totalMl)} ml</strong>
-              <small>{milkSummary.activeBagCount || 0} bịch</small>
+        <div className="home-journal-list">
+          {todayJournal.length === 0 ? (
+            <div className="home-journal-empty">
+              <GameIcon name="calendar" size={34} variant="lavender" />
+              <span>Hôm nay chưa có hoạt động.</span>
             </div>
-          </div>
-          <div className="home-storage-tile mint">
-            <GameIcon name="snow" size={38} variant="green" />
-            <div>
-              <span>Ngăn mát</span>
-              <strong>{formatNumber(fridgeMl)} ml</strong>
-              <small>{fridgeBags.length} bịch</small>
-            </div>
-          </div>
-          <div className="home-storage-tile blue">
-            <GameIcon name="snow" size={38} variant="blue" />
-            <div>
-              <span>Ngăn đông</span>
-              <strong>{formatNumber(freezerMl)} ml</strong>
-              <small>{freezerBags.length} bịch</small>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-card home-chart-card">
-        <div className="home-card-head">
-          <h2>Tổng kết 7 ngày gần nhất</h2>
-          <span className="home-date-pill">ml/ngày</span>
-        </div>
-
-        <div className="home-chart" aria-label="Biểu đồ lượng sữa 7 ngày">
-          {dailyStats.map((day, index) => (
-            <div className="home-bar-column" key={`${day.label}-${index}`}>
-              <span>{day.feedVol ? formatNumber(day.feedVol) : ''}</span>
-              <div className={`home-bar ${index === dailyStats.length - 1 ? 'active' : ''}`} style={{ height: `${Math.max(14, (day.feedVol / maxFeedVolume) * 100)}%` }} />
-              <small>{day.label}</small>
-            </div>
+          ) : todayJournal.map(item => (
+            <article className={`home-journal-item ${item.type}`} key={item.id}>
+              <time>{formatTime(item.time)}</time>
+              <span className="home-journal-dot" />
+              <div className="home-journal-main">
+                <GameIcon name={item.icon} size={34} variant={item.tone} />
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{item.detail}</span>
+                </div>
+                <em>{item.badge}</em>
+              </div>
+            </article>
           ))}
-        </div>
-
-        <div className="home-chart-footer">
-          <span><GameIcon name="clock" size={20} variant="lavender" bare /> Trung bình {formatNumber(avgDailyMl || Math.round(weekFeedVolume / 7))} ml/ngày</span>
-          <strong className={trendPercent >= 0 ? 'positive' : 'negative'}>
-            {trendPercent >= 0 ? '+' : ''}{trendPercent}% so với nhịp gần đây
-          </strong>
         </div>
       </section>
     </div>
