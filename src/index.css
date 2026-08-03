@@ -3522,6 +3522,528 @@
   border-radius: 999px;
 }
 
+.home-care-card {
+  padding: 14px;
+}
+
+.home-care-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.home-care-tile {
+  min-width: 0;
+  min-height: 122px;
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 7px;
+  padding: 11px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-care-tile.diaper {
+  background: linear-gradient(135deg, #F2FFF9, #FFFFFF);
+}
+
+.home-care-tile.sleep {
+  background: linear-gradient(135deg, #EFF7FF, #FFFFFF);
+}
+
+.home-care-tile.vaccine {
+  background: linear-gradient(135deg, #FFF5EF, #FFFFFF);
+}
+
+.home-care-tile span {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.home-care-tile strong {
+  max-width: 100%;
+  color: var(--color-base-content);
+  font-size: 20px;
+  line-height: 1.05;
+  font-weight: 1000;
+  overflow-wrap: anywhere;
+}
+
+.home-care-tile small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.home-care-tile small b {
+  color: var(--color-base-content);
+}
+
+.care-screen {
+  min-height: 100%;
+  padding: 16px 12px 110px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(124, 91, 232, 0.08), transparent 28%),
+    var(--color-base-200);
+}
+
+.care-header {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.care-header button {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+}
+
+.care-header h1 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 18px;
+  font-weight: 1000;
+  text-align: center;
+}
+
+.care-card,
+.sleep-live-card,
+.vaccine-baby-card,
+.vaccine-next-card {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: 0 8px 22px rgba(94, 83, 160, 0.08);
+}
+
+.care-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.care-card-head h2 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 13px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.care-card-head span {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.care-type-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.care-type-row button {
+  min-height: 76px;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 10px 6px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.care-type-row button.active {
+  border-color: color-mix(in oklab, var(--color-success) 60%, white);
+  background: color-mix(in oklab, var(--color-success) 12%, white);
+  color: var(--color-success);
+}
+
+.care-primary-action {
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2FCB9D, #1BBF8D);
+  color: white;
+  font-size: 15px;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.care-summary-card > strong,
+.sleep-live-card > strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-base-content);
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 1000;
+}
+
+.care-stat-grid,
+.sleep-today-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.care-stat-grid div,
+.sleep-today-grid div {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-left: 1px solid var(--color-base-300);
+}
+
+.care-stat-grid div:first-child,
+.sleep-today-grid div:first-child {
+  border-left: 0;
+}
+
+.care-stat-grid b,
+.sleep-today-grid strong {
+  color: var(--color-base-content);
+  font-size: 24px;
+  font-weight: 1000;
+}
+
+.care-stat-grid span,
+.sleep-today-grid span {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.care-note-input {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.care-list {
+  display: grid;
+  gap: 8px;
+}
+
+.care-list.compact {
+  margin-top: 10px;
+}
+
+.care-empty {
+  margin: 0;
+  padding: 20px 8px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.care-list-item {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 58px minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-surface-alt);
+}
+
+.care-list.compact .care-list-item {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.care-list-item time,
+.care-list-item p,
+.care-list-item span {
+  min-width: 0;
+}
+
+.care-list-item time {
+  color: var(--color-base-content);
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.care-list-item p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.care-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.care-badge.wet {
+  background: #EAF5FF;
+  color: #2686E8;
+}
+
+.care-badge.dirty {
+  background: #FFF2E8;
+  color: #B96930;
+}
+
+.care-badge.mixed {
+  background: #EAFBF3;
+  color: #16A86E;
+}
+
+.care-row-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.care-row-actions button,
+.care-list.compact .care-list-item button {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-base-200);
+  color: var(--color-base-content);
+}
+
+.sleep-live-card {
+  border-color: color-mix(in oklab, var(--color-info) 34%, white);
+  background: linear-gradient(135deg, #F8FBFF, #FFFFFF);
+}
+
+.sleep-live-card.active {
+  border-color: color-mix(in oklab, var(--color-info) 62%, white);
+  background: linear-gradient(135deg, #EFF7FF, #FFFFFF);
+}
+
+.sleep-live-card p {
+  margin: 0 0 14px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sleep-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.sleep-actions button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.sleep-today-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.care-chart {
+  position: relative;
+  height: 172px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: 8px;
+  padding: 22px 0 4px;
+}
+
+.care-chart > em {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: var(--color-info);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.care-chart-col {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 18px minmax(16px, 1fr) 18px;
+  align-items: end;
+  justify-items: center;
+  gap: 5px;
+}
+
+.care-chart-col span,
+.care-chart-col small {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.care-chart-col div {
+  width: 68%;
+  border-radius: 999px 999px 5px 5px;
+  background: linear-gradient(180deg, #AEDAFF, #7DBBF7);
+}
+
+.care-chart-col div.active {
+  background: linear-gradient(180deg, #9C7AF3, #7455D7);
+}
+
+.vaccine-baby-card,
+.vaccine-next-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.vaccine-baby-card span,
+.vaccine-next-card span {
+  color: var(--color-base-content);
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.vaccine-baby-card h2,
+.vaccine-next-card h2 {
+  margin: 7px 0;
+  color: var(--color-primary);
+  font-size: 22px;
+  font-weight: 1000;
+}
+
+.vaccine-baby-card p,
+.vaccine-next-card p {
+  margin: 4px 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.vaccine-next-card {
+  border-color: color-mix(in oklab, var(--color-error) 25%, white);
+  background: linear-gradient(135deg, #FFF7F2, #FFFFFF);
+}
+
+.vaccine-next-card ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--color-base-content);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.vaccine-timeline {
+  position: relative;
+  display: grid;
+  gap: 8px;
+}
+
+.vaccine-item {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 11px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-surface-alt);
+}
+
+.vaccine-item.soon {
+  border-color: color-mix(in oklab, var(--color-error) 32%, white);
+  background: #FFF6F0;
+}
+
+.vaccine-item button {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-base-200);
+  color: var(--color-text-muted);
+}
+
+.vaccine-item.done button {
+  background: var(--color-success);
+  color: white;
+}
+
+.vaccine-item strong {
+  color: var(--color-base-content);
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.vaccine-item p,
+.vaccine-item span {
+  display: block;
+  margin: 3px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.vaccine-item em {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-success) 14%, white);
+  color: var(--color-success);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+
+.vaccine-item.soon em {
+  background: color-mix(in oklab, var(--color-error) 12%, white);
+  color: var(--color-error);
+}
+
 @media (min-width: 768px) {
   .app-container {
     border-left: 1px solid var(--color-base-300);

@@ -3,10 +3,22 @@ import DashboardTab from './components/DashboardTab';
 import HistoryTab from './components/HistoryTab';
 import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
+import { DiaperTab, SleepTab, VaccineTab } from './components/CareTabs';
 import RecordModal from './components/RecordModal';
 import QuickAddModal from './components/QuickAddModal';
 import GameIcon from './components/GameIcon';
-import { getFirebaseErrorMessage, subscribeToRoom, updateRoomRecords, updateRoomSettings, updateRoomMilkBags, updateRoomMemos } from './services/firebase';
+import {
+  getFirebaseErrorMessage,
+  subscribeToRoom,
+  updateRoomDiapers,
+  updateRoomMilkBags,
+  updateRoomMemos,
+  updateRoomRecords,
+  updateRoomSettings,
+  updateRoomSleeps,
+  updateRoomVaccines,
+} from './services/firebase';
+import { generateVaccineSchedule } from './utils/careUtils';
 
 // ── localStorage keys ─────────────────────────────────────────
 const STORAGE_KEYS = {
@@ -14,6 +26,9 @@ const STORAGE_KEYS = {
   SETTINGS: 'bmt_settings',
   MILK_BAGS: 'bmt_milk_bags',
   MEMOS: 'bmt_memos',
+  DIAPERS: 'bmt_diapers',
+  SLEEPS: 'bmt_sleeps',
+  VACCINES: 'bmt_vaccines',
 };
 
 const DEFAULT_SETTINGS = {
@@ -65,6 +80,16 @@ export default function App() {
   const [memos, setMemos] = useState(() =>
     loadFromStorage(STORAGE_KEYS.MEMOS, [])
   );
+  const [diapers, setDiapers] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.DIAPERS, [])
+  );
+  const [sleeps, setSleeps] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.SLEEPS, [])
+  );
+  const [vaccines, setVaccines] = useState(() => {
+    const storedVaccines = loadFromStorage(STORAGE_KEYS.VACCINES, []);
+    return storedVaccines.length > 0 ? storedVaccines : generateVaccineSchedule(settings.babyBirthDate, []);
+  });
   const [modal, setModal] = useState(null); // null | { type: 'feed' | 'weight', editRecord: null | object }
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   
@@ -98,6 +123,21 @@ export default function App() {
       (remoteMemos) => {
         setMemos(remoteMemos);
       },
+      (remoteDiapers) => {
+        setDiapers(remoteDiapers);
+      },
+      (remoteSleeps) => {
+        setSleeps(remoteSleeps);
+      },
+      (remoteVaccines) => {
+        const seededVaccines = remoteVaccines.length > 0
+          ? remoteVaccines
+          : generateVaccineSchedule(settings.babyBirthDate, []);
+        setVaccines(seededVaccines);
+        if (remoteVaccines.length === 0 && seededVaccines.length > 0) {
+          updateRoomVaccines(syncPin, seededVaccines).catch(console.error);
+        }
+      },
       (error) => {
         setSyncStatus('error');
         setSyncError(getFirebaseErrorMessage(error));
@@ -105,7 +145,7 @@ export default function App() {
     );
 
     return () => unsubscribe();
-  }, [syncPin]);
+  }, [settings.babyBirthDate, syncPin]);
 
   // Persist records to local storage as fallback
   useEffect(() => {
@@ -126,6 +166,26 @@ export default function App() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.MEMOS, memos);
   }, [memos]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.DIAPERS, diapers);
+  }, [diapers]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.SLEEPS, sleeps);
+  }, [sleeps]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.VACCINES, vaccines);
+  }, [vaccines]);
+
+  useEffect(() => {
+    if (!settings.babyBirthDate || vaccines.length > 0) return;
+    const seededVaccines = generateVaccineSchedule(settings.babyBirthDate, vaccines);
+    if (seededVaccines.length === 0) return;
+
+    if (syncPin) updateRoomVaccines(syncPin, seededVaccines).catch(console.error);
+  }, [settings.babyBirthDate, syncPin, vaccines]);
 
   // ── Record CRUD ──────────────────────────────────────────────
   const addRecord = useCallback((record) => {
@@ -194,10 +254,71 @@ export default function App() {
     });
   }, [syncPin]);
 
+  const addDiaper = useCallback((diaper) => {
+    setDiapers(prev => {
+      const next = [diaper, ...prev].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      if (syncPin) updateRoomDiapers(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const updateDiaper = useCallback((id, updated) => {
+    setDiapers(prev => {
+      const next = prev.map(item => item.id === id ? { ...item, ...updated } : item);
+      if (syncPin) updateRoomDiapers(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const deleteDiaper = useCallback((id) => {
+    setDiapers(prev => {
+      const next = prev.filter(item => item.id !== id);
+      if (syncPin) updateRoomDiapers(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const addSleep = useCallback((sleep) => {
+    setSleeps(prev => {
+      const next = [sleep, ...prev].sort((a, b) => new Date(b.startAt) - new Date(a.startAt));
+      if (syncPin) updateRoomSleeps(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const updateSleep = useCallback((id, updated) => {
+    setSleeps(prev => {
+      const next = prev.map(item => item.id === id ? { ...item, ...updated } : item);
+      if (syncPin) updateRoomSleeps(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const deleteSleep = useCallback((id) => {
+    setSleeps(prev => {
+      const next = prev.filter(item => item.id !== id);
+      if (syncPin) updateRoomSleeps(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const updateVaccine = useCallback((id, updated) => {
+    setVaccines(prev => {
+      const next = prev.map(item => item.id === id ? { ...item, ...updated } : item);
+      if (syncPin) updateRoomVaccines(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
   const handleSaveSettings = useCallback((newSettings) => {
     setSettings(newSettings);
     if (syncPin) updateRoomSettings(syncPin, newSettings).catch(console.error);
-  }, [syncPin]);
+    if (newSettings.babyBirthDate && vaccines.length === 0) {
+      const seededVaccines = generateVaccineSchedule(newSettings.babyBirthDate, []);
+      setVaccines(seededVaccines);
+      if (syncPin) updateRoomVaccines(syncPin, seededVaccines).catch(console.error);
+    }
+  }, [syncPin, vaccines.length]);
 
   // ── Modal helpers ────────────────────────────────────────────
   const openFeedModal = useCallback((editRecord = null) => {
@@ -238,15 +359,45 @@ export default function App() {
           <DashboardTab
             {...sharedProps}
             milkBags={milkBags}
+            diapers={diapers}
+            sleeps={sleeps}
+            vaccines={vaccines}
             onAddMilkBag={addMilkBag}
             onUpdateMilkBag={updateMilkBag}
             onNavigateToMilk={() => setActiveTab('milk')}
+            onNavigateToCare={setActiveTab}
             memos={memos}
             onAddMemo={addMemo}
             onDeleteMemo={deleteMemo}
           />
         )}
         {activeTab === 'history'   && <HistoryTab   {...sharedProps} />}
+        {activeTab === 'diaper' && (
+          <DiaperTab
+            diapers={diapers}
+            onAddDiaper={addDiaper}
+            onUpdateDiaper={updateDiaper}
+            onDeleteDiaper={deleteDiaper}
+            onBack={() => setActiveTab('dashboard')}
+          />
+        )}
+        {activeTab === 'sleep' && (
+          <SleepTab
+            sleeps={sleeps}
+            onAddSleep={addSleep}
+            onUpdateSleep={updateSleep}
+            onDeleteSleep={deleteSleep}
+            onBack={() => setActiveTab('dashboard')}
+          />
+        )}
+        {activeTab === 'vaccine' && (
+          <VaccineTab
+            settings={settings}
+            vaccines={vaccines}
+            onUpdateVaccine={updateVaccine}
+            onBack={() => setActiveTab('dashboard')}
+          />
+        )}
         {activeTab === 'milk'      && (
           <MilkStorageTab
             milkBags={milkBags}
@@ -275,6 +426,21 @@ export default function App() {
             onImportMemos={(mems) => {
               setMemos(mems);
               if (syncPin) updateRoomMemos(syncPin, mems).catch(console.error);
+            }}
+            diapers={diapers}
+            onImportDiapers={(items) => {
+              setDiapers(items);
+              if (syncPin) updateRoomDiapers(syncPin, items).catch(console.error);
+            }}
+            sleeps={sleeps}
+            onImportSleeps={(items) => {
+              setSleeps(items);
+              if (syncPin) updateRoomSleeps(syncPin, items).catch(console.error);
+            }}
+            vaccines={vaccines}
+            onImportVaccines={(items) => {
+              setVaccines(items);
+              if (syncPin) updateRoomVaccines(syncPin, items).catch(console.error);
             }}
             syncPin={syncPin}
             syncStatus={syncStatus}

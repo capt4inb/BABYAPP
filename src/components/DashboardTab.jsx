@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { getMilkSummary, getAvgDailyMl } from '../utils/milkUtils';
+import { daysUntil, formatDuration, getDurationMinutes, getNextVaccine } from '../utils/careUtils';
 import GameIcon from './GameIcon';
 
 const NUMBER_FORMATTER = new Intl.NumberFormat('vi-VN');
@@ -79,7 +80,11 @@ export default function DashboardTab({
   records,
   settings,
   milkBags = [],
+  diapers = [],
+  sleeps = [],
+  vaccines = [],
   onNavigateToMilk,
+  onNavigateToCare,
 }) {
   const { babyName, babyBirthDate, feedIntervalHours = 3 } = settings;
   const [nowMs] = useState(() => Date.now());
@@ -138,6 +143,25 @@ export default function DashboardTab({
   );
   const fridgeMl = fridgeBags.reduce((sum, bag) => sum + (bag.volume_ml || 0), 0);
   const freezerMl = freezerBags.reduce((sum, bag) => sum + (bag.volume_ml || 0), 0);
+  const todayDiapers = useMemo(
+    () => diapers.filter(item => new Date(item.timestamp) >= todayStart),
+    [diapers, todayStart]
+  );
+  const todayDiaperCounts = todayDiapers.reduce((acc, item) => {
+    acc[item.type] = (acc[item.type] || 0) + 1;
+    return acc;
+  }, {});
+  const todaySleeps = useMemo(
+    () => sleeps.filter(item => new Date(item.startAt) >= todayStart),
+    [sleeps, todayStart]
+  );
+  const activeSleep = sleeps.find(item => !item.endAt);
+  const sleepMinutesToday = todaySleeps.reduce(
+    (sum, item) => sum + getDurationMinutes(item.startAt, item.endAt || new Date().toISOString()),
+    0
+  );
+  const nextVaccine = useMemo(() => getNextVaccine(vaccines), [vaccines]);
+  const nextVaccineDays = nextVaccine ? daysUntil(nextVaccine.dueDate) : null;
 
   const feedProgressPercent = lastFeed
     ? Math.min(100, Math.max(10, ((nowMs - new Date(lastFeed.timestamp).getTime()) / (feedIntervalHours * 3600000)) * 100))
@@ -202,6 +226,40 @@ export default function DashboardTab({
             <strong>{formatNumber(todayFeedVol)}</strong>
             <span>ml</span>
           </div>
+        </div>
+      </section>
+
+      <section className="home-card home-care-card">
+        <div className="home-card-head">
+          <h2>Chăm sóc hôm nay</h2>
+          <span className="home-date-pill">Đồng bộ gia đình</span>
+        </div>
+        <div className="home-care-actions">
+          <button type="button" className="home-care-tile diaper" onClick={() => onNavigateToCare?.('diaper')}>
+            <GameIcon name="poop" size={36} variant="green" />
+            <span>Thay tã</span>
+            <strong>{todayDiapers.length}</strong>
+            <small>
+              <b>{todayDiaperCounts.wet || 0}</b> ướt
+              <b>{todayDiaperCounts.dirty || 0}</b> bẩn
+            </small>
+          </button>
+          <button type="button" className="home-care-tile sleep" onClick={() => onNavigateToCare?.('sleep')}>
+            <GameIcon name="moon" size={36} variant="blue" />
+            <span>Giấc ngủ</span>
+            <strong>{formatDuration(sleepMinutesToday)}</strong>
+            <small>{activeSleep ? 'Đang ngủ' : `${todaySleeps.length} giấc ngủ`}</small>
+          </button>
+          <button type="button" className="home-care-tile vaccine" onClick={() => onNavigateToCare?.('vaccine')}>
+            <GameIcon name="syringe" size={36} variant="orange" />
+            <span>Tiêm chủng</span>
+            <strong>{nextVaccine ? nextVaccine.title : 'Đủ lịch'}</strong>
+            <small>
+              {nextVaccine
+                ? nextVaccineDays <= 0 ? 'Đến hạn' : `${nextVaccineDays} ngày nữa`
+                : 'Chưa có mũi sắp tới'}
+            </small>
+          </button>
         </div>
       </section>
 

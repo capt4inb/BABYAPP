@@ -82,7 +82,15 @@ export const generatePin = () => {
 };
 
 // Create a new room with a random PIN
-export const createRoom = async (initialRecords, initialSettings, initialMilkBags, initialMemos) => {
+export const createRoom = async (
+  initialRecords,
+  initialSettings,
+  initialMilkBags,
+  initialMemos,
+  initialDiapers = [],
+  initialSleeps = [],
+  initialVaccines = []
+) => {
   return withPermissionRetry(async () => {
     let pin = generatePin();
     let roomRef = ref(db, `rooms/${pin}`);
@@ -100,6 +108,9 @@ export const createRoom = async (initialRecords, initialSettings, initialMilkBag
       settings: initialSettings || {},
       milkBags: initialMilkBags || [],
       memos: initialMemos || [],
+      diapers: initialDiapers || [],
+      sleeps: initialSleeps || [],
+      vaccines: initialVaccines || [],
       createdAt: new Date().toISOString()
     });
 
@@ -118,11 +129,24 @@ export const joinRoom = async (pin) => {
 };
 
 // Subscribe to real-time changes
-export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange, onMilkBagsChange, onMemosChange, onError) => {
+export const subscribeToRoom = (
+  pin,
+  onRecordsChange,
+  onSettingsChange,
+  onMilkBagsChange,
+  onMemosChange,
+  onDiapersChange,
+  onSleepsChange,
+  onVaccinesChange,
+  onError
+) => {
   const recordsRef = ref(db, `rooms/${pin}/records`);
   const settingsRef = ref(db, `rooms/${pin}/settings`);
   const milkBagsRef = ref(db, `rooms/${pin}/milkBags`);
   const memosRef = ref(db, `rooms/${pin}/memos`);
+  const diapersRef = ref(db, `rooms/${pin}/diapers`);
+  const sleepsRef = ref(db, `rooms/${pin}/sleeps`);
+  const vaccinesRef = ref(db, `rooms/${pin}/vaccines`);
   let unsubscribers = [];
   let isActive = true;
   let authRetryInFlight = false;
@@ -176,6 +200,21 @@ export const subscribeToRoom = (pin, onRecordsChange, onSettingsChange, onMilkBa
             onMemosChange(snapshot.exists() ? snapshot.val() : []);
           }, handleListenerError)
         : () => {},
+      onDiapersChange
+        ? onValue(diapersRef, (snapshot) => {
+            onDiapersChange(snapshot.exists() ? snapshot.val() : []);
+          }, handleListenerError)
+        : () => {},
+      onSleepsChange
+        ? onValue(sleepsRef, (snapshot) => {
+            onSleepsChange(snapshot.exists() ? snapshot.val() : []);
+          }, handleListenerError)
+        : () => {},
+      onVaccinesChange
+        ? onValue(vaccinesRef, (snapshot) => {
+            onVaccinesChange(snapshot.exists() ? snapshot.val() : []);
+          }, handleListenerError)
+        : () => {},
     ];
   };
 
@@ -209,4 +248,19 @@ export const updateRoomMilkBags = async (pin, milkBags) => {
 export const updateRoomMemos = async (pin, memos) => {
   const memosRef = ref(db, `rooms/${pin}/memos`);
   await withPermissionRetry(() => set(memosRef, memos));
+};
+
+export const updateRoomDiapers = async (pin, diapers) => {
+  const diapersRef = ref(db, `rooms/${pin}/diapers`);
+  await withPermissionRetry(() => set(diapersRef, diapers));
+};
+
+export const updateRoomSleeps = async (pin, sleeps) => {
+  const sleepsRef = ref(db, `rooms/${pin}/sleeps`);
+  await withPermissionRetry(() => set(sleepsRef, sleeps));
+};
+
+export const updateRoomVaccines = async (pin, vaccines) => {
+  const vaccinesRef = ref(db, `rooms/${pin}/vaccines`);
+  await withPermissionRetry(() => set(vaccinesRef, vaccines));
 };

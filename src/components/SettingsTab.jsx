@@ -5,6 +5,7 @@ import GameIcon from './GameIcon';
 export default function SettingsTab({ 
   settings, onSaveSettings, records, onImportRecords,
   milkBags = [], onImportMilkBags, memos = [], onImportMemos,
+  diapers = [], onImportDiapers, sleeps = [], onImportSleeps, vaccines = [], onImportVaccines,
   syncPin, syncStatus, syncErrorMessage = '', onJoinSync, onLeaveSync 
 }) {
   const [form, setForm] = useState({ ...settings });
@@ -28,7 +29,7 @@ export default function SettingsTab({
 
   // Export JSON
   const handleExport = () => {
-    const data = { records, settings, milkBags, memos, exportedAt: new Date().toISOString() };
+    const data = { records, settings, milkBags, memos, diapers, sleeps, vaccines, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -59,6 +60,15 @@ export default function SettingsTab({
         if (Array.isArray(data.memos)) {
           onImportMemos(data.memos);
         }
+        if (Array.isArray(data.diapers)) {
+          onImportDiapers(data.diapers);
+        }
+        if (Array.isArray(data.sleeps)) {
+          onImportSleeps(data.sleeps);
+        }
+        if (Array.isArray(data.vaccines)) {
+          onImportVaccines(data.vaccines);
+        }
         alert('Đã nhập dữ liệu thành công!');
       } catch {
         setImportError('Tệp không hợp lệ. Vui lòng chọn tệp xuất từ ứng dụng này.');
@@ -73,6 +83,9 @@ export default function SettingsTab({
       onImportRecords([]);
       onImportMilkBags([]);
       onImportMemos([]);
+      onImportDiapers([]);
+      onImportSleeps([]);
+      onImportVaccines([]);
       setShowClearConfirm(false);
     } else {
       setShowClearConfirm(true);
@@ -84,7 +97,7 @@ export default function SettingsTab({
     try {
       setSyncLoading(true);
       setSyncError('');
-      const pin = await createRoom(records, settings, milkBags, memos);
+      const pin = await createRoom(records, settings, milkBags, memos, diapers, sleeps, vaccines);
       onJoinSync(pin);
     } catch (err) {
       setSyncError(getFirebaseErrorMessage(err));
@@ -110,6 +123,9 @@ export default function SettingsTab({
       }
       onImportMilkBags(initialData.milkBags || []);
       onImportMemos(initialData.memos || []);
+      onImportDiapers(initialData.diapers || []);
+      onImportSleeps(initialData.sleeps || []);
+      onImportVaccines(initialData.vaccines || []);
       onJoinSync(normalizedPin);
     } catch (err) {
       setSyncError(getFirebaseErrorMessage(err));
