@@ -70,6 +70,54 @@ function getFilterStats(bags) {
   };
 }
 
+function getMilkDayLabel(dateKey) {
+  const today = toDateInputValue(new Date());
+  const yesterday = getRelativeDateValue(1);
+  const twoDaysAgo = getRelativeDateValue(2);
+  const date = new Date(`${dateKey}T00:00:00`);
+
+  if (dateKey === today) return 'Hôm nay';
+  if (dateKey === yesterday) return 'Hôm qua';
+  if (dateKey === twoDaysAgo) return 'Hôm kia';
+  return date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+}
+
+function groupMilkBagsByDay(bags) {
+  const groups = new Map();
+
+  bags.forEach((bag) => {
+    const key = toDateInputValue(bag.expressed_at);
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        bags: [],
+        ml: 0,
+        fridgeCount: 0,
+        freezerCount: 0,
+        thawingCount: 0,
+      });
+    }
+
+    const group = groups.get(key);
+    group.bags.push(bag);
+    group.ml += bag.volume_ml || 0;
+    if (bag.storage_status === 'fridge' || (bag.storage_status === 'using' && bag.previous_status === 'fridge')) group.fridgeCount += 1;
+    if (bag.storage_status === 'freezer' || (bag.storage_status === 'using' && bag.previous_status === 'freezer')) group.freezerCount += 1;
+    if (bag.storage_status === 'thawing') group.thawingCount += 1;
+  });
+
+  return [...groups.values()]
+    .map(group => ({
+      ...group,
+      bags: [...group.bags].sort((a, b) => new Date(b.expressed_at) - new Date(a.expressed_at)),
+      firstAt: group.bags.reduce((earliest, bag) =>
+        !earliest || new Date(bag.expressed_at) < new Date(earliest) ? bag.expressed_at : earliest, null),
+      lastAt: group.bags.reduce((latest, bag) =>
+        !latest || new Date(bag.expressed_at) > new Date(latest) ? bag.expressed_at : latest, null),
+    }))
+    .sort((a, b) => new Date(b.key) - new Date(a.key));
+}
+
 function getLast7Days() {
   return Array.from({ length: 7 }, (_, index) => {
     const day = new Date();
@@ -223,6 +271,27 @@ function MilkBagCard({ bag, onUpdate, onDelete, onEdit }) {
   );
 }
 
+function MilkDayCard({ group, onSelect }) {
+  return (
+    <button className="milk-day-card" type="button" onClick={() => onSelect(group.key)}>
+      <span className="milk-day-date">
+        <strong>{getMilkDayLabel(group.key)}</strong>
+        <small>{formatDateShort(group.firstAt)} · {formatTime(group.firstAt)} - {formatTime(group.lastAt)}</small>
+      </span>
+      <span className="milk-day-total">
+        <strong>{formatNumber(group.ml)} ml</strong>
+        <small>{group.bags.length} bịch</small>
+      </span>
+      <span className="milk-day-tags">
+        {group.fridgeCount > 0 && <em>Ngăn mát {group.fridgeCount}</em>}
+        {group.freezerCount > 0 && <em>Ngăn đông {group.freezerCount}</em>}
+        {group.thawingCount > 0 && <em>Đang rã {group.thawingCount}</em>}
+      </span>
+      <GameIcon name="right" size={22} variant="cream" bare />
+    </button>
+  );
+}
+
 export default function MilkStorageTab({
   milkBags,
   records,
@@ -234,6 +303,7 @@ export default function MilkStorageTab({
   const [sortMode, setSortMode] = useState('priority');
   const [dateFilter, setDateFilter] = useState('all');
   const [customDate, setCustomDate] = useState(() => toDateInputValue(new Date()));
+  const [selectedMilkDay, setSelectedMilkDay] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [editingBag, setEditingBag] = useState(null);
@@ -297,6 +367,13 @@ export default function MilkStorageTab({
       return getPriorityScore(a) - getPriorityScore(b);
     });
   }, [activeBags, activeFilter, sortMode]);
+
+  const milkDayGroups = useMemo(() => groupMilkBagsByDay(filteredBags), [filteredBags]);
+  const selectedMilkGroup = useMemo(
+    () => milkDayGroups.find(group => group.key === selectedMilkDay) || null,
+    [milkDayGroups, selectedMilkDay]
+  );
+  const visibleMilkBags = selectedMilkGroup?.bags || [];
 
   const milkHistoryRows = useMemo(() => {
     return [...milkBags].sort((a, b) =>
@@ -381,7 +458,10 @@ export default function MilkStorageTab({
             <select
               className="form-input"
               value={dateFilter}
-              onChange={event => setDateFilter(event.target.value)}
+              onChange={event => {
+                setDateFilter(event.target.value);
+                setSelectedMilkDay(null);
+              }}
             >
               {DATE_FILTERS.map(filter => (
                 <option key={filter.id} value={filter.id}>{filter.label}</option>
@@ -394,13 +474,23 @@ export default function MilkStorageTab({
                 className="form-input"
                 type="date"
                 value={customDate}
-                onChange={event => setCustomDate(event.target.value)}
+                onChange={event => {
+                  setCustomDate(event.target.value);
+                  setSelectedMilkDay(null);
+                }}
               />
             </label>
           )}
           <label className="milk-sort-box">
             <GameIcon name="sliders" size={20} variant="cream" bare />
-            <select className="form-input" value={sortMode} onChange={event => setSortMode(event.target.value)}>
+            <select
+              className="form-input"
+              value={sortMode}
+              onChange={event => {
+                setSortMode(event.target.value);
+                setSelectedMilkDay(null);
+              }}
+            >
               <option value="priority">Ưu tiên dùng</option>
               <option value="newest">Mới hút trước</option>
               <option value="oldest">Cũ trước</option>
@@ -418,7 +508,10 @@ export default function MilkStorageTab({
                 key={filter.id}
                 type="button"
                 className={activeFilter === filter.id ? 'active' : ''}
-                onClick={() => setActiveFilter(filter.id)}
+                onClick={() => {
+                  setActiveFilter(filter.id);
+                  setSelectedMilkDay(null);
+                }}
               >
                 {filter.label}
                 <span className="milk-filter-stat">
@@ -430,7 +523,20 @@ export default function MilkStorageTab({
           })}
         </div>
 
-        <div className="milk-detail-list">
+        {selectedMilkGroup && (
+          <div className="milk-day-drilldown">
+            <button type="button" onClick={() => setSelectedMilkDay(null)}>
+              <GameIcon name="left" size={20} variant="cream" bare />
+              Danh sách ngày
+            </button>
+            <div>
+              <strong>{getMilkDayLabel(selectedMilkGroup.key)}</strong>
+              <span>{selectedMilkGroup.bags.length} bịch · {formatNumber(selectedMilkGroup.ml)} ml</span>
+            </div>
+          </div>
+        )}
+
+        <div className={selectedMilkGroup ? 'milk-detail-list' : 'milk-day-list'}>
           {filteredBags.length === 0 ? (
             <div className="milk-empty-state">
               <GameIcon name="bottle" size={54} variant="blue" />
@@ -441,8 +547,8 @@ export default function MilkStorageTab({
                 Thêm bịch
               </button>
             </div>
-          ) : (
-            filteredBags.map(bag => (
+          ) : selectedMilkGroup ? (
+            visibleMilkBags.map(bag => (
               <MilkBagCard
                 key={bag.id}
                 bag={bag}
@@ -450,6 +556,10 @@ export default function MilkStorageTab({
                 onDelete={onDeleteMilkBag}
                 onEdit={setEditingBag}
               />
+            ))
+          ) : (
+            milkDayGroups.map(group => (
+              <MilkDayCard key={group.key} group={group} onSelect={setSelectedMilkDay} />
             ))
           )}
         </div>
