@@ -429,6 +429,14 @@
   color: var(--color-primary);
   box-shadow: 0 12px 28px rgba(70, 57, 140, 0.28);
   cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sleep-floating-bubble.dragging {
+  cursor: grabbing;
+  box-shadow: 0 16px 34px rgba(70, 57, 140, 0.34);
 }
 
 .sleep-floating-icon {
@@ -4068,6 +4076,11 @@
   background: var(--color-base-100);
   color: var(--color-primary);
   box-shadow: 0 5px 14px rgba(94, 83, 160, 0.1);
+}
+
+.sleep-start-tabs button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .sleep-start-custom {

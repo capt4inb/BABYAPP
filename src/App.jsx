@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import DashboardTab from './components/DashboardTab';
 import HistoryTab from './components/HistoryTab';
 import SettingsTab from './components/SettingsTab';
@@ -29,6 +29,7 @@ const STORAGE_KEYS = {
   DIAPERS: 'bmt_diapers',
   SLEEPS: 'bmt_sleeps',
   VACCINES: 'bmt_vaccines',
+  SLEEP_BUBBLE: 'bmt_sleep_bubble_position',
 };
 
 const DEFAULT_SETTINGS = {
@@ -66,11 +67,80 @@ function saveToStorage(key, value) {
 }
 
 // ── App Component ─────────────────────────────────────────────
-function SleepFloatingBubble({ sleep, nowMs, onOpen }) {
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function SleepFloatingBubble({ sleep, nowMs, position, onPositionChange, onOpen }) {
+  const dragRef = useRef(null);
+  const suppressClickRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+
   if (!sleep) return null;
 
+  const handlePointerDown = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originLeft: rect.left,
+      originTop: rect.top,
+      width: rect.width,
+      height: rect.height,
+      moved: false,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setIsDragging(true);
+  };
+
+  const handlePointerMove = (event) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) drag.moved = true;
+
+    const safeMargin = 8;
+    onPositionChange({
+      x: clamp(drag.originLeft + dx, safeMargin, window.innerWidth - drag.width - safeMargin),
+      y: clamp(drag.originTop + dy, safeMargin, window.innerHeight - drag.height - safeMargin),
+    });
+  };
+
+  const handlePointerUp = (event) => {
+    const drag = dragRef.current;
+    if (drag?.pointerId === event.pointerId) {
+      suppressClickRef.current = Boolean(drag.moved);
+      dragRef.current = null;
+    }
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    setIsDragging(false);
+  };
+
+  const handleClick = (event) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    onOpen();
+  };
+
   return (
-    <button className="sleep-floating-bubble animate-scale-in" type="button" onClick={onOpen} aria-label="Mở thời gian ngủ">
+    <button
+      className={`sleep-floating-bubble animate-scale-in ${isDragging ? 'dragging' : ''}`}
+      type="button"
+      onClick={handleClick}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      style={position ? { left: position.x, top: position.y, right: 'auto', bottom: 'auto' } : undefined}
+      aria-label="Mở thời gian ngủ"
+    >
       <span className="sleep-floating-icon">
         <GameIcon name="moon" size={42} variant="cream" bare />
       </span>
@@ -108,6 +178,9 @@ export default function App() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [sleepNowMs, setSleepNowMs] = useState(() => Date.now());
   const [sleepBubbleMinimized, setSleepBubbleMinimized] = useState(false);
+  const [sleepBubblePosition, setSleepBubblePosition] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.SLEEP_BUBBLE, null)
+  );
   
   // Sync state
   const [syncPin, setSyncPin] = useState(() => loadFromStorage('bmt_sync_pin', null));
@@ -194,6 +267,10 @@ export default function App() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.VACCINES, vaccines);
   }, [vaccines]);
+
+  useEffect(() => {
+    if (sleepBubblePosition) saveToStorage(STORAGE_KEYS.SLEEP_BUBBLE, sleepBubblePosition);
+  }, [sleepBubblePosition]);
 
   const activeSleep = sleeps.find(item => !item.endAt);
   const activeSleepId = activeSleep?.id || '';
@@ -540,6 +617,8 @@ export default function App() {
         <SleepFloatingBubble
           sleep={activeSleep}
           nowMs={sleepNowMs}
+          position={sleepBubblePosition}
+          onPositionChange={setSleepBubblePosition}
           onOpen={() => {
             setSleepBubbleMinimized(false);
             setActiveTab('sleep');

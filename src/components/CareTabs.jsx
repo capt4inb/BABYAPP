@@ -251,86 +251,86 @@ export function SleepTab({ sleeps = [], nowMs = 0, onAddSleep, onUpdateSleep, on
         </div>
         <strong className="sleep-live-timer">{activeSleep ? formatLiveDuration(activeSleep.startAt, nowMs) : '--:--'}</strong>
         <p>{activeSleep ? `Bé đã ngủ từ ${formatTime(activeSleep.startAt)}` : 'Bấm bắt đầu khi bé ngủ.'}</p>
-        {!activeSleep && (
-          <div className="sleep-start-options">
-            <div className="sleep-start-tabs" role="tablist" aria-label="Chọn giờ bắt đầu ngủ">
-              <button
-                type="button"
-                className={startMode === 'now' ? 'active' : ''}
-                onClick={() => {
-                  setStartMode('now');
+        <div className="sleep-start-options">
+          <div className="sleep-start-tabs" role="tablist" aria-label="Chọn giờ bắt đầu ngủ">
+            <button
+              type="button"
+              className={startMode === 'now' ? 'active' : ''}
+              disabled={Boolean(activeSleep)}
+              onClick={() => {
+                setStartMode('now');
+                setStartError('');
+              }}
+            >
+              Bây giờ
+            </button>
+            <button
+              type="button"
+              className={startMode === 'custom' ? 'active' : ''}
+              disabled={Boolean(activeSleep)}
+              onClick={() => setStartMode('custom')}
+            >
+              Chọn giờ
+            </button>
+            <button
+              type="button"
+              className={startMode === 'manual' ? 'active' : ''}
+              onClick={() => setStartMode('manual')}
+            >
+              Nhập tay
+            </button>
+          </div>
+          {startMode === 'custom' && !activeSleep && (
+            <label className="sleep-start-custom">
+              <span>Bé ngủ từ</span>
+              <input
+                type="datetime-local"
+                className="form-input"
+                value={customStartAt}
+                max={toLocalDatetimeInput(new Date())}
+                onChange={event => {
+                  setCustomStartAt(event.target.value);
                   setStartError('');
                 }}
-              >
-                Bây giờ
-              </button>
-              <button
-                type="button"
-                className={startMode === 'custom' ? 'active' : ''}
-                onClick={() => setStartMode('custom')}
-              >
-                Chọn giờ
-              </button>
-              <button
-                type="button"
-                className={startMode === 'manual' ? 'active' : ''}
-                onClick={() => setStartMode('manual')}
-              >
-                Nhập tay
-              </button>
-            </div>
-            {startMode === 'custom' && (
-              <label className="sleep-start-custom">
-                <span>Bé ngủ từ</span>
+              />
+            </label>
+          )}
+          {startMode === 'manual' && (
+            <div className="sleep-manual-form">
+              <label>
+                <span>Bắt đầu</span>
                 <input
                   type="datetime-local"
                   className="form-input"
-                  value={customStartAt}
+                  value={manualStartAt}
                   max={toLocalDatetimeInput(new Date())}
                   onChange={event => {
-                    setCustomStartAt(event.target.value);
+                    setManualStartAt(event.target.value);
                     setStartError('');
                   }}
                 />
               </label>
-            )}
-            {startMode === 'manual' && (
-              <div className="sleep-manual-form">
-                <label>
-                  <span>Bắt đầu</span>
-                  <input
-                    type="datetime-local"
-                    className="form-input"
-                    value={manualStartAt}
-                    max={toLocalDatetimeInput(new Date())}
-                    onChange={event => {
-                      setManualStartAt(event.target.value);
-                      setStartError('');
-                    }}
-                  />
-                </label>
-                <label>
-                  <span>Kết thúc</span>
-                  <input
-                    type="datetime-local"
-                    className="form-input"
-                    value={manualEndAt}
-                    max={toLocalDatetimeInput(new Date())}
-                    onChange={event => {
-                      setManualEndAt(event.target.value);
-                      setStartError('');
-                    }}
-                  />
-                </label>
-                <button className="btn btn-primary" type="button" onClick={handleManualSave}>
-                  <GameIcon name="save" size={22} variant="cream" />
-                  Lưu giấc ngủ
-                </button>
-              </div>
-            )}
-            {startError && <p className="sleep-start-error">{startError}</p>}
-          </div>
-        )}
+              <label>
+                <span>Kết thúc</span>
+                <input
+                  type="datetime-local"
+                  className="form-input"
+                  value={manualEndAt}
+                  max={toLocalDatetimeInput(new Date())}
+                  onChange={event => {
+                    setManualEndAt(event.target.value);
+                    setStartError('');
+                  }}
+                />
+              </label>
+              <button className="btn btn-primary" type="button" onClick={handleManualSave}>
+                <GameIcon name="save" size={22} variant="cream" />
+                Lưu giấc ngủ
+              </button>
+            </div>
+          )}
+          {startError && <p className="sleep-start-error">{startError}</p>}
+        </div>
         <div className="sleep-actions">
           {activeSleep ? (
             <>
