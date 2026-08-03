@@ -267,6 +267,10 @@ export default function DashboardTab({
             <GameIcon name="moon" size={44} variant="blue" />
             <span>Ngủ</span>
           </button>
+          <button type="button" className="home-care-tile stats" onClick={() => onNavigateToCare?.('stats')}>
+            <GameIcon name="stats" size={44} variant="lavender" />
+            <span>Chỉ số</span>
+          </button>
           <button type="button" className="home-care-tile milk" onClick={() => onNavigateToMilk?.()}>
             <GameIcon name="milk" size={44} variant="blue" />
             <span>Kho sữa</span>

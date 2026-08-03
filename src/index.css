@@ -3844,7 +3844,7 @@
 }
 
 .home-care-actions-v2 {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -3863,6 +3863,10 @@
 
 .home-care-tile.milk {
   background: linear-gradient(135deg, #F0F9FF, #FFFFFF);
+}
+
+.home-care-tile.stats {
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-secondary) 7%, white), #FFFFFF);
 }
 
 .home-care-actions-v2 .home-care-tile span {
@@ -4369,6 +4373,404 @@
   color: var(--color-error-content);
 }
 
+.indicator-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 14px 110px;
+}
+
+.indicator-hero {
+  min-height: 136px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 18px;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 92%, #8ab4ff), var(--color-secondary));
+  color: white;
+  box-shadow: 0 16px 34px color-mix(in oklab, var(--color-primary) 24%, transparent);
+}
+
+.indicator-hero span,
+.indicator-hero h1,
+.indicator-hero p {
+  display: block;
+  margin: 0;
+}
+
+.indicator-hero span {
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.indicator-hero h1 {
+  margin-top: 7px;
+  font-size: 30px;
+  line-height: 1.05;
+  font-weight: 1000;
+}
+
+.indicator-hero p {
+  max-width: 420px;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+  opacity: 0.86;
+}
+
+.indicator-hero button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+  font-size: 13px;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.indicator-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: -44px;
+  padding-inline: 10px;
+}
+
+.indicator-summary-card {
+  min-width: 0;
+  min-height: 136px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid color-mix(in oklab, var(--color-base-300) 74%, white);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--color-base-content);
+  box-shadow: var(--shadow-sm);
+}
+
+.indicator-summary-card div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.indicator-summary-card div span {
+  min-width: 0;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 1000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.indicator-summary-card strong {
+  color: var(--color-base-content);
+  font-size: 25px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.indicator-summary-card strong small {
+  font-size: 12px;
+}
+
+.indicator-summary-card p,
+.indicator-summary-card em {
+  margin: 0;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.indicator-summary-card p {
+  color: var(--color-success);
+}
+
+.indicator-summary-card.alert p,
+.indicator-summary-card.alert em {
+  color: var(--color-error);
+}
+
+.indicator-summary-card em {
+  color: var(--color-text-muted);
+}
+
+.indicator-summary-card.good em {
+  color: var(--color-success);
+}
+
+.indicator-range-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.indicator-range-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.indicator-range-tabs button {
+  min-height: 38px;
+  min-width: 94px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 999px;
+  background: var(--color-base-100);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 1000;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.indicator-range-tabs button.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+  box-shadow: 0 10px 20px color-mix(in oklab, var(--color-primary) 22%, transparent);
+}
+
+.indicator-empty-note {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed color-mix(in oklab, var(--color-primary) 28%, white);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-primary) 6%, white);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.indicator-chart-card {
+  padding: 14px;
+  border: 1px solid color-mix(in oklab, var(--color-base-300) 74%, white);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: var(--shadow-sm);
+}
+
+.indicator-chart-card.compact {
+  padding-bottom: 10px;
+}
+
+.indicator-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.indicator-card-head h2,
+.indicator-card-head span,
+.indicator-card-head p {
+  display: block;
+  margin: 0;
+}
+
+.indicator-card-head h2 {
+  color: var(--color-base-content);
+  font-size: 17px;
+  font-weight: 1000;
+}
+
+.indicator-card-head span {
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.indicator-card-head p {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 1000;
+  text-align: right;
+}
+
+.indicator-card-head p.good {
+  color: var(--color-success);
+}
+
+.indicator-card-head p.alert {
+  color: var(--color-error);
+}
+
+.indicator-legend {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 6px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.indicator-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.indicator-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.indicator-legend i.low {
+  background: #ff4d5e;
+}
+
+.indicator-legend i.high {
+  background: #24b34b;
+}
+
+.indicator-legend i.baby {
+  background: #1b6ff2;
+}
+
+.indicator-growth-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.indicator-growth-svg text {
+  fill: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.indicator-growth-svg .grid {
+  stroke: color-mix(in oklab, var(--color-base-300) 80%, white);
+  stroke-width: 1;
+}
+
+.indicator-growth-svg .grid.vertical {
+  opacity: 0.55;
+}
+
+.indicator-growth-svg .who-band {
+  fill: color-mix(in oklab, var(--color-success) 8%, white);
+}
+
+.indicator-growth-svg .line {
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.indicator-growth-svg .line.low {
+  stroke: #ff4d5e;
+}
+
+.indicator-growth-svg .line.high {
+  stroke: #24b34b;
+}
+
+.indicator-growth-svg .line.median {
+  stroke: color-mix(in oklab, var(--color-primary) 28%, white);
+  stroke-dasharray: 4 4;
+}
+
+.indicator-growth-svg .line.baby {
+  stroke: #1b6ff2;
+  stroke-width: 3;
+}
+
+.indicator-growth-svg .baby-point {
+  fill: #1b6ff2;
+  stroke: white;
+  stroke-width: 2;
+}
+
+.indicator-growth-svg .point-label {
+  fill: var(--color-base-content);
+  font-size: 12px;
+  font-weight: 1000;
+}
+
+.indicator-bars {
+  position: relative;
+  height: 150px;
+  display: grid;
+  grid-template-columns: repeat(14, minmax(0, 1fr));
+  gap: 7px;
+  align-items: end;
+  padding-top: 18px;
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.indicator-bars .reference-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed color-mix(in oklab, var(--color-primary) 50%, white);
+}
+
+.indicator-bar-col {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 20px 1fr 24px;
+  justify-items: center;
+  align-items: end;
+  gap: 4px;
+}
+
+.indicator-bar-col strong,
+.indicator-bar-col small {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.indicator-bar-col div {
+  width: min(22px, 72%);
+  min-height: 5px;
+  border-radius: 999px 999px 3px 3px;
+  background: #4d86f7;
+}
+
+.indicator-bars.orange .indicator-bar-col div {
+  background: #ff7a1a;
+}
+
+.indicator-source-note {
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.45;
+  text-align: center;
+}
+
 @media (max-width: 560px) {
   .home-hero-v2 {
     grid-template-columns: minmax(0, 1fr) minmax(142px, 0.78fr);
@@ -4420,6 +4822,7 @@
   }
 
   .home-care-actions-v2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
 
@@ -4472,6 +4875,53 @@
 
   .feed-add-button {
     width: 100%;
+  }
+
+  .indicator-screen {
+    padding: 12px 12px 110px;
+  }
+
+  .indicator-hero {
+    min-height: 142px;
+    padding: 15px;
+  }
+
+  .indicator-hero h1 {
+    font-size: 26px;
+  }
+
+  .indicator-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: -36px;
+    padding-inline: 6px;
+    gap: 8px;
+  }
+
+  .indicator-summary-card {
+    min-height: 126px;
+    padding: 10px;
+  }
+
+  .indicator-summary-card strong {
+    font-size: 22px;
+  }
+
+  .indicator-card-head {
+    align-items: flex-start;
+  }
+
+  .indicator-legend {
+    gap: 8px;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .indicator-bars {
+    gap: 5px;
+  }
+
+  .indicator-bar-col small {
+    font-size: 9px;
   }
 }
 

@@ -1,192 +1,308 @@
 import { useMemo, useState } from 'react';
+import {
+  GROWTH_METRICS,
+  WHO_GROWTH_STANDARDS,
+  evaluateGrowthValue,
+  getAgeMonths,
+  normalizeGender,
+} from '../data/whoGrowthStandards';
+import { getDurationMinutes, toLocalDateInput } from '../utils/careUtils';
 import GameIcon from './GameIcon';
 
-function getLast7Days() {
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() - i);
-    days.push(d);
-  }
-  return days;
+const NUMBER_FORMATTER = new Intl.NumberFormat('vi-VN');
+
+const RANGE_OPTIONS = [
+  { value: '7d', label: '7 ngày', days: 7, months: 6 },
+  { value: '1m', label: '1 tháng', days: 30, months: 12 },
+  { value: '6m', label: '6 tháng', days: 180, months: 18 },
+  { value: '12m', label: '12 tháng', days: 365, months: 24 },
+];
+
+function formatNumber(value, decimals = 0) {
+  if (value == null || value === '' || Number.isNaN(Number(value))) return '--';
+  return NUMBER_FORMATTER.format(Number(value).toFixed(decimals));
 }
 
-function dayKey(date) {
-  return date.toDateString();
+function formatDateShort(dateLike) {
+  return new Date(dateLike).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
 }
 
-function shortDayLabel(date) {
-  return date.toLocaleDateString('vi-VN', { weekday: 'short' }).slice(0, 2);
+function getMetricValue(record, metric) {
+  if (metric === 'weight') return record.weight;
+  if (metric === 'height') return record.height;
+  if (metric === 'head') return record.headCircumference ?? record.head;
+  return null;
 }
 
-export default function StatsTab({ records }) {
-  const [period, setPeriod] = useState('7d'); // 7d | 30d
+function getLatestMetricRecord(records, metric) {
+  return [...records]
+    .filter(record => record.type === 'weight' && getMetricValue(record, metric) != null)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0] || null;
+}
 
-  const days7 = useMemo(() => getLast7Days(), []);
+function getPreviousMetricRecord(records, metric, latestRecord) {
+  if (!latestRecord) return null;
+  return [...records]
+    .filter(record =>
+      record.type === 'weight' &&
+      record.id !== latestRecord.id &&
+      getMetricValue(record, metric) != null &&
+      new Date(record.timestamp) < new Date(latestRecord.timestamp)
+    )
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0] || null;
+}
 
-  const periodStart = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    if (period === '7d') d.setDate(d.getDate() - 6);
-    else d.setDate(d.getDate() - 29);
-    return d;
-  }, [period]);
+function buildBabyMetricPoints(records, settings, metric, maxMonths) {
+  return records
+    .filter(record => record.type === 'weight' && getMetricValue(record, metric) != null)
+    .map(record => ({
+      month: getAgeMonths(settings.babyBirthDate, record.timestamp),
+      value: Number(getMetricValue(record, metric)),
+      label: formatNumber(getMetricValue(record, metric), GROWTH_METRICS[metric].decimals),
+    }))
+    .filter(point => point.month != null && point.month <= maxMonths && !Number.isNaN(point.value))
+    .sort((a, b) => a.month - b.month);
+}
 
-  const periodRecords = useMemo(() =>
-    records.filter(r => new Date(r.timestamp) >= periodStart),
-    [records, periodStart]
-  );
+function buildRecentDailyData(items, getDate, getValue, days) {
+  return Array.from({ length: Math.min(days, 14) }, (_, index) => {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - (Math.min(days, 14) - 1 - index));
+    const key = toLocalDateInput(day);
+    const total = items
+      .filter(item => toLocalDateInput(getDate(item)) === key)
+      .reduce((sum, item) => sum + getValue(item), 0);
 
-  const feedRecords = useMemo(() => periodRecords.filter(r => r.type === 'feed'), [periodRecords]);
+    return {
+      key,
+      label: formatDateShort(day),
+      total,
+    };
+  });
+}
 
-  // Per-day stats for bar chart (last 7)
-  const dailyStats = useMemo(() => {
-    return days7.map(day => {
-      const key = dayKey(day);
-      const dayFeeds = records.filter(r => r.type === 'feed' && new Date(r.timestamp).toDateString() === key);
-      const feedVol = dayFeeds.reduce((s, r) => s + (r.volume || 0), 0);
-      return { day, label: shortDayLabel(day), feedCount: dayFeeds.length, feedVol };
-    });
-  }, [days7, records]);
+function metricStatusClass(status) {
+  if (status === 'under' || status === 'over') return 'alert';
+  if (status === 'normal') return 'good';
+  return '';
+}
 
-  const maxFeed = Math.max(...dailyStats.map(d => d.feedCount), 1);
-
-  // Summary stats
-  const totalFeedVol = feedRecords.reduce((s, r) => s + (r.volume || 0), 0);
-  const avgFeedPerDay = (feedRecords.length / (period === '7d' ? 7 : 30)).toFixed(1);
-
-  // Feed side distribution
-  const sideStats = useMemo(() => {
-    const counts = { left: 0, right: 0, both: 0, bottle: 0 };
-    feedRecords.forEach(r => { if (r.side) counts[r.side] = (counts[r.side] || 0) + 1; });
-    return counts;
-  }, [feedRecords]);
-
-  const sideLabels = { left: 'Bên trái', right: 'Bên phải', both: 'Hai bên', bottle: 'Bình sữa' };
-  const sideIcon = { left: 'left', right: 'right', both: 'sliders', bottle: 'bottle' };
+function SummaryCard({ metric, latest, previous, settings }) {
+  const config = GROWTH_METRICS[metric];
+  const value = latest ? Number(getMetricValue(latest, metric)) : null;
+  const previousValue = previous ? Number(getMetricValue(previous, metric)) : null;
+  const delta = value != null && previousValue != null ? value - previousValue : null;
+  const ageMonths = latest ? getAgeMonths(settings.babyBirthDate, latest.timestamp) : getAgeMonths(settings.babyBirthDate);
+  const evaluation = evaluateGrowthValue(metric, settings.babyGender, ageMonths, value);
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <div className="page-header">
-        <h1 style={{ margin: '0 0 16px', fontSize: 24, fontWeight: 800 }}>Thống kê</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {[
-            { value: '7d', label: '7 ngày' },
-            { value: '30d', label: '30 ngày' },
-          ].map(p => (
-            <button
-              key={p.value}
-              className={`tag tag-primary ${period === p.value ? 'active' : ''}`}
-              onClick={() => setPeriod(p.value)}
-            >
-              {p.label}
-            </button>
-          ))}
+    <article className={`indicator-summary-card ${metricStatusClass(evaluation?.status)}`}>
+      <div>
+        <GameIcon name={config.icon} size={30} variant={metric === 'weight' ? 'lavender' : metric === 'height' ? 'blue' : 'green'} />
+        <span>{config.label}</span>
+      </div>
+      <strong>{formatNumber(value, config.decimals)} <small>{value != null ? config.unit : ''}</small></strong>
+      <p>
+        {delta == null ? 'Chưa có lần đo trước' : `${delta >= 0 ? '+' : ''}${formatNumber(delta, config.decimals)} ${config.unit}`}
+      </p>
+      <em>{evaluation?.label || 'Chưa đủ dữ liệu'}</em>
+    </article>
+  );
+}
+
+function GrowthChart({ metric, settings, records, maxMonths }) {
+  const gender = normalizeGender(settings.babyGender);
+  const config = GROWTH_METRICS[metric];
+  const standards = WHO_GROWTH_STANDARDS[metric][gender].filter(point => point[0] <= maxMonths);
+  const babyPoints = buildBabyMetricPoints(records, settings, metric, maxMonths);
+  const latest = babyPoints[babyPoints.length - 1];
+  const allValues = [
+    ...standards.flatMap(point => [point[1], point[3]]),
+    ...babyPoints.map(point => point.value),
+  ];
+  const minY = Math.max(0, Math.floor(Math.min(...allValues) - (metric === 'weight' ? 1 : 5)));
+  const maxY = Math.ceil(Math.max(...allValues) + (metric === 'weight' ? 1 : 5));
+  const width = 640;
+  const height = 230;
+  const pad = { top: 22, right: 18, bottom: 34, left: 42 };
+  const chartW = width - pad.left - pad.right;
+  const chartH = height - pad.top - pad.bottom;
+  const x = (month) => pad.left + (Math.min(maxMonths, Math.max(0, month)) / maxMonths) * chartW;
+  const y = (value) => pad.top + ((maxY - value) / (maxY - minY)) * chartH;
+  const lowerPath = standards.map((point, index) => `${index === 0 ? 'M' : 'L'} ${x(point[0])} ${y(point[1])}`).join(' ');
+  const upperPath = standards.map((point, index) => `${index === 0 ? 'M' : 'L'} ${x(point[0])} ${y(point[3])}`).join(' ');
+  const medianPath = standards.map((point, index) => `${index === 0 ? 'M' : 'L'} ${x(point[0])} ${y(point[2])}`).join(' ');
+  const babyPath = babyPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${x(point.month)} ${y(point.value)}`).join(' ');
+  const bandPath = `${upperPath} ${[...standards].reverse().map(point => `L ${x(point[0])} ${y(point[1])}`).join(' ')} Z`;
+  const ticks = Array.from({ length: Math.floor(maxMonths / 2) + 1 }, (_, index) => index * 2);
+  const latestEvaluation = latest
+    ? evaluateGrowthValue(metric, settings.babyGender, latest.month, latest.value)
+    : null;
+
+  return (
+    <section className="indicator-chart-card">
+      <div className="indicator-card-head">
+        <div>
+          <h2>{config.label}</h2>
+          <span>{config.unit}</span>
         </div>
+        <p className={metricStatusClass(latestEvaluation?.status)}>{latestEvaluation?.label || 'Chuẩn WHO -2SD đến +2SD'}</p>
       </div>
 
-      <div style={{ padding: '8px 16px 16px' }}>
-
-        {/* Summary Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginBottom: 16 }}>
-          {/* Feed summary */}
-          <div className="card" style={{ padding: 16, background: 'var(--color-primary-bg)', borderColor: 'var(--color-primary-light)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <GameIcon name="drop" size={26} variant="pink" />
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Cữ bú
-              </span>
-            </div>
-            <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--color-primary)', lineHeight: 1 }}>
-              {feedRecords.length}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
-              lần · TB {avgFeedPerDay}/ngày
-            </div>
-            {totalFeedVol > 0 && (
-              <div style={{ fontSize: 12, color: 'var(--color-primary)', marginTop: 4, fontWeight: 600 }}>
-                {totalFeedVol} ml tổng cộng
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Bar Chart - Last 7 days */}
-        <div className="card" style={{ padding: 16, marginBottom: 16 }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>
-            <GameIcon name="stats" size={18} variant="blue" bare /> 7 ngày gần nhất
-          </h3>
-
-          {/* Feed bars */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-primary)', marginBottom: 8 }}>
-              <GameIcon name="bottle" size={16} variant="pink" bare /> Cữ bú
-            </div>
-            <div className="bar-chart-container">
-              {dailyStats.map((d, i) => (
-                <div key={i} className="bar-wrap">
-                  {d.feedCount > 0 && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-primary)' }}>
-                      {d.feedCount}
-                    </span>
-                  )}
-                  <div
-                    className="bar"
-                    style={{
-                      height: `${(d.feedCount / maxFeed) * 80}%`,
-                      background: d.feedCount > 0
-                        ? 'var(--color-primary)'
-                        : 'var(--color-border)',
-                      minHeight: 4,
-                    }}
-                  />
-                  <div className="bar-label">{d.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Feed side distribution */}
-        {feedRecords.length > 0 && (
-          <div className="card" style={{ padding: 16, marginBottom: 16 }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>
-              <GameIcon name="bottle" size={18} variant="pink" bare /> Phân bổ cách bú
-            </h3>
-            {Object.entries(sideStats).filter(([, count]) => count > 0).map(([side, count]) => {
-              const pct = Math.round((count / feedRecords.length) * 100);
-              return (
-                <div key={side} style={{ marginBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13, fontWeight: 600 }}>
-                    <span><GameIcon name={sideIcon[side]} size={16} variant="cream" bare /> {sideLabels[side]}</span>
-                    <span style={{ color: 'var(--color-text-muted)' }}>{count} ({pct}%)</span>
-                  </div>
-                  <div style={{ height: 8, background: 'var(--color-border)', borderRadius: 99, overflow: 'hidden' }}>
-                    <div style={{
-                      height: '100%', width: `${pct}%`,
-                      background: 'var(--color-primary)',
-                      borderRadius: 99,
-                      transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                    }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {periodRecords.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 32px' }}>
-            <GameIcon name="stats" size={48} variant="blue" />
-            <p style={{ color: 'var(--color-text-muted)', fontSize: 15 }}>
-              Chưa có dữ liệu trong {period === '7d' ? '7 ngày' : '30 ngày'} qua
-            </p>
-          </div>
-        )}
+      <div className="indicator-legend">
+        <span><i className="low" /> Ngưỡng dưới</span>
+        <span><i className="high" /> Ngưỡng trên</span>
+        <span><i className="baby" /> Bé</span>
       </div>
+
+      <svg className="indicator-growth-svg" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${config.label} so với chuẩn WHO`}>
+        {[0, 1, 2, 3, 4].map(index => {
+          const value = minY + ((maxY - minY) / 4) * index;
+          return (
+            <g key={value}>
+              <line x1={pad.left} x2={width - pad.right} y1={y(value)} y2={y(value)} className="grid" />
+              <text x={pad.left - 10} y={y(value) + 4} textAnchor="end">{Math.round(value)}</text>
+            </g>
+          );
+        })}
+        {ticks.map(month => (
+          <g key={month}>
+            <line x1={x(month)} x2={x(month)} y1={pad.top} y2={height - pad.bottom} className="grid vertical" />
+            <text x={x(month)} y={height - 10} textAnchor="middle">{month}thg</text>
+          </g>
+        ))}
+        <path d={bandPath} className="who-band" />
+        <path d={lowerPath} className="line low" />
+        <path d={upperPath} className="line high" />
+        <path d={medianPath} className="line median" />
+        {babyPath && <path d={babyPath} className="line baby" />}
+        {babyPoints.map(point => (
+          <g key={`${metric}-${point.month}-${point.value}`}>
+            <circle cx={x(point.month)} cy={y(point.value)} r="4.5" className="baby-point" />
+            <text x={x(point.month)} y={y(point.value) - 9} textAnchor="middle" className="point-label">{point.label}</text>
+          </g>
+        ))}
+      </svg>
+    </section>
+  );
+}
+
+function DailyBars({ title, unit, data, tone = 'blue', reference }) {
+  const max = Math.max(...data.map(item => item.total), reference || 1, 1);
+
+  return (
+    <section className="indicator-chart-card compact">
+      <div className="indicator-card-head">
+        <div>
+          <h2>{title}</h2>
+          <span>{unit}</span>
+        </div>
+        {reference && <p>Mốc tham khảo cố định</p>}
+      </div>
+      <div className={`indicator-bars ${tone}`}>
+        {reference && <span className="reference-line" style={{ bottom: `${(reference / max) * 100}%` }} />}
+        {data.map(item => (
+          <div className="indicator-bar-col" key={item.key}>
+            <strong>{item.total ? formatNumber(item.total, title === 'Thời gian ngủ' ? 1 : 0) : ''}</strong>
+            <div style={{ height: `${Math.max(6, (item.total / max) * 100)}%` }} />
+            <small>{item.label}</small>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default function StatsTab({ records, sleeps = [], settings, onOpenWeightModal }) {
+  const [range, setRange] = useState('1m');
+  const selectedRange = RANGE_OPTIONS.find(item => item.value === range) || RANGE_OPTIONS[1];
+  const maxMonths = Math.max(6, Math.min(24, Math.ceil(getAgeMonths(settings.babyBirthDate) || selectedRange.months, 0) || selectedRange.months));
+  const weightLatest = getLatestMetricRecord(records, 'weight');
+  const heightLatest = getLatestMetricRecord(records, 'height');
+  const headLatest = getLatestMetricRecord(records, 'head');
+  const weightPrevious = getPreviousMetricRecord(records, 'weight', weightLatest);
+  const heightPrevious = getPreviousMetricRecord(records, 'height', heightLatest);
+  const headPrevious = getPreviousMetricRecord(records, 'head', headLatest);
+  const latestWeight = weightLatest?.weight ? Number(weightLatest.weight) : null;
+  const latestHeight = heightLatest ? Number(getMetricValue(heightLatest, 'height')) : null;
+  const bmi = latestWeight && latestHeight ? latestWeight / ((latestHeight / 100) ** 2) : null;
+  const feedData = useMemo(
+    () => buildRecentDailyData(
+      records.filter(record => record.type === 'feed'),
+      record => record.timestamp,
+      record => record.volume || 0,
+      selectedRange.days
+    ),
+    [records, selectedRange.days]
+  );
+  const sleepData = useMemo(
+    () => buildRecentDailyData(
+      sleeps,
+      item => item.startAt,
+      item => getDurationMinutes(item.startAt, item.endAt || new Date().toISOString()) / 60,
+      selectedRange.days
+    ),
+    [sleeps, selectedRange.days]
+  );
+
+  return (
+    <div className="animate-fade-in indicator-screen">
+      <header className="indicator-hero">
+        <div>
+          <span>Chỉ số</span>
+          <h1>{settings.babyName || 'Bé yêu'}</h1>
+          <p>Theo dõi tăng trưởng, lượng bú và giấc ngủ trong cùng một màn.</p>
+        </div>
+        <button type="button" onClick={() => onOpenWeightModal()}>
+          <GameIcon name="plus" size={20} variant="cream" bare />
+          Cập nhật
+        </button>
+      </header>
+
+      <section className="indicator-summary-grid">
+        <SummaryCard metric="weight" latest={weightLatest} previous={weightPrevious} settings={settings} />
+        <SummaryCard metric="height" latest={heightLatest} previous={heightPrevious} settings={settings} />
+        <SummaryCard metric="head" latest={headLatest} previous={headPrevious} settings={settings} />
+        <article className={`indicator-summary-card ${bmi ? 'good' : ''}`}>
+          <div>
+            <GameIcon name="stats" size={30} variant="lavender" />
+            <span>BMI</span>
+          </div>
+          <strong>{formatNumber(bmi, 1)} <small>{bmi ? 'kg/m²' : ''}</small></strong>
+          <p>{bmi ? 'Tính từ cân nặng và chiều cao mới nhất' : 'Cần nhập cân nặng + chiều cao'}</p>
+          <em>{bmi ? 'Đã có dữ liệu' : 'Chưa đủ dữ liệu'}</em>
+        </article>
+      </section>
+
+      <div className="indicator-range-tabs">
+        {RANGE_OPTIONS.map(option => (
+          <button
+            key={option.value}
+            type="button"
+            className={range === option.value ? 'active' : ''}
+            onClick={() => setRange(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      {!settings.babyBirthDate && (
+        <section className="indicator-empty-note">
+          <GameIcon name="calendar" size={30} variant="lavender" />
+          <span>Nhập ngày sinh trong Cài đặt để so sánh theo tuổi chuẩn WHO.</span>
+        </section>
+      )}
+
+      <GrowthChart metric="weight" settings={settings} records={records} maxMonths={maxMonths} />
+      <GrowthChart metric="height" settings={settings} records={records} maxMonths={maxMonths} />
+      <GrowthChart metric="head" settings={settings} records={records} maxMonths={maxMonths} />
+      <DailyBars title="Lượng sữa" unit="ml" data={feedData} tone="blue" reference={750} />
+      <DailyBars title="Thời gian ngủ" unit="giờ" data={sleepData} tone="orange" reference={10} />
+      <p className="indicator-source-note">
+        Chuẩn tăng trưởng dùng các mốc WHO Child Growth Standards (-2SD, median, +2SD) cho trẻ 0-24 tháng.
+      </p>
     </div>
   );
 }

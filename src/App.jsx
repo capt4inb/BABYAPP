@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import DashboardTab from './components/DashboardTab';
 import FeedTab from './components/FeedTab';
+import StatsTab from './components/StatsTab';
 import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
 import { DiaperTab, SleepTab } from './components/CareTabs';
@@ -538,6 +539,14 @@ export default function App() {
             onUpdateMilkBag={updateMilkBag}
             onDeleteMilkBag={deleteMilkBag}
             onNavigateToDashboard={() => setActiveTab('dashboard')}
+          />
+        )}
+        {activeTab === 'stats' && (
+          <StatsTab
+            records={records}
+            sleeps={sleeps}
+            settings={settings}
+            onOpenWeightModal={openWeightModal}
           />
         )}
         {activeTab === 'settings'  && (

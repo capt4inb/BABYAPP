@@ -14,6 +14,8 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
   const [timestamp, setTimestamp] = useState(() => toLocalDatetimeInput(editRecord?.timestamp || new Date()));
   const [volume, setVolume] = useState(() => editRecord?.volume ?? '');
   const [weight, setWeight] = useState(() => editRecord?.weight ?? '');
+  const [height, setHeight] = useState(() => editRecord?.height ?? '');
+  const [headCircumference, setHeadCircumference] = useState(() => editRecord?.headCircumference ?? editRecord?.head ?? '');
   const [side] = useState(() => editRecord?.side ?? 'bottle');
   const [note, setNote] = useState(() => editRecord?.note ?? '');
 
@@ -30,6 +32,8 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
       record.volume = volume !== '' ? Number(volume) : null;
     } else if (isWeight) {
       record.weight = weight !== '' ? Number(weight) : null;
+      record.height = height !== '' ? Number(height) : null;
+      record.headCircumference = headCircumference !== '' ? Number(headCircumference) : null;
     }
     onSave(record);
   };
@@ -56,7 +60,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>
-                {editRecord ? 'Chỉnh sửa' : 'Ghi lại'} {isFeed ? 'cữ bú' : 'cân nặng'}
+                {editRecord ? 'Chỉnh sửa' : 'Ghi lại'} {isFeed ? 'cữ bú' : 'chỉ số'}
               </h2>
               <p style={{ margin: 0, fontSize: 12, color: 'var(--color-text-muted)' }}>
                 {isFeed ? 'Theo dõi lượng sữa bú bình' : 'Theo dõi sự phát triển của bé'}
@@ -109,24 +113,58 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
             </div>
           )}
 
-          {/* Weight */}
+          {/* Growth metrics */}
           {isWeight && (
-            <div className="form-group">
-              <label className="form-label">
-                Cân nặng (kg)
-              </label>
-              <input
-                type="number"
-                className="form-input"
-                value={weight}
-                onChange={e => setWeight(e.target.value)}
-                placeholder="Ví dụ: 6.5"
-                step="0.1"
-                min="0"
-                max="50"
-                required
-              />
-            </div>
+            <>
+              <div className="form-group">
+                <label className="form-label">
+                  Cân nặng (kg)
+                </label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={weight}
+                  onChange={e => setWeight(e.target.value)}
+                  placeholder="Ví dụ: 6.5"
+                  step="0.1"
+                  min="0"
+                  max="50"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  Chiều cao (cm)
+                </label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={height}
+                  onChange={e => setHeight(e.target.value)}
+                  placeholder="Ví dụ: 67.8"
+                  step="0.1"
+                  min="0"
+                  max="140"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  Chu vi đầu (cm)
+                </label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={headCircumference}
+                  onChange={e => setHeadCircumference(e.target.value)}
+                  placeholder="Ví dụ: 42"
+                  step="0.1"
+                  min="0"
+                  max="70"
+                />
+              </div>
+            </>
           )}
 
           {/* Note */}
@@ -152,7 +190,7 @@ export default function RecordModal({ type, editRecord, onSave, onClose }) {
               className={`btn ${isFeed ? 'btn-primary' : ''}`}
               style={{ flex: 2, background: isWeight ? 'var(--color-info)' : undefined, color: isWeight ? 'var(--color-info-content)' : undefined }}
             >
-              {editRecord ? 'Lưu thay đổi' : `Lưu ${isFeed ? 'cữ bú' : 'cân nặng'}`}
+              {editRecord ? 'Lưu thay đổi' : `Lưu ${isFeed ? 'cữ bú' : 'chỉ số'}`}
             </button>
           </div>
         </form>
