@@ -67,6 +67,12 @@ function milkStorageLabel(status) {
   return 'kho sữa';
 }
 
+function minuteKey(dateLike) {
+  const date = new Date(dateLike);
+  date.setSeconds(0, 0);
+  return date.toISOString();
+}
+
 function buildTodayJournal({ records, milkBags, diapers, sleeps, todayStart }) {
   const items = [];
 
@@ -85,20 +91,37 @@ function buildTodayJournal({ records, milkBags, diapers, sleeps, todayStart }) {
       });
     });
 
+  const milkGroups = new Map();
   milkBags
     .filter(bag => new Date(bag.expressed_at) >= todayStart)
     .forEach(bag => {
-      items.push({
-        id: `milk-${bag.id}`,
+      const storage = bag.storage_status || 'stored';
+      const key = `${minuteKey(bag.expressed_at)}-${storage}`;
+      const current = milkGroups.get(key) || {
+        ids: [],
         time: bag.expressed_at,
-        type: 'milk',
-        icon: 'milk',
-        tone: 'lavender',
-        title: 'Hút sữa',
-        detail: `${formatNumber(bag.volume_ml || 0)} ml thêm vào ${milkStorageLabel(bag.storage_status)}`,
-        badge: `+${formatNumber(bag.volume_ml || 0)} ml`,
-      });
+        storage,
+        volume: 0,
+      };
+
+      current.ids.push(bag.id);
+      current.volume += bag.volume_ml || 0;
+      if (new Date(bag.expressed_at) > new Date(current.time)) current.time = bag.expressed_at;
+      milkGroups.set(key, current);
     });
+
+  milkGroups.forEach(group => {
+    items.push({
+      id: `milk-${group.ids.join('-')}`,
+      time: group.time,
+      type: 'milk',
+      icon: 'milk',
+      tone: 'lavender',
+      title: 'Hút sữa',
+      detail: `${formatNumber(group.volume)} ml thêm vào ${milkStorageLabel(group.storage)}`,
+      badge: `+${formatNumber(group.volume)} ml`,
+    });
+  });
 
   diapers
     .filter(item => new Date(item.timestamp) >= todayStart)
@@ -131,7 +154,7 @@ function buildTodayJournal({ records, milkBags, diapers, sleeps, todayStart }) {
       });
     });
 
-  return items.sort((a, b) => new Date(a.time) - new Date(b.time));
+  return items.sort((a, b) => new Date(b.time) - new Date(a.time));
 }
 
 export default function DashboardTab({
