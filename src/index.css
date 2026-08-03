@@ -3859,24 +3859,47 @@
 }
 
 .home-care-actions-v2 .home-care-tile {
-  min-height: 76px;
+  min-height: 88px;
   place-items: center;
   align-content: center;
-  gap: 0;
+  gap: 5px;
   padding: 10px 8px;
+  border-color: color-mix(in oklab, var(--color-primary) 24%, var(--color-base-300));
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 10%, white), #FFFFFF);
+  box-shadow: 0 8px 18px color-mix(in oklab, var(--color-primary) 10%, transparent);
   text-align: center;
 }
 
+.home-care-actions-v2 .home-care-tile span {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: none;
+}
+
 .home-care-tile.feed {
-  background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 8%, white), #FFFFFF);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 16%, white), #FFFFFF);
+}
+
+.home-care-tile.diaper {
+  border-color: color-mix(in oklab, var(--color-success) 28%, var(--color-base-300));
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-success) 14%, white), #FFFFFF);
+}
+
+.home-care-tile.sleep,
+.home-care-tile.milk {
+  border-color: color-mix(in oklab, var(--color-info) 28%, var(--color-base-300));
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-info) 14%, white), #FFFFFF);
 }
 
 .home-care-tile.milk {
-  background: linear-gradient(135deg, #F0F9FF, #FFFFFF);
+  background: linear-gradient(135deg, #EAF7FF, #FFFFFF);
 }
 
 .home-care-tile.stats {
-  background: linear-gradient(135deg, color-mix(in oklab, var(--color-secondary) 7%, white), #FFFFFF);
+  border-color: color-mix(in oklab, var(--color-secondary) 28%, var(--color-base-300));
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-secondary) 14%, white), #FFFFFF);
 }
 
 .home-journal-card {
@@ -4831,7 +4854,7 @@
   }
 
   .home-care-actions-v2 .home-care-tile {
-    min-height: 70px;
+    min-height: 78px;
     padding: 9px 6px;
   }
 
