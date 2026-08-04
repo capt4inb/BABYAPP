@@ -7,6 +7,7 @@ export const WONDER_WEEKS = [
     startWeek: 4,
     endWeek: 6,
     title: 'Cảm giác mới',
+    mood: 'crying',
     summary: 'Bé bắt đầu cảm nhận ánh sáng, âm thanh, mùi và tiếp xúc rõ ràng hơn.',
     signs: ['Bám người hơn', 'Dễ quấy', 'Khó vào giấc', 'Muốn bú gần hơn'],
     observations: [
@@ -60,6 +61,7 @@ export const WONDER_WEEKS = [
     startWeek: 7,
     endWeek: 10,
     title: 'Nhận biết khuôn mẫu',
+    mood: 'fussy',
     summary: 'Bé dần chú ý đến các hình dáng, âm thanh và chuyển động lặp lại.',
     signs: ['Muốn được gần ba mẹ', 'Khóc nhiều hơn', 'Ngủ thất thường', 'Dễ bị quá tải'],
     observations: [
@@ -113,6 +115,7 @@ export const WONDER_WEEKS = [
     startWeek: 11,
     endWeek: 13,
     title: 'Chuyển động trôi chảy',
+    mood: 'gentle',
     summary: 'Bé cảm nhận tốt hơn những thay đổi liên tục trong giọng nói và chuyển động.',
     signs: ['Hay giật mình', 'Cần dỗ lâu hơn', 'Ít tự chơi', 'Nhịp bú thay đổi'],
     observations: [
@@ -166,6 +169,7 @@ export const WONDER_WEEKS = [
     startWeek: 14,
     endWeek: 20,
     title: 'Những sự kiện nhỏ',
+    mood: 'cryMore',
     summary: 'Bé bắt đầu liên kết các hành động ngắn và nhận ra điều gì sẽ xảy ra tiếp theo.',
     signs: ['Quấy khi rời người chăm', 'Dễ tỉnh giấc', 'Muốn bú nhiều lần', 'Cần được chú ý'],
     observations: [
@@ -219,6 +223,7 @@ export const WONDER_WEEKS = [
     startWeek: 22,
     endWeek: 27,
     title: 'Các mối quan hệ',
+    mood: 'crying',
     summary: 'Bé dần hiểu khoảng cách giữa mình, người thân và những đồ vật xung quanh.',
     signs: ['Lo khi xa ba mẹ', 'Khó ngủ một mình', 'Dễ cáu gắt', 'Đòi bế nhiều hơn'],
     observations: [
@@ -272,6 +277,7 @@ export const WONDER_WEEKS = [
     startWeek: 33,
     endWeek: 38,
     title: 'Phân loại thế giới',
+    mood: 'irritated',
     summary: 'Bé thử nhóm các đồ vật, âm thanh và con người theo điểm giống nhau.',
     signs: ['Kén ăn hơn', 'Không thích thay tã', 'Bám người quen', 'Dễ phản đối'],
     observations: [
@@ -325,6 +331,7 @@ export const WONDER_WEEKS = [
     startWeek: 41,
     endWeek: 47,
     title: 'Trình tự hành động',
+    mood: 'fussy',
     summary: 'Bé hiểu rằng một việc thường gồm nhiều bước theo thứ tự.',
     signs: ['Dễ mất kiên nhẫn', 'Muốn làm theo ý mình', 'Ngủ chập chờn', 'Đòi tương tác nhiều'],
     observations: [
@@ -378,6 +385,7 @@ export const WONDER_WEEKS = [
     startWeek: 51,
     endWeek: 56,
     title: 'Lập kế hoạch đơn giản',
+    mood: 'cryMore',
     summary: 'Bé bắt đầu kết hợp nhiều hành động để đạt một mục tiêu quen thuộc.',
     signs: ['Thử giới hạn nhiều hơn', 'Khó chuyển hoạt động', 'Hay mè nheo', 'Cần được trấn an'],
     observations: [
@@ -431,6 +439,7 @@ export const WONDER_WEEKS = [
     startWeek: 59,
     endWeek: 65,
     title: 'Những nguyên tắc',
+    mood: 'irritated',
     summary: 'Bé thử tìm quy tắc, ngoại lệ và cách ứng xử trong nhiều tình huống.',
     signs: ['Dễ nổi giận', 'Muốn tự quyết', 'Thay đổi khẩu vị', 'Khó chấp nhận chờ đợi'],
     observations: [
@@ -484,6 +493,7 @@ export const WONDER_WEEKS = [
     startWeek: 70,
     endWeek: 76,
     title: 'Kết nối thành hệ thống',
+    mood: 'calm',
     summary: 'Bé phối hợp nhiều nguyên tắc và hiểu các nhóm sự việc phức tạp hơn.',
     signs: ['Khẳng định ý muốn mạnh', 'Dễ thất vọng', 'Cần gần người thân', 'Nếp ngủ thay đổi'],
     observations: [

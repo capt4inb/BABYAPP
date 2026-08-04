@@ -6,6 +6,35 @@ import {
   getLeapTiming,
   getWonderWeekState,
 } from '../data/wonderWeeks';
+import moodGentle from '../assets/wonder-mood-gentle.png';
+import moodCalm from '../assets/wonder-mood-calm.png';
+import moodFussy from '../assets/wonder-mood-fussy.png';
+import moodIrritated from '../assets/wonder-mood-irritated.png';
+import moodCrying from '../assets/wonder-mood-crying.png';
+import moodCryMore from '../assets/wonder-mood-cry-more.png';
+
+const WONDER_MOODS = {
+  gentle: { label: 'Dịu dàng', image: moodGentle, color: '#2FC9A3', soft: '#E9FAF6' },
+  calm: { label: 'Ngoan ngoãn', image: moodCalm, color: '#5CA8F6', soft: '#EAF5FF' },
+  fussy: { label: 'Khó tính', image: moodFussy, color: '#F0AE32', soft: '#FFF7E5' },
+  irritated: { label: 'Bực bội', image: moodIrritated, color: '#F27645', soft: '#FFF0E9' },
+  crying: { label: 'Quấy khóc', image: moodCrying, color: '#EE5F7C', soft: '#FFF0F4' },
+  cryMore: { label: 'Khóc nhiều', image: moodCryMore, color: '#D93A50', soft: '#FFECEF' },
+};
+
+function WonderMoodPortrait({ moodKey, compact = false }) {
+  const mood = WONDER_MOODS[moodKey] || WONDER_MOODS.gentle;
+
+  return (
+    <span
+      className={`wonder-mood-portrait ${compact ? 'compact' : ''}`}
+      style={{ '--wonder-mood-color': mood.color, '--wonder-mood-soft': mood.soft }}
+      aria-hidden="true"
+    >
+      <img src={mood.image} alt="" draggable="false" />
+    </span>
+  );
+}
 
 function timingLabel(timing) {
   if (!timing) return '';
@@ -80,7 +109,7 @@ export default function WonderWeeksTab({ settings, onSaveSettings, onBack }) {
         <>
           <section className={`wonder-current-card ${wonderState.status}`}>
             <div className="wonder-current-top">
-              <GameIcon name="wonder" size={64} variant="lavender" />
+              <WonderMoodPortrait moodKey={wonderState.focus?.mood} />
               <div className="wonder-current-copy">
                 <span className="wonder-kicker">
                   {wonderState.current ? 'Đang trong giai đoạn' : wonderState.next ? 'Giai đoạn sắp tới' : 'Đã hoàn thành'}
@@ -131,10 +160,15 @@ export default function WonderWeeksTab({ settings, onSaveSettings, onBack }) {
                   className={`wonder-leap-button ${timing.state} ${selectedNumber === timing.number ? 'selected' : ''}`}
                   onClick={() => setSelectedNumberOverride(timing.number)}
                   aria-pressed={selectedNumber === timing.number}
+                  style={{
+                    '--wonder-mood-color': WONDER_MOODS[timing.mood]?.color,
+                    '--wonder-mood-soft': WONDER_MOODS[timing.mood]?.soft,
+                  }}
                 >
                   <span>Giai đoạn {timing.number}</span>
-                  <strong>{timing.peakWeek}</strong>
-                  <small>tuần</small>
+                  <WonderMoodPortrait moodKey={timing.mood} compact />
+                  <strong>Tuần {timing.peakWeek}</strong>
+                  <small>{WONDER_MOODS[timing.mood]?.label}</small>
                   <i aria-hidden="true" />
                 </button>
               ))}
@@ -145,7 +179,9 @@ export default function WonderWeeksTab({ settings, onSaveSettings, onBack }) {
             <section className={`wonder-detail-card ${selectedTiming.state}`}>
               <div className="wonder-detail-hero">
                 <div>
-                  <span className="wonder-kicker">Tuần kỳ diệu {selectedTiming.number}</span>
+                  <span className="wonder-kicker">
+                    Tuần kỳ diệu {selectedTiming.number} · {WONDER_MOODS[selectedTiming.mood]?.label}
+                  </span>
                   <h2>{selectedTiming.title}</h2>
                   <p>{selectedTiming.summary}</p>
                 </div>
