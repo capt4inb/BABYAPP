@@ -6,11 +6,13 @@ import {
   formatDuration,
   formatLiveDuration,
   formatTime,
+  formatWakeWindowRange,
   getDurationMinutes,
   getLast7DayStats,
   getNextVaccine,
   isToday,
   toLocalDatetimeInput,
+  WAKE_WINDOW_RANGES,
 } from '../utils/careUtils';
 import GameIcon from './GameIcon';
 
@@ -161,13 +163,32 @@ export function DiaperTab({ diapers = [], onAddDiaper, onUpdateDiaper, onDeleteD
   );
 }
 
-export function SleepTab({ sleeps = [], nowMs = 0, onAddSleep, onUpdateSleep, onDeleteSleep, onMinimize, onBack }) {
+export function SleepTab({
+  sleeps = [],
+  nowMs = 0,
+  awakeStartAt = '',
+  babyAgeWeeks = null,
+  wakeWindow = null,
+  wakeOverdue = false,
+  onAddSleep,
+  onUpdateSleep,
+  onDeleteSleep,
+  onMinimize,
+  onBack,
+}) {
   const [startMode, setStartMode] = useState('now');
   const [customStartAt, setCustomStartAt] = useState(() => toLocalDatetimeInput(new Date()));
   const [manualStartAt, setManualStartAt] = useState(() => toLocalDatetimeInput(new Date()));
   const [manualEndAt, setManualEndAt] = useState(() => toLocalDatetimeInput(new Date()));
   const [startError, setStartError] = useState('');
   const activeSleep = useMemo(() => sleeps.find(item => !item.endAt), [sleeps]);
+  const liveStartAt = activeSleep?.startAt || awakeStartAt;
+  const awakeMinutes = awakeStartAt
+    ? getDurationMinutes(awakeStartAt, new Date(nowMs).toISOString())
+    : 0;
+  const wakeProgress = wakeWindow
+    ? Math.min(100, Math.round((awakeMinutes / wakeWindow.maxMinutes) * 100))
+    : 0;
   const todaySleeps = useMemo(
     () => sleeps.filter(item => isToday(item.startAt)).sort((a, b) => new Date(b.startAt) - new Date(a.startAt)),
     [sleeps]
@@ -244,13 +265,53 @@ export function SleepTab({ sleeps = [], nowMs = 0, onAddSleep, onUpdateSleep, on
     <div className="animate-fade-in care-screen sleep-screen">
       <ScreenHeader title="Giấc ngủ" icon="moon" onBack={onBack} />
 
-      <section className={`sleep-live-card ${activeSleep ? 'active' : ''}`}>
+      <section className={`sleep-live-card ${activeSleep ? 'active' : awakeStartAt ? 'awake' : ''} ${wakeOverdue ? 'overdue' : ''}`}>
         <div className="care-card-head">
-          <h2>{activeSleep ? 'Đang ngủ' : 'Chưa ngủ'}</h2>
-          <span>Giấc {todaySleeps.length}</span>
+          <h2>{activeSleep ? 'Đang ngủ' : awakeStartAt ? 'Bé đang thức' : 'Chưa có trạng thái'}</h2>
+          <span>
+            {activeSleep
+              ? `Giấc ${todaySleeps.length}`
+              : awakeStartAt && wakeWindow
+                ? `Tuần ${wakeWindow.ageWeeks}`
+                : awakeStartAt && babyAgeWeeks !== null
+                  ? `Tuần ${babyAgeWeeks}`
+                : awakeStartAt
+                  ? 'Đang thức'
+                  : `Giấc ${todaySleeps.length}`}
+          </span>
         </div>
-        <strong className="sleep-live-timer">{activeSleep ? formatLiveDuration(activeSleep.startAt, nowMs) : '--:--'}</strong>
-        <p>{activeSleep ? `Bé đã ngủ từ ${formatTime(activeSleep.startAt)}` : 'Bấm bắt đầu khi bé ngủ.'}</p>
+        <strong className="sleep-live-timer">{liveStartAt ? formatLiveDuration(liveStartAt, nowMs) : '--:--'}</strong>
+        <p>
+          {activeSleep
+            ? `Bé đã ngủ từ ${formatTime(activeSleep.startAt)}`
+            : awakeStartAt
+              ? `Bé thức từ ${formatTime(awakeStartAt)}`
+              : 'Bấm bắt đầu khi bé ngủ.'}
+        </p>
+        {awakeStartAt && (
+          <div className={`wake-window-status ${wakeOverdue ? 'overdue' : ''}`}>
+            <div>
+              <span>{wakeWindow ? `Khoảng thức tham khảo · ${wakeWindow.ageLabel}` : 'Khoảng thức tham khảo'}</span>
+              <strong>
+                {wakeWindow
+                  ? formatWakeWindowRange(wakeWindow)
+                  : babyAgeWeeks === null
+                    ? 'Cần ngày sinh của bé'
+                    : 'Ngoài phạm vi 0-78 tuần'}
+              </strong>
+            </div>
+            {wakeWindow && (
+              <div className="wake-window-progress" aria-label={`Đã dùng ${wakeProgress}% khoảng thức`}>
+                <i style={{ width: `${wakeProgress}%` }} />
+              </div>
+            )}
+            <small>
+              {wakeOverdue
+                ? 'Đã vượt khoảng thức tham khảo. Cho bé ngủ ngay.'
+                : 'Quan sát thêm dấu hiệu ngáp, quay mặt, nhắm mắt hoặc giảm tương tác.'}
+            </small>
+          </div>
+        )}
         <div className="sleep-start-options">
           <div className="sleep-start-tabs" role="tablist" aria-label="Chọn giờ bắt đầu ngủ">
             <button
@@ -357,6 +418,23 @@ export function SleepTab({ sleeps = [], nowMs = 0, onAddSleep, onUpdateSleep, on
           )}
         </div>
       </section>
+
+      <details className="wake-window-reference">
+        <summary>
+          <GameIcon name="clock" size={24} variant="blue" />
+          Các mốc thức theo tuần tuổi
+          <GameIcon name="down" size={20} variant="cream" bare />
+        </summary>
+        <div>
+          {WAKE_WINDOW_RANGES.map(range => (
+            <span className={wakeWindow?.minWeek === range.minWeek ? 'active' : ''} key={range.minWeek}>
+              <b>{range.ageLabel}</b>
+              <em>{formatWakeWindowRange(range)}</em>
+            </span>
+          ))}
+        </div>
+        <p>Khoảng thức là mốc tham khảo. Hãy ưu tiên tín hiệu buồn ngủ và nhịp riêng của bé.</p>
+      </details>
 
       <section className="care-card care-summary-card">
         <div className="care-card-head">

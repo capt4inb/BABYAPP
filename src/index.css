@@ -415,13 +415,13 @@
   right: max(12px, calc((100vw - 768px) / 2 + 12px));
   bottom: calc(72px + max(10px, env(safe-area-inset-bottom, 0px)));
   z-index: 180;
-  width: 104px;
-  height: 104px;
+  width: 112px;
+  height: 112px;
   display: grid;
   justify-items: center;
   align-content: center;
   gap: 2px;
-  padding: 10px 8px 12px;
+  padding: 8px 7px 10px;
   border: 1px solid color-mix(in oklab, var(--color-primary) 25%, white);
   border-radius: 999px;
   background:
@@ -432,6 +432,22 @@
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.sleep-floating-bubble.awake {
+  border-color: color-mix(in oklab, var(--color-info) 38%, white);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0 47%, #42A8F5 48% 100%);
+  color: var(--color-info);
+  box-shadow: 0 12px 28px rgba(37, 128, 200, 0.28);
+}
+
+.sleep-floating-bubble.overdue {
+  border-color: color-mix(in oklab, var(--color-error) 46%, white);
+  background:
+    linear-gradient(180deg, #FFF4F5 0 47%, #E94757 48% 100%);
+  color: var(--color-error);
+  box-shadow: 0 14px 30px rgba(200, 43, 62, 0.34);
 }
 
 .sleep-floating-bubble.dragging {
@@ -456,6 +472,16 @@
   text-align: center;
 }
 
+.sleep-floating-bubble.awake span:not(.sleep-floating-icon),
+.sleep-floating-bubble.awake .sleep-floating-icon {
+  color: var(--color-info);
+}
+
+.sleep-floating-bubble.overdue span:not(.sleep-floating-icon),
+.sleep-floating-bubble.overdue .sleep-floating-icon {
+  color: var(--color-error);
+}
+
 .sleep-floating-bubble strong {
   color: white;
   font-size: 18px;
@@ -463,6 +489,15 @@
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
+}
+
+.sleep-floating-bubble small {
+  max-width: 98px;
+  color: white;
+  font-size: 8px;
+  font-weight: 950;
+  line-height: 1.15;
+  text-align: center;
 }
 
 .tab-icon {
@@ -5720,6 +5755,20 @@
   background: linear-gradient(135deg, #EFF7FF, #FFFFFF);
 }
 
+.sleep-live-card.awake {
+  border-color: color-mix(in oklab, var(--color-info) 48%, white);
+  background: linear-gradient(135deg, #F3FAFF, #FFFFFF);
+}
+
+.sleep-live-card.overdue {
+  border-color: color-mix(in oklab, var(--color-error) 52%, white);
+  background: linear-gradient(135deg, #FFF1F3, #FFFFFF);
+}
+
+.sleep-live-card.overdue .sleep-live-timer {
+  color: var(--color-error);
+}
+
 .sleep-live-timer {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
@@ -5730,6 +5779,70 @@
   color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 800;
+}
+
+.wake-window-status {
+  display: grid;
+  gap: 8px;
+  margin: 0 -14px 12px;
+  padding: 11px 14px;
+  border-top: 1px solid color-mix(in oklab, var(--color-info) 22%, white);
+  border-bottom: 1px solid color-mix(in oklab, var(--color-info) 22%, white);
+  background: color-mix(in oklab, var(--color-info) 6%, white);
+}
+
+.wake-window-status > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wake-window-status span,
+.wake-window-status small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
+.wake-window-status strong {
+  color: var(--color-info);
+  font-size: 13px;
+  text-align: right;
+}
+
+.wake-window-progress {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-info) 12%, white);
+}
+
+.wake-window-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-info);
+  transition: width 0.25s ease;
+}
+
+.wake-window-status.overdue {
+  border-color: color-mix(in oklab, var(--color-error) 30%, white);
+  background: color-mix(in oklab, var(--color-error) 7%, white);
+}
+
+.wake-window-status.overdue strong,
+.wake-window-status.overdue small {
+  color: var(--color-error);
+}
+
+.wake-window-status.overdue .wake-window-progress {
+  background: color-mix(in oklab, var(--color-error) 14%, white);
+}
+
+.wake-window-status.overdue .wake-window-progress i {
+  background: var(--color-error);
 }
 
 .sleep-start-options {
@@ -5818,6 +5931,89 @@
 
 .sleep-today-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wake-window-reference {
+  margin-bottom: 12px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: 0 8px 22px rgba(94, 83, 160, 0.06);
+}
+
+.wake-window-reference summary {
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  color: var(--color-base-content);
+  font-size: 13px;
+  font-weight: 950;
+  cursor: pointer;
+  list-style: none;
+}
+
+.wake-window-reference summary::-webkit-details-marker {
+  display: none;
+}
+
+.wake-window-reference summary > .game-icon-bare:last-child {
+  transition: transform 0.18s ease;
+}
+
+.wake-window-reference[open] summary > .game-icon-bare:last-child {
+  transform: rotate(180deg);
+}
+
+.wake-window-reference > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--color-base-300);
+}
+
+.wake-window-reference > div > span {
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.wake-window-reference > div > span:nth-child(odd) {
+  border-right: 1px solid var(--color-base-300);
+}
+
+.wake-window-reference > div > span.active {
+  background: color-mix(in oklab, var(--color-info) 8%, white);
+}
+
+.wake-window-reference b,
+.wake-window-reference em {
+  font-size: 11px;
+  line-height: 1.35;
+  font-style: normal;
+}
+
+.wake-window-reference b {
+  color: var(--color-base-content);
+}
+
+.wake-window-reference em {
+  color: var(--color-info);
+  font-weight: 900;
+  text-align: right;
+}
+
+.wake-window-reference > p {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+  font-weight: 750;
 }
 
 .care-chart {

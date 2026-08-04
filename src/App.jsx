@@ -20,7 +20,13 @@ import {
   updateRoomSleeps,
   updateRoomVaccines,
 } from './services/firebase';
-import { formatLiveDuration, generateVaccineSchedule } from './utils/careUtils';
+import {
+  formatLiveDuration,
+  generateVaccineSchedule,
+  getBabyAgeWeeks,
+  getDurationMinutes,
+  getWakeWindowForAge,
+} from './utils/careUtils';
 
 // ── localStorage keys ─────────────────────────────────────────
 const STORAGE_KEYS = {
@@ -72,19 +78,37 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function SleepFloatingBubble({ sleep, nowMs, position, onPositionChange, onOpen }) {
+const TIMER_BUBBLE_SIZE = 112;
+
+function formatCompactMinutes(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (!hours) return `${minutes}p`;
+  return minutes ? `${hours}h${minutes}` : `${hours}h`;
+}
+
+function SleepFloatingBubble({ mode, startAt, nowMs, wakeWindow, position, onPositionChange, onOpen }) {
   const dragRef = useRef(null);
   const suppressClickRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  if (!sleep) return null;
+  if (!startAt) return null;
 
-  const bubbleSize = 104;
+  const isAwake = mode === 'awake';
+  const awakeMinutes = isAwake
+    ? getDurationMinutes(startAt, new Date(nowMs).toISOString())
+    : 0;
+  const isOverdue = Boolean(isAwake && wakeWindow && awakeMinutes > wakeWindow.maxMinutes);
+  const bubbleStatus = isOverdue
+    ? 'Cho bé ngủ ngay'
+    : wakeWindow
+      ? `Tối đa ${formatCompactMinutes(wakeWindow.maxMinutes)}`
+      : 'Theo dõi giờ thức';
   const safeMargin = 8;
   const bubbleStyle = position && typeof window !== 'undefined'
     ? {
-        left: clamp(position.x, safeMargin, window.innerWidth - bubbleSize - safeMargin),
-        top: clamp(position.y, safeMargin, window.innerHeight - bubbleSize - safeMargin),
+        left: clamp(position.x, safeMargin, window.innerWidth - TIMER_BUBBLE_SIZE - safeMargin),
+        top: clamp(position.y, safeMargin, window.innerHeight - TIMER_BUBBLE_SIZE - safeMargin),
         right: 'auto',
         bottom: 'auto',
       }
@@ -142,7 +166,7 @@ function SleepFloatingBubble({ sleep, nowMs, position, onPositionChange, onOpen 
 
   return (
     <button
-      className={`sleep-floating-bubble animate-scale-in ${isDragging ? 'dragging' : ''}`}
+      className={`sleep-floating-bubble ${isAwake ? 'awake' : 'sleeping'} ${isOverdue ? 'overdue' : ''} animate-scale-in ${isDragging ? 'dragging' : ''}`}
       type="button"
       onClick={handleClick}
       onPointerDown={handlePointerDown}
@@ -150,13 +174,14 @@ function SleepFloatingBubble({ sleep, nowMs, position, onPositionChange, onOpen 
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       style={bubbleStyle}
-      aria-label="Mở thời gian ngủ"
+      aria-label={isAwake ? `Bé đang thức ${formatLiveDuration(startAt, nowMs)}` : `Bé đang ngủ ${formatLiveDuration(startAt, nowMs)}`}
     >
       <span className="sleep-floating-icon">
-        <GameIcon name="moon" size={42} variant="cream" bare />
+        <GameIcon name={isAwake ? 'sun' : 'moon'} size={42} variant="cream" bare />
       </span>
-      <span>Thời gian ngủ</span>
-      <strong>{formatLiveDuration(sleep.startAt, nowMs)}</strong>
+      <span>{isAwake ? 'Đang thức' : 'Thời gian ngủ'}</span>
+      <strong>{formatLiveDuration(startAt, nowMs)}</strong>
+      {isAwake && <small>{bubbleStatus}</small>}
     </button>
   );
 }
@@ -228,6 +253,7 @@ export default function App() {
       },
       (remoteSleeps) => {
         setSleeps(remoteSleeps);
+        setSleepNowMs(Date.now());
       },
       (remoteVaccines) => {
         const seededVaccines = remoteVaccines.length > 0
@@ -285,19 +311,29 @@ export default function App() {
 
   const activeSleep = sleeps.find(item => !item.endAt);
   const activeSleepId = activeSleep?.id || '';
-  const activeSleepStartAt = activeSleep?.startAt || '';
+  const latestCompletedSleep = [...sleeps]
+    .filter(item => item.endAt && new Date(item.endAt).getTime() <= sleepNowMs)
+    .sort((a, b) => new Date(b.endAt) - new Date(a.endAt))[0] || null;
+  const awakeStartAt = activeSleep ? '' : latestCompletedSleep?.endAt || '';
+  const babyAgeWeeks = getBabyAgeWeeks(settings.babyBirthDate, sleepNowMs);
+  const wakeWindow = getWakeWindowForAge(settings.babyBirthDate, sleepNowMs);
+  const awakeMinutes = awakeStartAt
+    ? getDurationMinutes(awakeStartAt, new Date(sleepNowMs).toISOString())
+    : 0;
+  const wakeOverdue = Boolean(wakeWindow && awakeMinutes > wakeWindow.maxMinutes);
+  const timerStartAt = activeSleep?.startAt || awakeStartAt;
+  const timerStateId = activeSleepId || (awakeStartAt ? `awake-${awakeStartAt}` : '');
 
   useEffect(() => {
-    if (!activeSleepId || !sleepBubblePosition) return undefined;
+    if (!timerStateId || !sleepBubblePosition) return undefined;
 
     const normalizeBubblePosition = () => {
       const safeMargin = 8;
-      const bubbleSize = 104;
       setSleepBubblePosition(prev => {
         if (!prev) return prev;
         const next = {
-          x: clamp(prev.x, safeMargin, window.innerWidth - bubbleSize - safeMargin),
-          y: clamp(prev.y, safeMargin, window.innerHeight - bubbleSize - safeMargin),
+          x: clamp(prev.x, safeMargin, window.innerWidth - TIMER_BUBBLE_SIZE - safeMargin),
+          y: clamp(prev.y, safeMargin, window.innerHeight - TIMER_BUBBLE_SIZE - safeMargin),
         };
 
         return next.x === prev.x && next.y === prev.y ? prev : next;
@@ -307,13 +343,13 @@ export default function App() {
     normalizeBubblePosition();
     window.addEventListener('resize', normalizeBubblePosition);
     return () => window.removeEventListener('resize', normalizeBubblePosition);
-  }, [activeSleepId, sleepBubblePosition]);
+  }, [sleepBubblePosition, timerStateId]);
 
   useEffect(() => {
-    if (!activeSleepId) return undefined;
+    if (!timerStartAt) return undefined;
     const intervalId = window.setInterval(() => setSleepNowMs(Date.now()), 1000);
     return () => window.clearInterval(intervalId);
-  }, [activeSleepId, activeSleepStartAt]);
+  }, [timerStartAt]);
 
   useEffect(() => {
     if (!settings.babyBirthDate || vaccines.length > 0) return;
@@ -425,7 +461,10 @@ export default function App() {
   }, [syncPin]);
 
   const updateSleep = useCallback((id, updated) => {
-    if (updated.endAt) setSleepBubbleMinimized(false);
+    if (updated.endAt) {
+      setSleepNowMs(Date.now());
+      setSleepBubbleMinimized(false);
+    }
     setSleeps(prev => {
       const next = prev.map(item => item.id === id ? { ...item, ...updated } : item);
       if (syncPin) updateRoomSleeps(syncPin, next).catch(console.error);
@@ -523,6 +562,10 @@ export default function App() {
           <SleepTab
             sleeps={sleeps}
             nowMs={sleepNowMs}
+            awakeStartAt={awakeStartAt}
+            babyAgeWeeks={babyAgeWeeks}
+            wakeWindow={wakeWindow}
+            wakeOverdue={wakeOverdue}
             onAddSleep={addSleep}
             onUpdateSleep={updateSleep}
             onDeleteSleep={deleteSleep}
@@ -652,10 +695,12 @@ export default function App() {
         ))}
       </nav>
 
-      {activeSleep && (sleepBubbleMinimized || activeTab !== 'sleep') && (
+      {timerStartAt && (!activeSleep || sleepBubbleMinimized || activeTab !== 'sleep') && (
         <SleepFloatingBubble
-          sleep={activeSleep}
+          mode={activeSleep ? 'sleep' : 'awake'}
+          startAt={timerStartAt}
           nowMs={sleepNowMs}
+          wakeWindow={activeSleep ? null : wakeWindow}
           position={sleepBubblePosition}
           onPositionChange={setSleepBubblePosition}
           onOpen={() => {
