@@ -255,25 +255,29 @@ export default function DashboardTab({
 
       <section className="home-card home-care-card">
         <div className="home-care-actions home-care-actions-v2">
-          <button type="button" className="home-care-tile feed" onClick={onOpenFeed} aria-label="Bú" title="Bú">
+          <button type="button" className="home-care-tile feed" onClick={onOpenFeed}>
             <GameIcon name="bottle" size={44} variant="lavender" />
             <span>Bú</span>
           </button>
-          <button type="button" className="home-care-tile diaper" onClick={() => onNavigateToCare?.('diaper')} aria-label="Tã" title="Tã">
+          <button type="button" className="home-care-tile diaper" onClick={() => onNavigateToCare?.('diaper')}>
             <GameIcon name="poop" size={44} variant="green" />
             <span>Tã</span>
           </button>
-          <button type="button" className="home-care-tile sleep" onClick={() => onNavigateToCare?.('sleep')} aria-label="Ngủ" title="Ngủ">
+          <button type="button" className="home-care-tile sleep" onClick={() => onNavigateToCare?.('sleep')}>
             <GameIcon name="moon" size={44} variant="blue" />
             <span>Ngủ</span>
           </button>
-          <button type="button" className="home-care-tile stats" onClick={() => onNavigateToCare?.('stats')} aria-label="Chỉ số" title="Chỉ số">
+          <button type="button" className="home-care-tile stats" onClick={() => onNavigateToCare?.('stats')}>
             <GameIcon name="stats" size={44} variant="lavender" />
             <span>Chỉ số</span>
           </button>
-          <button type="button" className="home-care-tile milk" onClick={() => onNavigateToMilk?.()} aria-label="Kho sữa" title="Kho sữa">
+          <button type="button" className="home-care-tile milk" onClick={() => onNavigateToMilk?.()}>
             <GameIcon name="milk" size={44} variant="blue" />
             <span>Kho sữa</span>
+          </button>
+          <button type="button" className="home-care-tile wonder" onClick={() => onNavigateToCare?.('wonder')}>
+            <GameIcon name="wonder" size={44} variant="lavender" />
+            <span>Wonder Week</span>
           </button>
         </div>
       </section>

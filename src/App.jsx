@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import DashboardTab from './components/DashboardTab';
 import FeedTab from './components/FeedTab';
 import StatsTab from './components/StatsTab';
+import WonderWeeksTab from './components/WonderWeeksTab';
 import SettingsTab from './components/SettingsTab';
 import MilkStorageTab from './components/MilkStorageTab';
 import { DiaperTab, SleepTab } from './components/CareTabs';
@@ -37,6 +38,7 @@ const DEFAULT_SETTINGS = {
   babyName: 'Bé Yêu',
   babyGender: 'boy', // 'boy' | 'girl'
   babyBirthDate: '', // YYYY-MM-DD
+  babyDueDate: '', // YYYY-MM-DD, 40-week estimated due date
   feedIntervalHours: 3,
   volumeUnit: 'ml',
 };
@@ -547,6 +549,13 @@ export default function App() {
             sleeps={sleeps}
             settings={settings}
             onOpenWeightModal={openWeightModal}
+          />
+        )}
+        {activeTab === 'wonder' && (
+          <WonderWeeksTab
+            settings={settings}
+            onSaveSettings={handleSaveSettings}
+            onBack={() => setActiveTab('dashboard')}
           />
         )}
         {activeTab === 'settings'  && (

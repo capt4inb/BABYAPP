@@ -182,6 +182,16 @@ export default function SettingsTab({
             />
           </div>
 
+          <div className="form-group">
+            <label className="form-label">Ngày dự sinh (thai kỳ 40 tuần)</label>
+            <input
+              type="date"
+              className="form-input"
+              value={form.babyDueDate || ''}
+              onChange={e => handleChange('babyDueDate', e.target.value)}
+            />
+          </div>
+
         </div>
 
         {/* Reminders */}

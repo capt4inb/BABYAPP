@@ -3854,52 +3854,39 @@
 }
 
 .home-care-actions-v2 {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
 .home-care-actions-v2 .home-care-tile {
-  min-height: 88px;
-  place-items: center;
+  min-height: 112px;
+  justify-items: center;
   align-content: center;
-  gap: 5px;
-  padding: 10px 8px;
-  border-color: color-mix(in oklab, var(--color-primary) 24%, var(--color-base-300));
-  background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 10%, white), #FFFFFF);
-  box-shadow: 0 8px 18px color-mix(in oklab, var(--color-primary) 10%, transparent);
+  gap: 10px;
+  padding-inline: 8px;
   text-align: center;
 }
 
-.home-care-actions-v2 .home-care-tile span {
-  color: var(--color-primary);
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1.05;
-  text-transform: none;
-}
-
 .home-care-tile.feed {
-  background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 16%, white), #FFFFFF);
-}
-
-.home-care-tile.diaper {
-  border-color: color-mix(in oklab, var(--color-success) 28%, var(--color-base-300));
-  background: linear-gradient(135deg, color-mix(in oklab, var(--color-success) 14%, white), #FFFFFF);
-}
-
-.home-care-tile.sleep,
-.home-care-tile.milk {
-  border-color: color-mix(in oklab, var(--color-info) 28%, var(--color-base-300));
-  background: linear-gradient(135deg, color-mix(in oklab, var(--color-info) 14%, white), #FFFFFF);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 8%, white), #FFFFFF);
 }
 
 .home-care-tile.milk {
-  background: linear-gradient(135deg, #EAF7FF, #FFFFFF);
+  background: linear-gradient(135deg, #F0F9FF, #FFFFFF);
 }
 
 .home-care-tile.stats {
-  border-color: color-mix(in oklab, var(--color-secondary) 28%, var(--color-base-300));
-  background: linear-gradient(135deg, color-mix(in oklab, var(--color-secondary) 14%, white), #FFFFFF);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--color-secondary) 7%, white), #FFFFFF);
+}
+
+.home-care-tile.wonder {
+  background: linear-gradient(135deg, #FFF2F7, #F7F3FF 70%, #FFFFFF);
+}
+
+.home-care-actions-v2 .home-care-tile span {
+  color: var(--color-base-content);
+  font-size: 17px;
+  text-transform: none;
 }
 
 .home-journal-card {
@@ -4040,6 +4027,508 @@
   color: var(--color-text-muted);
   font-size: 14px;
   font-weight: 850;
+}
+
+.wonder-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 14px 112px;
+}
+
+.wonder-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.wonder-header .icon-button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  cursor: pointer;
+}
+
+.wonder-header div {
+  min-width: 0;
+  text-align: center;
+}
+
+.wonder-header div > span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.wonder-header h1 {
+  margin: 2px 0 0;
+  color: var(--color-base-content);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.wonder-setup-card,
+.wonder-current-card,
+.wonder-calendar-card,
+.wonder-detail-card {
+  border: 1px solid color-mix(in oklab, var(--color-base-300) 78%, white);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: var(--shadow-sm);
+}
+
+.wonder-setup-card {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.wonder-setup-copy,
+.wonder-date-form {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.wonder-setup-copy div {
+  min-width: 0;
+}
+
+.wonder-setup-copy h2,
+.wonder-setup-copy p {
+  margin: 0;
+}
+
+.wonder-setup-copy h2 {
+  font-size: 18px;
+}
+
+.wonder-setup-copy p {
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wonder-date-form .form-input {
+  min-width: 0;
+  flex: 1;
+}
+
+.wonder-date-form .btn {
+  min-width: 126px;
+}
+
+.wonder-current-card {
+  padding: 16px;
+  border-color: color-mix(in oklab, var(--color-primary) 30%, white);
+  background: linear-gradient(135deg, #FFF7FA, #F6F2FF 68%, #FFFFFF);
+}
+
+.wonder-current-card.waiting {
+  border-color: color-mix(in oklab, var(--color-info) 30%, white);
+  background: linear-gradient(135deg, #F4FAFF, #F8F6FF 70%, #FFFFFF);
+}
+
+.wonder-current-card.completed {
+  border-color: color-mix(in oklab, var(--color-success) 30%, white);
+  background: linear-gradient(135deg, #F3FFF9, #FFFFFF);
+}
+
+.wonder-current-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.wonder-current-copy {
+  min-width: 0;
+}
+
+.wonder-kicker {
+  display: block;
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.wonder-current-copy h2,
+.wonder-current-copy p {
+  margin: 0;
+}
+
+.wonder-current-copy h2 {
+  margin-top: 3px;
+  color: var(--color-base-content);
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.wonder-current-copy p {
+  margin-top: 5px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.wonder-state-badge,
+.wonder-age-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-primary) 12%, white);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.wonder-current-dates {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.wonder-current-dates strong {
+  color: var(--color-base-content);
+  text-align: right;
+}
+
+.wonder-progress {
+  height: 8px;
+  margin-top: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--color-primary) 10%, white);
+}
+
+.wonder-progress span {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+}
+
+.wonder-calendar-card,
+.wonder-detail-card {
+  padding: 16px;
+}
+
+.wonder-section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.wonder-section-head > div > span {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.wonder-section-head h2 {
+  margin: 2px 0 0;
+  color: var(--color-base-content);
+  font-size: 18px;
+}
+
+.wonder-leap-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wonder-leap-button {
+  position: relative;
+  min-width: 0;
+  min-height: 104px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1px;
+  overflow: hidden;
+  padding: 10px 6px 14px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.wonder-leap-button span,
+.wonder-leap-button small {
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.wonder-leap-button strong {
+  color: var(--color-base-content);
+  font-size: 28px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.wonder-leap-button i {
+  position: absolute;
+  inset: auto 0 0;
+  height: 6px;
+  background: color-mix(in oklab, var(--color-info) 54%, white);
+}
+
+.wonder-leap-button.passed i {
+  background: color-mix(in oklab, var(--color-success) 62%, white);
+}
+
+.wonder-leap-button.active {
+  border-color: color-mix(in oklab, var(--color-primary) 52%, white);
+  background: color-mix(in oklab, var(--color-primary) 7%, white);
+}
+
+.wonder-leap-button.active i {
+  background: var(--color-primary);
+}
+
+.wonder-leap-button.selected {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-secondary) 18%, transparent);
+}
+
+.wonder-detail-card {
+  display: grid;
+  gap: 18px;
+}
+
+.wonder-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.wonder-detail-hero h2,
+.wonder-detail-hero p {
+  margin: 0;
+}
+
+.wonder-detail-hero h2 {
+  margin-top: 4px;
+  color: var(--color-base-content);
+  font-size: 23px;
+  line-height: 1.1;
+}
+
+.wonder-detail-hero p {
+  max-width: 560px;
+  margin-top: 8px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  font-weight: 700;
+}
+
+.wonder-detail-status {
+  min-width: 142px;
+  align-self: start;
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-primary) 8%, white);
+  text-align: right;
+}
+
+.wonder-detail-status strong {
+  color: var(--color-primary);
+  font-size: 13px;
+}
+
+.wonder-detail-status span {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.wonder-detail-section {
+  display: grid;
+  gap: 10px;
+}
+
+.wonder-detail-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 15px;
+}
+
+.wonder-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wonder-chip-grid span {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  min-height: 42px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in oklab, var(--color-primary) 22%, white);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-primary) 5%, white);
+  color: var(--color-base-content);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.wonder-observation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--color-base-300);
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.wonder-observation-group {
+  min-width: 0;
+  padding: 14px;
+}
+
+.wonder-observation-group:nth-child(odd) {
+  border-right: 1px solid var(--color-base-300);
+}
+
+.wonder-observation-group:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.wonder-observation-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.wonder-observation-heading h4 {
+  margin: 0;
+  color: var(--color-base-content);
+  font-size: 13px;
+}
+
+.wonder-observation-group ul {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wonder-observation-group li {
+  position: relative;
+  padding-left: 14px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 720;
+}
+
+.wonder-observation-group li::before {
+  content: '';
+  position: absolute;
+  top: 0.58em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.wonder-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wonder-skill-grid article {
+  min-width: 0;
+  min-height: 88px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 22%, white);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-secondary) 5%, white);
+}
+
+.wonder-skill-grid strong {
+  color: var(--color-secondary);
+  font-size: 18px;
+}
+
+.wonder-skill-grid span {
+  color: var(--color-base-content);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 850;
+}
+
+.wonder-tips > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wonder-tips > div > span {
+  min-width: 0;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  min-height: 48px;
+  padding: 9px;
+  border: 1px solid color-mix(in oklab, var(--color-warning) 24%, white);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-warning) 6%, white);
+  color: var(--color-base-content);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.wonder-disclaimer {
+  margin: 0;
+  padding: 11px 13px;
+  border: 1px solid color-mix(in oklab, var(--color-info) 22%, white);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-info) 5%, white);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 750;
 }
 
 .feed-screen {
@@ -4854,8 +5343,12 @@
   }
 
   .home-care-actions-v2 .home-care-tile {
-    min-height: 78px;
+    min-height: 90px;
     padding: 9px 6px;
+  }
+
+  .home-care-actions-v2 .home-care-tile span {
+    font-size: 12px;
   }
 
   .home-journal-list::before {
@@ -5886,4 +6379,119 @@
 
 .milk-total-side {
   flex: 1 1 0;
+}
+
+@media (max-width: 560px) {
+  .wonder-screen {
+    padding: 12px 10px 96px;
+  }
+
+  .wonder-header {
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    gap: 8px;
+  }
+
+  .wonder-header .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .wonder-date-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .wonder-date-form .btn {
+    width: 100%;
+  }
+
+  .wonder-current-top {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .wonder-state-badge {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .wonder-current-copy h2 {
+    font-size: 19px;
+  }
+
+  .wonder-leap-grid {
+    gap: 5px;
+  }
+
+  .wonder-leap-button {
+    min-height: 92px;
+    padding-inline: 3px;
+  }
+
+  .wonder-leap-button span,
+  .wonder-leap-button small {
+    font-size: 9px;
+  }
+
+  .wonder-leap-button strong {
+    font-size: 24px;
+  }
+
+  .wonder-detail-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .wonder-detail-status {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .wonder-chip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wonder-observation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wonder-observation-group:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .wonder-observation-group:nth-child(-n + 3) {
+    border-bottom: 1px solid var(--color-base-300);
+  }
+
+  .wonder-skill-grid,
+  .wonder-tips > div {
+    grid-template-columns: 1fr;
+  }
+
+  .wonder-skill-grid article {
+    min-height: 72px;
+  }
+}
+
+@media (max-width: 350px) {
+  .wonder-current-top {
+    grid-template-columns: 1fr;
+  }
+
+  .wonder-current-top > .game-icon {
+    display: none;
+  }
+
+  .wonder-state-badge {
+    grid-column: 1;
+  }
+
+  .wonder-current-dates {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .wonder-current-dates strong {
+    text-align: left;
+  }
 }

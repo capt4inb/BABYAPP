@@ -54,6 +54,7 @@ import sleepIcon from '../assets/activity-sleep.svg';
 import statsIcon from '../assets/activity-stats.svg';
 import pumpIcon from '../assets/activity-pump.svg';
 import milkStorageIcon from '../assets/activity-milk-storage.svg';
+import wonderIcon from '../assets/activity-wonder.svg';
 
 const ICONS = {
   home: Home,
@@ -120,6 +121,7 @@ const CUSTOM_ICONS = {
   pump: pumpIcon,
   milkStorage: milkStorageIcon,
   milk: milkStorageIcon,
+  wonder: wonderIcon,
 };
 
 export default function GameIcon({
