@@ -48,6 +48,9 @@ function MiniBarChart({ data, unit }) {
 export function DiaperTab({ diapers = [], onAddDiaper, onUpdateDiaper, onDeleteDiaper, onBack }) {
   const [type, setType] = useState('wet');
   const [note, setNote] = useState('');
+  const [editDraft, setEditDraft] = useState(null);
+  const [editError, setEditError] = useState('');
+  const [deleteArmed, setDeleteArmed] = useState(false);
 
   const todayLogs = useMemo(
     () => diapers.filter(item => isToday(item.timestamp)).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)),
@@ -70,6 +73,56 @@ export function DiaperTab({ diapers = [], onAddDiaper, onUpdateDiaper, onDeleteD
       createdAt: new Date().toISOString(),
     });
     setNote('');
+  };
+
+  const openEditor = (item, confirmDelete = false) => {
+    setEditDraft({
+      ...item,
+      type: item.type || 'wet',
+      note: item.note || '',
+      timestampInput: toLocalDatetimeInput(item.timestamp),
+    });
+    setDeleteArmed(confirmDelete);
+    setEditError('');
+  };
+
+  const closeEditor = () => {
+    setEditDraft(null);
+    setDeleteArmed(false);
+    setEditError('');
+  };
+
+  const handleEditSave = () => {
+    if (!editDraft) return;
+    const timestamp = new Date(editDraft.timestampInput);
+    if (Number.isNaN(timestamp.getTime())) {
+      setEditError('Vui lòng chọn thời gian hợp lệ.');
+      return;
+    }
+    if (timestamp.getTime() > Date.now()) {
+      setEditError('Thời gian thay tã không được ở tương lai.');
+      return;
+    }
+
+    const storedFields = { ...editDraft };
+    delete storedFields.timestampInput;
+    onUpdateDiaper(editDraft.id, {
+      ...storedFields,
+      timestamp: timestamp.toISOString(),
+      note: editDraft.note.trim(),
+      updatedAt: new Date().toISOString(),
+    });
+    closeEditor();
+  };
+
+  const handleEditDelete = () => {
+    if (!editDraft) return;
+    if (!deleteArmed) {
+      setDeleteArmed(true);
+      return;
+    }
+    onDeleteDiaper(editDraft.id);
+    closeEditor();
   };
 
   return (
@@ -139,10 +192,20 @@ export function DiaperTab({ diapers = [], onAddDiaper, onUpdateDiaper, onDeleteD
                 </span>
                 <p>{item.note || 'Không ghi chú'}</p>
                 <div className="care-row-actions">
-                  <button type="button" onClick={() => onUpdateDiaper(item.id, { ...item, type })}>
+                  <button
+                    type="button"
+                    onClick={() => openEditor(item)}
+                    aria-label={`Sửa lần thay tã lúc ${formatTime(item.timestamp)}`}
+                    title="Sửa"
+                  >
                     <GameIcon name="edit" size={18} variant="cream" bare />
                   </button>
-                  <button type="button" onClick={() => onDeleteDiaper(item.id)}>
+                  <button
+                    type="button"
+                    onClick={() => openEditor(item, true)}
+                    aria-label={`Xoá lần thay tã lúc ${formatTime(item.timestamp)}`}
+                    title="Xoá"
+                  >
                     <GameIcon name="trash" size={18} variant="cream" bare />
                   </button>
                 </div>
@@ -159,6 +222,81 @@ export function DiaperTab({ diapers = [], onAddDiaper, onUpdateDiaper, onDeleteD
         </div>
         <MiniBarChart data={chartData} unit="lần/ngày" />
       </section>
+
+      {editDraft && (
+        <>
+          <div className="modal-backdrop" onClick={closeEditor} />
+          <section className="diaper-edit-modal animate-modal" role="dialog" aria-modal="true" aria-labelledby="diaper-edit-title">
+            <header>
+              <div>
+                <span>Nhật ký thay tã</span>
+                <h2 id="diaper-edit-title">Chỉnh sửa lần thay tã</h2>
+              </div>
+              <button type="button" onClick={closeEditor} aria-label="Đóng" title="Đóng">
+                <GameIcon name="close" size={24} variant="cream" bare />
+              </button>
+            </header>
+
+            <div className="diaper-edit-types" aria-label="Loại tã">
+              {Object.entries(DIAPER_TYPES).map(([id, item]) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={editDraft.type === id ? 'active' : ''}
+                  onClick={() => {
+                    setEditDraft(current => ({ ...current, type: id }));
+                    setEditError('');
+                  }}
+                >
+                  <GameIcon name={item.icon} size={25} variant={item.tone} />
+                  {item.shortLabel}
+                </button>
+              ))}
+            </div>
+
+            <div className="diaper-edit-form">
+              <label>
+                <span>Thời gian</span>
+                <input
+                  type="datetime-local"
+                  className="form-input"
+                  value={editDraft.timestampInput}
+                  max={toLocalDatetimeInput(new Date())}
+                  onChange={event => {
+                    setEditDraft(current => ({ ...current, timestampInput: event.target.value }));
+                    setEditError('');
+                  }}
+                />
+              </label>
+              <label>
+                <span>Ghi chú</span>
+                <input
+                  className="form-input"
+                  value={editDraft.note}
+                  onChange={event => setEditDraft(current => ({ ...current, note: event.target.value }))}
+                  placeholder="Ghi chú về lần thay tã"
+                />
+              </label>
+              {editError && <p>{editError}</p>}
+            </div>
+
+            <footer>
+              <button className="btn btn-primary" type="button" onClick={handleEditSave}>
+                <GameIcon name="save" size={22} variant="cream" />
+                Lưu thay đổi
+              </button>
+              <button
+                className={`diaper-delete-action ${deleteArmed ? 'armed' : ''}`}
+                type="button"
+                onClick={handleEditDelete}
+              >
+                <GameIcon name="trash" size={21} variant="cream" bare />
+                {deleteArmed ? 'Xác nhận xoá' : 'Xoá bản ghi'}
+              </button>
+            </footer>
+          </section>
+        </>
+      )}
     </div>
   );
 }

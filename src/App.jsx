@@ -436,7 +436,9 @@ export default function App() {
 
   const updateDiaper = useCallback((id, updated) => {
     setDiapers(prev => {
-      const next = prev.map(item => item.id === id ? { ...item, ...updated } : item);
+      const next = prev
+        .map(item => item.id === id ? { ...item, ...updated } : item)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       if (syncPin) updateRoomDiapers(syncPin, next).catch(console.error);
       return next;
     });
