@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { DIAPER_TYPES, formatDuration, getDurationMinutes } from '../utils/careUtils';
 import GameIcon from './GameIcon';
+import PumpingReminder from './PumpingReminder';
 
 const NUMBER_FORMATTER = new Intl.NumberFormat('vi-VN');
 
@@ -166,6 +167,11 @@ export default function DashboardTab({
   onOpenFeed,
   onNavigateToMilk,
   onNavigateToCare,
+  onSaveSettings,
+  pumpingSessions = [],
+  onAddPumpingSession,
+  onUpdatePumpingSession,
+  onDeletePumpingSession,
 }) {
   const { babyName, babyBirthDate, feedIntervalHours = 3 } = settings;
   const [nowMs] = useState(() => Date.now());
@@ -252,6 +258,15 @@ export default function DashboardTab({
           </div>
         )}
       </section>
+
+      <PumpingReminder
+        pumpingSessions={pumpingSessions}
+        settings={settings}
+        onAddPumpingSession={onAddPumpingSession}
+        onUpdatePumpingSession={onUpdatePumpingSession}
+        onDeletePumpingSession={onDeletePumpingSession}
+        onSaveSettings={onSaveSettings}
+      />
 
       <section className="home-card home-care-card">
         <div className="home-care-actions home-care-actions-v2">

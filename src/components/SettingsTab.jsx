@@ -5,6 +5,7 @@ import GameIcon from './GameIcon';
 export default function SettingsTab({ 
   settings, onSaveSettings, records, onImportRecords,
   milkBags = [], onImportMilkBags, memos = [], onImportMemos,
+  pumpingSessions = [], onImportPumpingSessions,
   diapers = [], onImportDiapers, sleeps = [], onImportSleeps, vaccines = [], onImportVaccines,
   syncPin, syncStatus, syncErrorMessage = '', onJoinSync, onLeaveSync 
 }) {
@@ -29,7 +30,7 @@ export default function SettingsTab({
 
   // Export JSON
   const handleExport = () => {
-    const data = { records, settings, milkBags, memos, diapers, sleeps, vaccines, exportedAt: new Date().toISOString() };
+    const data = { records, settings, milkBags, pumpingSessions, memos, diapers, sleeps, vaccines, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -57,6 +58,9 @@ export default function SettingsTab({
         if (Array.isArray(data.milkBags)) {
           onImportMilkBags(data.milkBags);
         }
+        if (Array.isArray(data.pumpingSessions)) {
+          onImportPumpingSessions(data.pumpingSessions);
+        }
         if (Array.isArray(data.memos)) {
           onImportMemos(data.memos);
         }
@@ -82,6 +86,7 @@ export default function SettingsTab({
     if (showClearConfirm) {
       onImportRecords([]);
       onImportMilkBags([]);
+      onImportPumpingSessions([]);
       onImportMemos([]);
       onImportDiapers([]);
       onImportSleeps([]);
@@ -97,7 +102,7 @@ export default function SettingsTab({
     try {
       setSyncLoading(true);
       setSyncError('');
-      const pin = await createRoom(records, settings, milkBags, memos, diapers, sleeps, vaccines);
+      const pin = await createRoom(records, settings, milkBags, memos, diapers, sleeps, vaccines, pumpingSessions);
       onJoinSync(pin);
     } catch (err) {
       setSyncError(getFirebaseErrorMessage(err));
@@ -122,6 +127,7 @@ export default function SettingsTab({
         setForm(initialData.settings);
       }
       onImportMilkBags(initialData.milkBags || []);
+      onImportPumpingSessions(initialData.pumpingSessions || []);
       onImportMemos(initialData.memos || []);
       onImportDiapers(initialData.diapers || []);
       onImportSleeps(initialData.sleeps || []);

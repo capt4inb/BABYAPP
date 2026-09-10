@@ -89,7 +89,8 @@ export const createRoom = async (
   initialMemos,
   initialDiapers = [],
   initialSleeps = [],
-  initialVaccines = []
+  initialVaccines = [],
+  initialPumpingSessions = []
 ) => {
   return withPermissionRetry(async () => {
     let pin = generatePin();
@@ -111,6 +112,7 @@ export const createRoom = async (
       diapers: initialDiapers || [],
       sleeps: initialSleeps || [],
       vaccines: initialVaccines || [],
+      pumpingSessions: initialPumpingSessions || [],
       createdAt: new Date().toISOString()
     });
 
@@ -138,6 +140,7 @@ export const subscribeToRoom = (
   onDiapersChange,
   onSleepsChange,
   onVaccinesChange,
+  onPumpingSessionsChange,
   onError
 ) => {
   const recordsRef = ref(db, `rooms/${pin}/records`);
@@ -147,6 +150,7 @@ export const subscribeToRoom = (
   const diapersRef = ref(db, `rooms/${pin}/diapers`);
   const sleepsRef = ref(db, `rooms/${pin}/sleeps`);
   const vaccinesRef = ref(db, `rooms/${pin}/vaccines`);
+  const pumpingSessionsRef = ref(db, `rooms/${pin}/pumpingSessions`);
   let unsubscribers = [];
   let isActive = true;
   let authRetryInFlight = false;
@@ -215,6 +219,11 @@ export const subscribeToRoom = (
             onVaccinesChange(snapshot.exists() ? snapshot.val() : []);
           }, handleListenerError)
         : () => {},
+      onPumpingSessionsChange
+        ? onValue(pumpingSessionsRef, (snapshot) => {
+            onPumpingSessionsChange(snapshot.exists() ? snapshot.val() : []);
+          }, handleListenerError)
+        : () => {},
     ];
   };
 
@@ -242,6 +251,11 @@ export const updateRoomSettings = async (pin, settings) => {
 export const updateRoomMilkBags = async (pin, milkBags) => {
   const milkBagsRef = ref(db, `rooms/${pin}/milkBags`);
   await withPermissionRetry(() => set(milkBagsRef, milkBags));
+};
+
+export const updateRoomPumpingSessions = async (pin, pumpingSessions) => {
+  const pumpingSessionsRef = ref(db, `rooms/${pin}/pumpingSessions`);
+  await withPermissionRetry(() => set(pumpingSessionsRef, pumpingSessions));
 };
 
 // Update memos

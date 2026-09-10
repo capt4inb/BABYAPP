@@ -15,6 +15,7 @@ import {
   updateRoomDiapers,
   updateRoomMilkBags,
   updateRoomMemos,
+  updateRoomPumpingSessions,
   updateRoomRecords,
   updateRoomSettings,
   updateRoomSleeps,
@@ -33,6 +34,7 @@ const STORAGE_KEYS = {
   RECORDS: 'bmt_records',
   SETTINGS: 'bmt_settings',
   MILK_BAGS: 'bmt_milk_bags',
+  PUMPING_SESSIONS: 'bmt_pumping_sessions',
   MEMOS: 'bmt_memos',
   DIAPERS: 'bmt_diapers',
   SLEEPS: 'bmt_sleeps',
@@ -197,6 +199,9 @@ export default function App() {
   const [milkBags, setMilkBags] = useState(() =>
     loadFromStorage(STORAGE_KEYS.MILK_BAGS, [])
   );
+  const [pumpingSessions, setPumpingSessions] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.PUMPING_SESSIONS, [])
+  );
   const [memos, setMemos] = useState(() =>
     loadFromStorage(STORAGE_KEYS.MEMOS, [])
   );
@@ -264,6 +269,9 @@ export default function App() {
           updateRoomVaccines(syncPin, seededVaccines).catch(console.error);
         }
       },
+      (remotePumpingSessions) => {
+        setPumpingSessions(remotePumpingSessions);
+      },
       (error) => {
         setSyncStatus('error');
         setSyncError(getFirebaseErrorMessage(error));
@@ -287,6 +295,10 @@ export default function App() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.MILK_BAGS, milkBags);
   }, [milkBags]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.PUMPING_SESSIONS, pumpingSessions);
+  }, [pumpingSessions]);
 
   // Persist memos to local storage as fallback
   useEffect(() => {
@@ -405,6 +417,30 @@ export default function App() {
     setMilkBags(prev => {
       const next = prev.filter(b => b.id !== id);
       if (syncPin) updateRoomMilkBags(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const addPumpingSession = useCallback((session) => {
+    setPumpingSessions(prev => {
+      const next = [session, ...prev];
+      if (syncPin) updateRoomPumpingSessions(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const updatePumpingSession = useCallback((id, updated) => {
+    setPumpingSessions(prev => {
+      const next = prev.map(item => item.id === id ? { ...item, ...updated } : item);
+      if (syncPin) updateRoomPumpingSessions(syncPin, next).catch(console.error);
+      return next;
+    });
+  }, [syncPin]);
+
+  const deletePumpingSession = useCallback((id) => {
+    setPumpingSessions(prev => {
+      const next = prev.filter(item => item.id !== id);
+      if (syncPin) updateRoomPumpingSessions(syncPin, next).catch(console.error);
       return next;
     });
   }, [syncPin]);
@@ -534,6 +570,11 @@ export default function App() {
             diapers={diapers}
             sleeps={sleeps}
             onAddMilkBag={addMilkBag}
+            onSaveSettings={handleSaveSettings}
+            pumpingSessions={pumpingSessions}
+            onAddPumpingSession={addPumpingSession}
+            onUpdatePumpingSession={updatePumpingSession}
+            onDeletePumpingSession={deletePumpingSession}
             onUpdateMilkBag={updateMilkBag}
             onOpenFeed={() => setActiveTab('feed')}
             onNavigateToMilk={() => setActiveTab('milk')}
@@ -616,6 +657,11 @@ export default function App() {
             onImportMilkBags={(bags) => {
               setMilkBags(bags);
               if (syncPin) updateRoomMilkBags(syncPin, bags).catch(console.error);
+            }}
+            pumpingSessions={pumpingSessions}
+            onImportPumpingSessions={(items) => {
+              setPumpingSessions(items);
+              if (syncPin) updateRoomPumpingSessions(syncPin, items).catch(console.error);
             }}
             memos={memos}
             onImportMemos={(mems) => {
