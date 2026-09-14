@@ -10,6 +10,7 @@ import {
   transitionBag,
 } from '../utils/milkUtils';
 import AddMilkBagModal from './AddMilkBagModal';
+import AddMilkBagsModal from './AddMilkBagsModal';
 import ThawModal from './ThawModal';
 import GameIcon from './GameIcon';
 
@@ -295,7 +296,7 @@ function MilkDayCard({ group, onSelect }) {
 export default function MilkStorageTab({
   milkBags,
   records,
-  onAddMilkBag,
+  onAddMilkBags,
   onUpdateMilkBag,
   onDeleteMilkBag,
 }) {
@@ -380,11 +381,6 @@ export default function MilkStorageTab({
       new Date(b.fed_at || b.expressed_at) - new Date(a.fed_at || a.expressed_at)
     );
   }, [milkBags]);
-
-  const handleAddSave = useCallback((bag) => {
-    onAddMilkBag(bag);
-    setShowAddModal(false);
-  }, [onAddMilkBag]);
 
   const handleEditSave = useCallback((updatedBag) => {
     onUpdateMilkBag(updatedBag.id, updatedBag);
@@ -565,11 +561,13 @@ export default function MilkStorageTab({
         </div>
       </section>
 
-      {(showAddModal || editingBag) && (
+      {showAddModal && <AddMilkBagsModal onSave={onAddMilkBags} onClose={() => setShowAddModal(false)} />}
+
+      {editingBag && (
         <AddMilkBagModal
           key={editingBag?.id || 'add'}
           editBag={editingBag}
-          onSave={editingBag ? handleEditSave : handleAddSave}
+          onSave={handleEditSave}
           onClose={() => {
             setShowAddModal(false);
             setEditingBag(null);

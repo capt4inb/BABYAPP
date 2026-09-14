@@ -163,7 +163,7 @@ export default function AddMilkBagModal({ onSave, onClose, editBag }) {
                 onChange={e => setVolumeStr(e.target.value)}
                 placeholder="Ví dụ: 120"
                 min="1"
-                max="500"
+                max="1000"
                 step="any"
                 autoFocus
                 style={{ paddingRight: 50 }}

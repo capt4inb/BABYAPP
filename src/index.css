@@ -3651,6 +3651,56 @@
   animation: backdropAppear 0.15s ease-out both;
 }
 
+.milk-batch-modal {
+  position: fixed;
+  inset: 50% auto auto 50%;
+  z-index: 221;
+  width: min(520px, calc(100vw - 24px));
+  max-height: min(760px, calc(100dvh - 24px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  background: var(--color-base-100);
+  box-shadow: 0 20px 60px #162a4133;
+}
+
+.milk-batch-modal > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.milk-batch-modal h2 { flex: 1; margin: 0; font-size: 17px; }
+.milk-batch-modal form { display: flex; flex-direction: column; min-height: 0; }
+.milk-batch-scroll { padding: 14px; overflow-y: auto; overscroll-behavior: contain; }
+.milk-batch-defaults, .milk-batch-overrides { display: grid; gap: 10px; }
+.milk-batch-defaults { padding-bottom: 16px; }
+.milk-batch-defaults > .milk-batch-field > span,
+.milk-batch-defaults > .milk-batch-field > label { color: var(--color-primary); }
+.milk-batch-field { display: grid; gap: 6px; min-width: 0; font-size: 12px; font-weight: 650; }
+.milk-batch-field .form-input { min-width: 0; width: 100%; max-width: 100%; height: 44px; }
+.milk-batch-row { border-top: 1px solid var(--color-base-300); padding-bottom: 12px; }
+.milk-batch-row-head { display: flex; align-items: center; gap: 4px; padding-block: 5px; }
+.milk-batch-row-head > strong { flex: 1; font-size: 13px; }
+.milk-batch-numbers { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 12px; }
+.milk-batch-icon { display: grid; place-items: center; flex: 0 0 auto; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 6px; color: var(--color-text-muted); background: transparent; cursor: pointer; }
+.milk-batch-icon:hover:not(:disabled) { background: var(--color-base-200); color: var(--color-primary); }
+.milk-batch-icon:disabled { opacity: 0.35; cursor: default; }
+.milk-batch-custom { display: flex; align-items: center; gap: 8px; min-height: 40px; font-size: 12px; color: var(--color-text-muted); cursor: pointer; }
+.milk-batch-custom input { width: 16px; height: 16px; accent-color: var(--color-primary); }
+.milk-batch-add { width: 100%; border: 1px dashed var(--color-base-300); }
+.milk-batch-modal footer { flex: 0 0 auto; padding: 12px 14px; border-top: 1px solid var(--color-base-300); background: var(--color-base-100); }
+.milk-batch-total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; font-size: 13px; }
+.milk-batch-total strong { color: var(--color-primary); font-size: 18px; }
+.milk-batch-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 10px; }
+.milk-batch-actions .btn { min-width: 0; padding-inline: 8px; }
+.milk-batch-error { margin: 0 0 10px; color: var(--color-error); font-size: 12px; }
+
 .modal-sheet {
   position: fixed;
   left: 0;

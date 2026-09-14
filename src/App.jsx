@@ -397,6 +397,13 @@ export default function App() {
   }, [syncPin]);
 
   // ── Milk Bag CRUD ────────────────────────────────────────────
+  const addMilkBags = useCallback((bags) => {
+    if (!bags.length) return;
+    const next = [...bags, ...milkBags];
+    setMilkBags(next);
+    if (syncPin) updateRoomMilkBags(syncPin, next).catch(console.error);
+  }, [milkBags, syncPin]);
+
   const addMilkBag = useCallback((bag) => {
     setMilkBags(prev => {
       const next = [bag, ...prev];
@@ -623,7 +630,7 @@ export default function App() {
           <MilkStorageTab
             milkBags={milkBags}
             records={records}
-            onAddMilkBag={addMilkBag}
+            onAddMilkBags={addMilkBags}
             onUpdateMilkBag={updateMilkBag}
             onDeleteMilkBag={deleteMilkBag}
             onNavigateToDashboard={() => setActiveTab('dashboard')}
@@ -774,6 +781,7 @@ export default function App() {
           onClose={() => setShowQuickAdd(false)}
           onSaveFeed={addRecord}
           onSaveMilkBag={addMilkBag}
+          onSaveMilkBags={addMilkBags}
         />
       )}
     </div>

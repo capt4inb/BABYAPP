@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createMilkBag } from '../utils/milkUtils';
 import GameIcon from './GameIcon';
+import AddMilkBagsModal from './AddMilkBagsModal';
 
 function toLocalDatetimeInput(date) {
   const value = new Date(date);
@@ -15,7 +16,7 @@ const STORAGE_CHOICES = [
   { value: 'room_temp', label: 'Để ngoài', icon: 'thermo', tone: 'orange', hint: '4 giờ' },
 ];
 
-export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
+export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag, onSaveMilkBags }) {
   const now = useMemo(() => new Date(), []);
   const [activeTab, setActiveTab] = useState('feed');
   const [feedVolume, setFeedVolume] = useState(150);
@@ -23,6 +24,7 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
   const [milkVolume, setMilkVolume] = useState(240);
   const [storageStatus, setStorageStatus] = useState('fridge');
   const [milkAt, setMilkAt] = useState(toLocalDatetimeInput(now));
+  const [showBatch, setShowBatch] = useState(false);
 
   const saveFeed = (event) => {
     event.preventDefault();
@@ -47,6 +49,9 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
     }));
     onClose();
   };
+
+  if (showBatch) return <AddMilkBagsModal onSave={onSaveMilkBags} onClose={onClose}
+    initialValues={{ volume: milkVolume, expressedAt: milkAt, storageStatus }} />;
 
   return createPortal(
     <>
@@ -164,6 +169,9 @@ export default function QuickAddModal({ onClose, onSaveFeed, onSaveMilkBag }) {
               <input type="datetime-local" className="form-input" value={milkAt} onChange={event => setMilkAt(event.target.value)} required />
             </div>
 
+            <button className="btn btn-ghost" type="button" onClick={() => setShowBatch(true)}>
+              <GameIcon name="plus" size={24} bare />Thêm nhiều bịch
+            </button>
             <button className="quick-add-submit pink" type="submit">
               <GameIcon name="check" size={20} variant="cream" bare />
               Lưu vào kho
