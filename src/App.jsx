@@ -189,6 +189,10 @@ function SleepFloatingBubble({ mode, startAt, nowMs, wakeWindow, position, onPos
 }
 
 export default function App() {
+  useEffect(() => {
+    window.dispatchEvent(new Event('babyapp:ready'));
+  }, []);
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [records, setRecords] = useState(() =>
     loadFromStorage(STORAGE_KEYS.RECORDS, [])

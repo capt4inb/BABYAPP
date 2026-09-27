@@ -16,3 +16,13 @@ The React Compiler is not enabled on this template because of its impact on dev 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
 # BABYAPP
+
+## App thumbnail
+
+`public/thumbnail.png` is the 1200 × 630 sharing image; `public/thumbnail.svg` is its editable source. Open Graph and Twitter metadata are in `index.html`, with absolute URLs pointing to https://babyapp-kappa.vercel.app/. Update those URLs if the production domain changes.
+
+`public/icon.svg`, the PNG icons, and `public/site.webmanifest` provide the browser and home-screen icons. Deploy the updated build for the images and metadata to become available. Social networks may cache older previews.
+
+## Startup loading
+
+The initial HTML shows a lightweight pastel loading screen before JavaScript loads. The app downloads dynamically and replaces it as soon as it renders; there is no artificial delay. After 15 seconds, or if the app chunk fails, a reload button is available. Reduced-motion preferences are respected.

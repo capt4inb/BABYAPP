@@ -9,12 +9,56 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="description" content="Theo dõi lịch bú sữa của bé, kho sữa mẹ và các ghi chú chăm sóc hằng ngày." />
     <title>Baby Milk Tracker</title>
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Baby Milk Tracker" />
+    <meta property="og:url" content="https://babyapp-kappa.vercel.app/" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:title" content="Baby Milk Tracker" />
+    <meta property="og:description" content="Chăm chút từng cữ sữa, lưu giữ từng ngày yêu thương." />
+    <meta property="og:image" content="https://babyapp-kappa.vercel.app/thumbnail.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Baby Milk Tracker — theo dõi sữa, giấc ngủ và nhật ký của bé" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Baby Milk Tracker" />
+    <meta name="twitter:description" content="Chăm chút từng cữ sữa, lưu giữ từng ngày yêu thương." />
+    <meta name="twitter:image" content="https://babyapp-kappa.vercel.app/thumbnail.png" />
+    <style>
+      body { margin: 0; }
+      .app-startup { box-sizing: border-box; min-height: 100vh; min-height: 100dvh; display: grid; place-content: center; justify-items: center; padding: 32px 24px; text-align: center; background: radial-gradient(ellipse at top, #fce7ef, transparent 65%), #fff8f5; color: #423b5d; font-family: Outfit, system-ui, sans-serif; }
+      .app-startup img { width: 112px; height: 112px; border-radius: 28px; box-shadow: 0 16px 45px #b460851a; }
+      .app-startup h1 { margin: 28px 0 10px; font-size: clamp(24px, 6vw, 32px); font-weight: 700; line-height: 1.25; }
+      .app-startup p { margin: 0; max-width: 320px; font-size: 16px; line-height: 1.7; color: #716b80; }
+      .startup-dots { display: flex; gap: 8px; margin: 30px 0 16px; }
+      .startup-dots span { width: 9px; height: 9px; border-radius: 50%; background: #b46085; animation: startup-pulse 1.2s ease-in-out infinite; }
+      .startup-dots span:nth-child(2) { animation-delay: .15s; background: #8b9ed7; }
+      .startup-dots span:nth-child(3) { animation-delay: .3s; background: #dfb574; }
+      .app-startup .startup-status { font-size: 14px; }
+      .app-startup button { margin-top: 22px; border: 0; border-radius: 14px; padding: 12px 24px; background: #5b6ee1; color: white; font: inherit; cursor: pointer; }
+      .app-startup button:focus-visible { outline: 3px solid #423b5d; outline-offset: 4px; }
+      @keyframes startup-pulse { 0%, 80%, 100% { transform: translateY(0); opacity: .4; } 40% { transform: translateY(-7px); opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) { .startup-dots span { animation: none; } }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="app-startup" id="app-startup" aria-labelledby="startup-title">
+        <img src="/icon.svg" width="112" height="112" alt="" />
+        <h1 id="startup-title">Baby Milk Tracker</h1>
+        <p>Chăm chút từng cữ sữa,<br />lưu giữ từng ngày yêu thương.</p>
+        <div class="startup-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="startup-status" id="startup-status" role="status">Đang mở nhật ký của bé…</p>
+        <button id="startup-retry" type="button" hidden>Tải lại</button>
+        <noscript><p>Vui lòng bật JavaScript để mở ứng dụng.</p></noscript>
+      </main>
+    </div>
+    <script src="/startup.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
