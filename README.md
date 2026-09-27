@@ -26,3 +26,26 @@ If you are developing a production application, we recommend using TypeScript wi
 ## Startup loading
 
 The initial HTML shows a lightweight pastel loading screen before JavaScript loads. The app downloads dynamically and replaces it as soon as it renders; there is no artificial delay. After 15 seconds, or if the app chunk fails, a reload button is available. Reduced-motion preferences are respected.
+
+## iOS and Android widgets
+
+The native Capacitor projects in `ios/` and `android/` include a medium home-screen widget. It shows the latest feeding time and pumping completion time. Each row has a `+` button that opens the matching quick-entry form in the app through the `babyapp://quick-add/feed` and `babyapp://quick-add/pump` deep links.
+
+Widget values are a device-local snapshot of the current Firebase-backed React state. Opening or synchronizing the app refreshes the snapshot and asks the operating system to redraw the widget.
+
+### Sync native projects
+
+```sh
+npm install
+npm run native:sync
+```
+
+### Android
+
+Open `android/` in Android Studio, select the desired device, and run the `app` configuration. After installation, long-press the phone's home screen, open **Widgets**, select **Baby Milk Tracker**, and add the 4 × 2 widget.
+
+### iOS
+
+iOS compilation and signing require macOS with Xcode 26 or newer. Open `ios/App/App.xcodeproj`, choose an Apple development team for both **App** and **BabyWidgetExtension**, and register the App Group `group.com.capt4inb.babyapp` for both targets. Run the app once, then long-press the iPhone home screen and add **Baby Milk Widget**.
+
+The app bundle identifiers are `com.capt4inb.babyapp` and `com.capt4inb.babyapp.widget`. Change them together with the App Group if those identifiers are already owned by another Apple Developer account.

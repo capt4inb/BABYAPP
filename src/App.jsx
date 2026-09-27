@@ -21,6 +21,7 @@ import {
   updateRoomSleeps,
   updateRoomVaccines,
 } from './services/firebase';
+import { listenForWidgetActions, syncWidgetSnapshot } from './services/widgetBridge';
 import {
   formatLiveDuration,
   generateVaccineSchedule,
@@ -233,6 +234,34 @@ export default function App() {
     loadFromStorage('bmt_sync_pin', null) ? 'connecting' : 'disconnected'
   ); // disconnected | connecting | connected | error
   const [syncError, setSyncError] = useState('');
+
+  useEffect(() => {
+    let stopListening = () => {};
+    let active = true;
+
+    listenForWidgetActions(action => {
+      setActiveTab('dashboard');
+      if (action === 'feed') {
+        setModal({ type: 'feed', editRecord: null });
+      } else if (action === 'pump') {
+        window.setTimeout(() => {
+          window.dispatchEvent(new Event('babyapp:quick-add-pump'));
+        }, 0);
+      }
+    }).then(remove => {
+      if (active) stopListening = remove;
+      else remove();
+    }).catch(console.error);
+
+    return () => {
+      active = false;
+      stopListening();
+    };
+  }, []);
+
+  useEffect(() => {
+    syncWidgetSnapshot(records, pumpingSessions).catch(console.error);
+  }, [records, pumpingSessions]);
 
   // Firebase Realtime Subscription
   useEffect(() => {

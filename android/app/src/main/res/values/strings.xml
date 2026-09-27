@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Baby Milk Tracker</string>
+    <string name="title_activity_main">Baby Milk Tracker</string>
+    <string name="package_name">com.capt4inb.babyapp</string>
+    <string name="custom_url_scheme">com.capt4inb.babyapp</string>
+    <string name="widget_title">Baby Milk Tracker</string>
+    <string name="widget_last_feed">Bú gần nhất</string>
+    <string name="widget_last_pump">Hút gần nhất</string>
+    <string name="widget_add_feed">Thêm cữ bú</string>
+    <string name="widget_add_pump">Ghi giờ hút</string>
+    <string name="widget_description">Xem giờ bú, giờ hút sữa và thêm nhanh.</string>
+</resources>

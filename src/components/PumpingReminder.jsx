@@ -67,6 +67,18 @@ export default function PumpingReminder({
   }, []);
 
   useEffect(() => {
+    const openWidgetQuickAdd = () => {
+      setEditSession(null);
+      setCompletedAt(toDatetimeInput(new Date()));
+      setError('');
+      setDialog('record');
+    };
+
+    window.addEventListener('babyapp:quick-add-pump', openWidgetQuickAdd);
+    return () => window.removeEventListener('babyapp:quick-add-pump', openWidgetQuickAdd);
+  }, []);
+
+  useEffect(() => {
     if (!dialog) return;
     const previousFocus = document.activeElement;
     const previousOverflow = document.body.style.overflow;
